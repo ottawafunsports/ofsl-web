@@ -1,28 +1,25 @@
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
+import { HeroBanner } from "../../components/HeroBanner";
 
 export const VolleyballPage = (): JSX.Element => {
   return (
     <div className="bg-white flex flex-row justify-center w-full">
       <div className="bg-white w-full max-w-[1920px] relative">
-        {/* Hero Section */}
-        <div className="relative h-[500px]">
-          <img
-            src="/indoor-coed.png"
-            alt="Volleyball players"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <div className="text-center text-white">
-              <h1 className="text-5xl font-bold mb-4">Volleyball Leagues</h1>
-              <p className="text-xl max-w-2xl mx-auto">
-                Join Ottawa's premier volleyball leagues for all skill levels.
-                Whether you're looking for competitive play or recreational fun,
-                we have a division for you.
-              </p>
-            </div>
+        <HeroBanner 
+          image="/indoor-coed.png" 
+          imageAlt="Volleyball players"
+          height="500px"
+        >
+          <div className="text-center text-white">
+            <h1 className="text-5xl font-bold mb-4">Volleyball Leagues</h1>
+            <p className="text-xl max-w-2xl mx-auto">
+              Join Ottawa's premier volleyball leagues for all skill levels.
+              Whether you're looking for competitive play or recreational fun,
+              we have a division for you.
+            </p>
           </div>
-        </div>
+        </HeroBanner>
 
         {/* League Types Section */}
         <div className="container mx-auto px-4 py-16">
@@ -140,4 +137,3 @@ export const VolleyballPage = (): JSX.Element => {
     </div>
   );
 };
-
