@@ -2,12 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
-import {
-  NavigationMenu,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-} from "../../components/ui/navigation-menu";
+import { HeroBanner } from "../../components/HeroBanner";
 
 const leagueTypes = [
   {
@@ -56,24 +51,25 @@ export const LeaguesPage = (): JSX.Element => {
   return (
     <div className="bg-white flex flex-row justify-center w-full">
       <div className="bg-white w-full max-w-[1920px] relative">
-        {/* Hero Section */}
-        <div className="relative h-[400px] bg-[#b20000]">
+        <HeroBanner 
+          image="/mask-group.png" 
+          imageAlt="Sports players"
+          height="400px"
+        >
           <div className="container mx-auto px-4 h-full flex items-center">
             <div className="max-w-2xl">
-              <h1 className="text-5xl font-bold text-white mb-6">
-                Our Leagues
-              </h1>
+              <h1 className="text-5xl font-bold text-white mb-6">Our Leagues</h1>
               <p className="text-xl text-white mb-8">
-                Join Ottawa's most active sports community. Whether you're
-                looking for competitive play or recreational fun, we have
-                leagues for all skill levels.
+                Join Ottawa's most active sports community. Whether you're looking
+                for competitive play or recreational fun, we have leagues for all
+                skill levels.
               </p>
               <Button className="bg-white text-[#b20000] hover:bg-gray-100">
                 View Schedule & Standings
               </Button>
             </div>
           </div>
-        </div>
+        </HeroBanner>
 
         {/* League Types */}
         <div className="container mx-auto px-4 py-16">
@@ -193,4 +189,3 @@ export const LeaguesPage = (): JSX.Element => {
     </div>
   );
 };
-
