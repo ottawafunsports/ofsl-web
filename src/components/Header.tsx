@@ -56,7 +56,7 @@ export function Header() {
         <Link to="/login" className="hidden lg:block">
           <Button
             variant="outline"
-            className="bg-white/10 hover:bg-white/20 text-white border-white/20 hover:border-white/30 rounded-lg px-6 py-2 transition-all duration-200"
+            className="bg-white hover:bg-gray-50 text-primary border-white rounded-lg px-6 py-2 transition-all duration-200"
           >
             Login
           </Button>
