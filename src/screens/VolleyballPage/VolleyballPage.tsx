@@ -5,9 +5,9 @@ import { HeroBanner } from "../../components/HeroBanner";
 export const VolleyballPage = (): JSX.Element => {
   return (
     <div className="bg-white flex flex-row justify-center w-full">
-      <div className="bg-white w-full max-w-[1920px] relative">
-        <HeroBanner 
-          image="/indoor-coed.png" 
+      <div className="bg-white w-full relative">
+        <HeroBanner
+          image="/indoor-coed.png"
           imageAlt="Volleyball players"
           height="500px"
         >
@@ -137,3 +137,4 @@ export const VolleyballPage = (): JSX.Element => {
     </div>
   );
 };
+

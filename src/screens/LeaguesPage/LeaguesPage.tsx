@@ -50,19 +50,21 @@ const upcomingSeasons = [
 export const LeaguesPage = (): JSX.Element => {
   return (
     <div className="bg-white flex flex-row justify-center w-full">
-      <div className="bg-white w-full max-w-[1920px] relative">
-        <HeroBanner 
-          image="/mask-group.png" 
+      <div className="bg-white w-full relative">
+        <HeroBanner
+          image="/mask-group.png"
           imageAlt="Sports players"
-          height="400px"
+          height="500px"
         >
           <div className="container mx-auto px-4 h-full flex items-center">
             <div className="max-w-2xl">
-              <h1 className="text-5xl font-bold text-white mb-6">Our Leagues</h1>
+              <h1 className="text-5xl font-bold text-white mb-6">
+                Our Leagues
+              </h1>
               <p className="text-xl text-white mb-8">
-                Join Ottawa's most active sports community. Whether you're looking
-                for competitive play or recreational fun, we have leagues for all
-                skill levels.
+                Join Ottawa's most active sports community. Whether you're
+                looking for competitive play or recreational fun, we have
+                leagues for all skill levels.
               </p>
               <Button className="bg-white text-[#b20000] hover:bg-gray-100">
                 View Schedule & Standings
@@ -189,3 +191,4 @@ export const LeaguesPage = (): JSX.Element => {
     </div>
   );
 };
+
