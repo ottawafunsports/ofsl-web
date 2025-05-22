@@ -2,7 +2,12 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
-import { NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList } from "../../components/ui/navigation-menu";
+import {
+  NavigationMenu,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+} from "../../components/ui/navigation-menu";
 import { Separator } from "../../components/ui/separator";
 
 // Data for leagues
@@ -11,25 +16,25 @@ const leagueCards = [
     title: "Indoor Coed/ Mens/ Womens Volleyball",
     image: "/indoor-coed.png",
     alt: "Indoor coed",
-    link: "/volleyball"
+    link: "/volleyball",
   },
   {
     title: "Indoor Elite Womens Volleyball",
     image: "/elite-womens.png",
     alt: "Elite womens",
-    link: "/volleyball"
+    link: "/volleyball",
   },
   {
     title: "Coed Badminton",
     image: "/coed-badminton.png",
     alt: "Coed badminton",
-    link: "/badminton"
+    link: "/badminton",
   },
   {
     title: "Pickleball",
     image: "/pickleball.png",
     alt: "Pickleball",
-    link: "/pickleball"
+    link: "/pickleball",
   },
 ];
 
@@ -44,70 +49,6 @@ const footerLinks = {
 export const HomePage = (): JSX.Element => {
   return (
     <div className="bg-white w-full">
-      {/* Announcement bar - full width */}
-      <div className="w-full h-[38px] bg-black">
-        <div className="max-w-[1920px] mx-auto h-full flex items-center justify-center">
-          <div className="font-normal text-white text-base text-center leading-6">
-            <span className="tracking-[0.08px]">
-              Summer 2025 leagues registration is now open!&nbsp;&nbsp;
-            </span>
-            <Link to="/leagues" className="tracking-[var(--m3-body-large-letter-spacing)] leading-[var(--m3-body-large-line-height)] underline font-m3-body-large font-[number:var(--m3-body-large-font-weight)] text-[length:var(--m3-body-large-font-size)]">
-              Register now
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* Header - full width */}
-      <div className="w-full h-[97px] [background:linear-gradient(180deg,rgba(178,0,0,1)_0%,rgba(120,18,18,1)_100%)]">
-        <div className="max-w-[1920px] mx-auto px-4 h-full flex items-center justify-between">
-          {/* Logo */}
-          <Link to="/" className="relative h-[46px] w-[230px]">
-            <img
-              className="w-[217px] h-[46px]"
-              alt="OFSL Logo"
-              src="/group-1.png"
-            />
-          </Link>
-
-          {/* Navigation */}
-          <NavigationMenu className="mx-auto">
-            <NavigationMenuList className="flex gap-8">
-              <NavigationMenuItem>
-                <Link to="/volleyball" className="font-m3-title-large font-[number:var(--m3-title-large-font-weight)] text-white text-[length:var(--m3-title-large-font-size)] tracking-[var(--m3-title-large-letter-spacing)] leading-[var(--m3-title-large-line-height)] whitespace-nowrap [font-style:var(--m3-title-large-font-style)]">
-                  Volleyball
-                </Link>
-              </NavigationMenuItem>
-              <NavigationMenuItem>
-                <NavigationMenuLink className="font-m3-title-large font-[number:var(--m3-title-large-font-weight)] text-white text-[length:var(--m3-title-large-font-size)] tracking-[var(--m3-title-large-letter-spacing)] leading-[var(--m3-title-large-line-height)] whitespace-nowrap [font-style:var(--m3-title-large-font-style)]">
-                  Badminton
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-              <NavigationMenuItem>
-                <NavigationMenuLink className="font-m3-title-large font-[number:var(--m3-title-large-font-weight)] text-white text-[length:var(--m3-title-large-font-size)] tracking-[var(--m3-title-large-letter-spacing)] leading-[var(--m3-title-large-line-height)] whitespace-nowrap [font-style:var(--m3-title-large-font-style)]">
-                  Pickleball
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-              <NavigationMenuItem>
-                <Link to="/leagues" className="font-m3-title-large font-[number:var(--m3-title-large-font-weight)] text-white text-[length:var(--m3-title-large-font-size)] tracking-[var(--m3-title-large-letter-spacing)] leading-[var(--m3-title-large-line-height)] whitespace-nowrap [font-style:var(--m3-title-large-font-style)]">
-                  Leagues
-                </Link>
-              </NavigationMenuItem>
-            </NavigationMenuList>
-          </NavigationMenu>
-
-          {/* Login button */}
-          <Button
-            variant="outline"
-            className="bg-[#0000002e] text-white border-white rounded-[10px] px-[25px] py-2.5"
-          >
-            <span className="font-m3-title-large font-[number:var(--m3-title-large-font-weight)] text-[length:var(--m3-title-large-font-size)] tracking-[var(--m3-title-large-letter-spacing)] leading-[var(--m3-title-large-line-height)] whitespace-nowrap [font-style:var(--m3-title-large-font-style)]">
-              Login
-            </span>
-          </Button>
-        </div>
-      </div>
-
       {/* Hero section with carousel - full width */}
       <div className="relative w-full">
         <img
@@ -233,9 +174,12 @@ export const HomePage = (): JSX.Element => {
               src="/rebase-24dp-000000-fill0-wght300-grad0-opsz24-1.svg"
             />
             <div className="ml-12 flex-1">
-              <h2 className="text-2xl font-bold text-white mb-2">Tournaments</h2>
+              <h2 className="text-2xl font-bold text-white mb-2">
+                Tournaments
+              </h2>
               <p className="text-white">
-                Led by James Battiston, former member of the Canadian Beach National Team.
+                Led by James Battiston, former member of the Canadian Beach
+                National Team.
               </p>
             </div>
             <Button className="bg-white text-black rounded-[10px] px-[25px] py-2.5">
@@ -262,10 +206,9 @@ export const HomePage = (): JSX.Element => {
               <p className="text-[#6f6f6f] text-base leading-6 mb-6">
                 Just getting into volleyball or been around for a while but
                 looking to revisit some fundamentals, refine your skills or take
-                them to the next level? Join us for OFSL's new Skills and
-                Drills Program led by James Battiston, former professional
-                volleyball player and member of the Canadian Beach National
-                Team.
+                them to the next level? Join us for OFSL's new Skills and Drills
+                Program led by James Battiston, former professional volleyball
+                player and member of the Canadian Beach National Team.
               </p>
               <Button
                 variant="link"
@@ -288,8 +231,8 @@ export const HomePage = (): JSX.Element => {
                 About us
               </h2>
               <p className="text-[#6f6f6f] text-base leading-[25px] mb-6">
-                The <strong>Ottawa Fun Sports league's(OFSL)</strong> aims
-                to provide opportunities to be active and to promote a healthy
+                The <strong>Ottawa Fun Sports league's(OFSL)</strong> aims to
+                provide opportunities to be active and to promote a healthy
                 lifestyle for youths and adults, while having fun at the same
                 time.
                 <br />
@@ -412,3 +355,4 @@ export const HomePage = (): JSX.Element => {
     </div>
   );
 };
+
