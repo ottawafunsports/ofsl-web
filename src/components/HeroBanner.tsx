@@ -9,9 +9,9 @@ interface HeroBannerProps {
 
 export function HeroBanner({ image, imageAlt, height = "604px", children }: HeroBannerProps) {
   return (
-    <div className="relative w-full">
+    <div className="relative w-full" style={{ height }}>
       <img
-        className={`w-full h-[${height}] object-cover`}
+        className="w-full h-full object-cover"
         alt={imageAlt}
         src={image}
       />
