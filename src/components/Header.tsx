@@ -82,13 +82,13 @@ export function Header() {
         </NavigationMenu>
 
         {/* Login button */}
-        <Link to="/login" className="hidden lg:block">
-          <Button
-            variant="outline"
-            className="bg-white hover:bg-gray-50 text-primary border-white rounded-lg px-6 py-2 transition-all duration-200"
-          >
-            Login
-          </Button>
+        <Link 
+          to="/login" 
+          className={`hidden lg:block relative text-white font-medium py-2 px-6 transition-all duration-200
+            before:content-[''] before:absolute before:inset-0 before:bg-white/10 before:rounded-lg
+            hover:before:bg-white/20`}
+        >
+          Login
         </Link>
 
         {/* Mobile Navigation */}
