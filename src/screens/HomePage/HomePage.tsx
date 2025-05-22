@@ -43,10 +43,10 @@ const footerLinks = {
 
 export const HomePage = (): JSX.Element => {
   return (
-    <div className="bg-white flex flex-row justify-center w-full">
-      <div className="bg-white w-full max-w-[1920px] relative">
-        {/* Announcement bar */}
-        <div className="w-full h-[38px] bg-black flex items-center justify-center">
+    <div className="bg-white w-full">
+      {/* Announcement bar - full width */}
+      <div className="w-full h-[38px] bg-black">
+        <div className="max-w-[1920px] mx-auto h-full flex items-center justify-center">
           <div className="font-normal text-white text-base text-center leading-6">
             <span className="tracking-[0.08px]">
               Summer 2025 leagues registration is now open!&nbsp;&nbsp;
@@ -56,107 +56,110 @@ export const HomePage = (): JSX.Element => {
             </Link>
           </div>
         </div>
+      </div>
 
-        {/* Header */}
-        <div className="w-full h-[97px] [background:linear-gradient(180deg,rgba(178,0,0,1)_0%,rgba(120,18,18,1)_100%)]">
-          <div className="container mx-auto px-4 flex items-center justify-between h-full">
-            {/* Logo */}
-            <Link to="/" className="relative h-[46px] w-[230px]">
-              <img
-                className="w-[217px] h-[46px]"
-                alt="OFSL Logo"
-                src="/group-1.png"
-              />
-            </Link>
+      {/* Header - full width */}
+      <div className="w-full h-[97px] [background:linear-gradient(180deg,rgba(178,0,0,1)_0%,rgba(120,18,18,1)_100%)]">
+        <div className="max-w-[1920px] mx-auto px-4 h-full flex items-center justify-between">
+          {/* Logo */}
+          <Link to="/" className="relative h-[46px] w-[230px]">
+            <img
+              className="w-[217px] h-[46px]"
+              alt="OFSL Logo"
+              src="/group-1.png"
+            />
+          </Link>
 
-            {/* Navigation */}
-            <NavigationMenu className="mx-auto">
-              <NavigationMenuList className="flex gap-8">
-                <NavigationMenuItem>
-                  <Link to="/volleyball" className="font-m3-title-large font-[number:var(--m3-title-large-font-weight)] text-white text-[length:var(--m3-title-large-font-size)] tracking-[var(--m3-title-large-letter-spacing)] leading-[var(--m3-title-large-line-height)] whitespace-nowrap [font-style:var(--m3-title-large-font-style)]">
-                    Volleyball
-                  </Link>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                  <NavigationMenuLink className="font-m3-title-large font-[number:var(--m3-title-large-font-weight)] text-white text-[length:var(--m3-title-large-font-size)] tracking-[var(--m3-title-large-letter-spacing)] leading-[var(--m3-title-large-line-height)] whitespace-nowrap [font-style:var(--m3-title-large-font-style)]">
-                    Badminton
-                  </NavigationMenuLink>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                  <NavigationMenuLink className="font-m3-title-large font-[number:var(--m3-title-large-font-weight)] text-white text-[length:var(--m3-title-large-font-size)] tracking-[var(--m3-title-large-letter-spacing)] leading-[var(--m3-title-large-line-height)] whitespace-nowrap [font-style:var(--m3-title-large-font-style)]">
-                    Pickleball
-                  </NavigationMenuLink>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                  <Link to="/leagues" className="font-m3-title-large font-[number:var(--m3-title-large-font-weight)] text-white text-[length:var(--m3-title-large-font-size)] tracking-[var(--m3-title-large-letter-spacing)] leading-[var(--m3-title-large-line-height)] whitespace-nowrap [font-style:var(--m3-title-large-font-style)]">
-                    Leagues
-                  </Link>
-                </NavigationMenuItem>
-              </NavigationMenuList>
-            </NavigationMenu>
-
-            {/* Login button */}
-            <Button
-              variant="outline"
-              className="bg-[#0000002e] text-white border-white rounded-[10px] px-[25px] py-2.5"
-            >
-              <span className="font-m3-title-large font-[number:var(--m3-title-large-font-weight)] text-[length:var(--m3-title-large-font-size)] tracking-[var(--m3-title-large-letter-spacing)] leading-[var(--m3-title-large-line-height)] whitespace-nowrap [font-style:var(--m3-title-large-font-style)]">
-                Login
-              </span>
-            </Button>
-          </div>
-        </div>
-
-        {/* Hero section with carousel */}
-        <div className="relative">
-          <img
-            className="w-full h-[604px] object-cover"
-            alt="Volleyball players"
-            src="/mask-group.png"
-          />
-          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <div className="text-center text-white max-w-[860px] px-4">
-              <h1 className="text-4xl font-bold mb-6">Welcome to OFSL!</h1>
-              <p className="text-xl">
-                Ottawa's premier adult volleyball and badminton league—where
-                sportsmanship meets healthy competition from intermediate to
-                competitive levels.
-              </p>
-              {/* Hero buttons */}
-              <div className="flex gap-4 mt-12 justify-center">
-                <Link to="/volleyball">
-                  <Button
-                    variant="outline"
-                    className="bg-[#0d0d0d42] text-white border-white rounded-[10px] px-[25px] py-2.5"
-                  >
-                    <span className="font-m3-title-large font-[number:var(--m3-title-large-font-weight)] text-white text-[length:var(--m3-title-large-font-size)] tracking-[var(--m3-title-large-letter-spacing)] leading-[var(--m3-title-large-line-height)] whitespace-nowrap [font-style:var(--m3-title-large-font-style)]">
-                      Womens Elite
-                    </span>
-                  </Button>
+          {/* Navigation */}
+          <NavigationMenu className="mx-auto">
+            <NavigationMenuList className="flex gap-8">
+              <NavigationMenuItem>
+                <Link to="/volleyball" className="font-m3-title-large font-[number:var(--m3-title-large-font-weight)] text-white text-[length:var(--m3-title-large-font-size)] tracking-[var(--m3-title-large-letter-spacing)] leading-[var(--m3-title-large-line-height)] whitespace-nowrap [font-style:var(--m3-title-large-font-style)]">
+                  Volleyball
                 </Link>
+              </NavigationMenuItem>
+              <NavigationMenuItem>
+                <NavigationMenuLink className="font-m3-title-large font-[number:var(--m3-title-large-font-weight)] text-white text-[length:var(--m3-title-large-font-size)] tracking-[var(--m3-title-large-letter-spacing)] leading-[var(--m3-title-large-line-height)] whitespace-nowrap [font-style:var(--m3-title-large-font-style)]">
+                  Badminton
+                </NavigationMenuLink>
+              </NavigationMenuItem>
+              <NavigationMenuItem>
+                <NavigationMenuLink className="font-m3-title-large font-[number:var(--m3-title-large-font-weight)] text-white text-[length:var(--m3-title-large-font-size)] tracking-[var(--m3-title-large-letter-spacing)] leading-[var(--m3-title-large-line-height)] whitespace-nowrap [font-style:var(--m3-title-large-font-style)]">
+                  Pickleball
+                </NavigationMenuLink>
+              </NavigationMenuItem>
+              <NavigationMenuItem>
+                <Link to="/leagues" className="font-m3-title-large font-[number:var(--m3-title-large-font-weight)] text-white text-[length:var(--m3-title-large-font-size)] tracking-[var(--m3-title-large-letter-spacing)] leading-[var(--m3-title-large-line-height)] whitespace-nowrap [font-style:var(--m3-title-large-font-style)]">
+                  Leagues
+                </Link>
+              </NavigationMenuItem>
+            </NavigationMenuList>
+          </NavigationMenu>
+
+          {/* Login button */}
+          <Button
+            variant="outline"
+            className="bg-[#0000002e] text-white border-white rounded-[10px] px-[25px] py-2.5"
+          >
+            <span className="font-m3-title-large font-[number:var(--m3-title-large-font-weight)] text-[length:var(--m3-title-large-font-size)] tracking-[var(--m3-title-large-letter-spacing)] leading-[var(--m3-title-large-line-height)] whitespace-nowrap [font-style:var(--m3-title-large-font-style)]">
+              Login
+            </span>
+          </Button>
+        </div>
+      </div>
+
+      {/* Hero section with carousel - full width */}
+      <div className="relative w-full">
+        <img
+          className="w-full h-[604px] object-cover"
+          alt="Volleyball players"
+          src="/mask-group.png"
+        />
+        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="text-center text-white max-w-[860px] px-4">
+            <h1 className="text-4xl font-bold mb-6">Welcome to OFSL!</h1>
+            <p className="text-xl">
+              Ottawa's premier adult volleyball and badminton league—where
+              sportsmanship meets healthy competition from intermediate to
+              competitive levels.
+            </p>
+            {/* Hero buttons */}
+            <div className="flex gap-4 mt-12 justify-center">
+              <Link to="/volleyball">
                 <Button
                   variant="outline"
                   className="bg-[#0d0d0d42] text-white border-white rounded-[10px] px-[25px] py-2.5"
                 >
                   <span className="font-m3-title-large font-[number:var(--m3-title-large-font-weight)] text-white text-[length:var(--m3-title-large-font-size)] tracking-[var(--m3-title-large-letter-spacing)] leading-[var(--m3-title-large-line-height)] whitespace-nowrap [font-style:var(--m3-title-large-font-style)]">
-                    Schedule &amp; Standings
+                    Womens Elite
                   </span>
                 </Button>
-                <Button
-                  variant="outline"
-                  className="bg-[#0d0d0d42] text-white border-white rounded-[10px] px-[25px] py-2.5"
-                >
-                  <span className="font-m3-title-large font-[number:var(--m3-title-large-font-weight)] text-white text-[length:var(--m3-title-large-font-size)] tracking-[var(--m3-title-large-letter-spacing)] leading-[var(--m3-title-large-line-height)] whitespace-nowrap [font-style:var(--m3-title-large-font-style)]">
-                    Tournaments
-                  </span>
-                </Button>
-              </div>
+              </Link>
+              <Button
+                variant="outline"
+                className="bg-[#0d0d0d42] text-white border-white rounded-[10px] px-[25px] py-2.5"
+              >
+                <span className="font-m3-title-large font-[number:var(--m3-title-large-font-weight)] text-white text-[length:var(--m3-title-large-font-size)] tracking-[var(--m3-title-large-letter-spacing)] leading-[var(--m3-title-large-line-height)] whitespace-nowrap [font-style:var(--m3-title-large-font-style)]">
+                  Schedule &amp; Standings
+                </span>
+              </Button>
+              <Button
+                variant="outline"
+                className="bg-[#0d0d0d42] text-white border-white rounded-[10px] px-[25px] py-2.5"
+              >
+                <span className="font-m3-title-large font-[number:var(--m3-title-large-font-weight)] text-white text-[length:var(--m3-title-large-font-size)] tracking-[var(--m3-title-large-letter-spacing)] leading-[var(--m3-title-large-line-height)] whitespace-nowrap [font-style:var(--m3-title-large-font-style)]">
+                  Tournaments
+                </span>
+              </Button>
             </div>
           </div>
         </div>
+      </div>
 
+      {/* Rest of the content with container width */}
+      <div className="max-w-[1400px] mx-auto px-4">
         {/* Diabetes Canada partnership */}
-        <div className="container mx-auto px-4 flex items-center justify-between py-12">
+        <div className="flex items-center justify-between py-12">
           <img
             className="w-[153px] h-[53px] object-cover"
             alt="Diabetes Canada logo"
@@ -174,7 +177,7 @@ export const HomePage = (): JSX.Element => {
         </div>
 
         {/* Holiday break notification */}
-        <Card className="container mx-auto bg-[#ffeae5] rounded-[23px] mb-12">
+        <Card className="bg-[#ffeae5] rounded-[23px] mb-12">
           <CardContent className="flex items-center p-6">
             <img
               className="w-[71px] h-[71px]"
@@ -195,7 +198,7 @@ export const HomePage = (): JSX.Element => {
         </Card>
 
         {/* League description */}
-        <div className="container mx-auto text-center mb-16">
+        <div className="text-center mb-16">
           <p className="max-w-[1080px] mx-auto font-normal text-[#6f6f6f] text-base leading-7">
             Our leagues are organized to provide participants with a structured
             environment. We are dedicated to having fun at an
@@ -205,7 +208,7 @@ export const HomePage = (): JSX.Element => {
         </div>
 
         {/* League cards */}
-        <div className="container mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-16">
           {leagueCards.map((card, index) => (
             <Link key={index} to={card.link}>
               <Card className="border-none">
@@ -222,7 +225,7 @@ export const HomePage = (): JSX.Element => {
         </div>
 
         {/* Tournaments section */}
-        <Card className="container mx-auto bg-[#b20000] rounded-[23px] mb-16">
+        <Card className="bg-[#b20000] rounded-[23px] mb-16">
           <CardContent className="flex items-center p-6">
             <img
               className="w-[86px] h-[86px]"
@@ -244,7 +247,7 @@ export const HomePage = (): JSX.Element => {
         </Card>
 
         {/* Skills and About section */}
-        <div className="container mx-auto grid grid-cols-1 md:grid-cols-2 gap-5 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-16">
           {/* Skills and drills */}
           <div className="flex flex-col">
             <img
@@ -305,7 +308,7 @@ export const HomePage = (): JSX.Element => {
         </div>
 
         {/* Charity section */}
-        <div className="container mx-auto text-center mb-16">
+        <div className="text-center mb-16">
           <p className="max-w-[1077px] mx-auto font-normal text-[#6f6f6f] text-base leading-7">
             We are proud to raise funds for several local charities across the
             Ottawa region, including The Boys and Girls Club of Ottawa, The
@@ -314,7 +317,7 @@ export const HomePage = (): JSX.Element => {
         </div>
 
         {/* Footer */}
-        <footer className="container mx-auto pt-16 pb-8">
+        <footer className="pt-16 pb-8">
           <Separator className="mb-8" />
 
           <div className="grid grid-cols-1 md:grid-cols-5 gap-8 mb-16">
