@@ -6,13 +6,6 @@ import { Link } from "react-router-dom";
 export function LoginPage() {
   return (
     <div className="min-h-[calc(100vh-135px)] bg-gray-50 flex flex-col items-center justify-center p-4">
-      <div className="mb-8">
-        <img
-          src="/group-1.png"
-          alt="OFSL Logo"
-          className="w-[217px] h-[46px]"
-        />
-      </div>
       <Card className="w-full max-w-[460px] bg-white rounded-[10px] shadow-lg">
         <CardContent className="p-8">
           <h1 className="text-[32px] font-bold text-center mb-8 text-[#6F6F6F]">
@@ -75,3 +68,4 @@ export function LoginPage() {
     </div>
   );
 }
+
