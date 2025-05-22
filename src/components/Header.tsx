@@ -30,22 +30,32 @@ export function Header() {
         <NavigationMenu className="hidden lg:block mx-auto">
           <NavigationMenuList className="flex gap-8">
             <NavigationMenuItem>
-              <Link to="/volleyball" className="text-white hover:text-gray-200 transition-colors">
+              <Link 
+                to="/volleyball" 
+                className="relative text-white font-medium py-2 transition-colors hover:text-white before:content-[''] before:absolute before:bottom-0 before:left-0 before:w-full before:h-0.5 before:bg-white before:scale-x-0 before:transition-transform before:duration-300 hover:before:scale-x-100"
+              >
                 Volleyball
               </Link>
             </NavigationMenuItem>
             <NavigationMenuItem>
-              <NavigationMenuLink className="text-white hover:text-gray-200 transition-colors">
+              <NavigationMenuLink 
+                className="relative text-white font-medium py-2 transition-colors hover:text-white before:content-[''] before:absolute before:bottom-0 before:left-0 before:w-full before:h-0.5 before:bg-white before:scale-x-0 before:transition-transform before:duration-300 hover:before:scale-x-100"
+              >
                 Badminton
               </NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
-              <NavigationMenuLink className="text-white hover:text-gray-200 transition-colors">
+              <NavigationMenuLink 
+                className="relative text-white font-medium py-2 transition-colors hover:text-white before:content-[''] before:absolute before:bottom-0 before:left-0 before:w-full before:h-0.5 before:bg-white before:scale-x-0 before:transition-transform before:duration-300 hover:before:scale-x-100"
+              >
                 Pickleball
               </NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
-              <Link to="/leagues" className="text-white hover:text-gray-200 transition-colors">
+              <Link 
+                to="/leagues" 
+                className="relative text-white font-medium py-2 transition-colors hover:text-white before:content-[''] before:absolute before:bottom-0 before:left-0 before:w-full before:h-0.5 before:bg-white before:scale-x-0 before:transition-transform before:duration-300 hover:before:scale-x-100"
+              >
                 Leagues
               </Link>
             </NavigationMenuItem>
@@ -69,35 +79,35 @@ export function Header() {
               <nav className="flex flex-col space-y-4">
                 <Link 
                   to="/volleyball" 
-                  className="text-white text-lg py-2 hover:bg-white/10 rounded-lg px-4"
+                  className="text-white text-lg py-2 hover:bg-white/10 rounded-lg px-4 transition-colors duration-200"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Volleyball
                 </Link>
                 <Link 
                   to="/badminton" 
-                  className="text-white text-lg py-2 hover:bg-white/10 rounded-lg px-4"
+                  className="text-white text-lg py-2 hover:bg-white/10 rounded-lg px-4 transition-colors duration-200"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Badminton
                 </Link>
                 <Link 
                   to="/pickleball" 
-                  className="text-white text-lg py-2 hover:bg-white/10 rounded-lg px-4"
+                  className="text-white text-lg py-2 hover:bg-white/10 rounded-lg px-4 transition-colors duration-200"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Pickleball
                 </Link>
                 <Link 
                   to="/leagues" 
-                  className="text-white text-lg py-2 hover:bg-white/10 rounded-lg px-4"
+                  className="text-white text-lg py-2 hover:bg-white/10 rounded-lg px-4 transition-colors duration-200"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Leagues
                 </Link>
                 <Link 
                   to="/login" 
-                  className="text-white text-lg py-2 hover:bg-white/10 rounded-lg px-4"
+                  className="text-white text-lg py-2 hover:bg-white/10 rounded-lg px-4 transition-colors duration-200"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Login
