@@ -107,54 +107,51 @@ export const HomePage = (): JSX.Element => {
           </div>
         </div>
 
-        {/* Hero image */}
-        <img
-          className="w-full h-[604px] object-cover"
-          alt="Volleyball players"
-          src="/mask-group.png"
-        />
-
-        {/* Hero content overlay */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center pt-[95px]">
-          <div className="max-w-[860px] font-m3-title-large font-[number:var(--m3-title-large-font-weight)] text-white text-[length:var(--m3-title-large-font-size)] text-center tracking-[var(--m3-title-large-letter-spacing)] leading-[var(--m3-title-large-line-height)] [font-style:var(--m3-title-large-font-style)] mt-[150px]">
-            <span className="font-[number:var(--m3-title-large-font-weight)] leading-[var(--m3-title-large-line-height)] font-m3-title-large [font-style:var(--m3-title-large-font-style)] tracking-[var(--m3-title-large-letter-spacing)] text-[length:var(--m3-title-large-font-size)]">
-              Welcome to OFSL! <br />
-            </span>
-            <span className="text-[length:var(--m3-title-large-font-size)] leading-[var(--m3-title-large-line-height)] font-m3-title-large [font-style:var(--m3-title-large-font-style)] font-[number:var(--m3-title-large-font-weight)] tracking-[var(--m3-title-large-letter-spacing)]">
-              Ottawa's premier adult volleyball and badminton league—where
-              sportsmanship meets healthy competition from intermediate to
-              competitive levels.
-            </span>
-          </div>
-
-          {/* Hero buttons */}
-          <div className="flex gap-4 mt-12">
-            <Link to="/volleyball">
-              <Button
-                variant="outline"
-                className="bg-[#0d0d0d42] text-white border-white rounded-[10px] px-[25px] py-2.5"
-              >
-                <span className="font-m3-title-large font-[number:var(--m3-title-large-font-weight)] text-white text-[length:var(--m3-title-large-font-size)] tracking-[var(--m3-title-large-letter-spacing)] leading-[var(--m3-title-large-line-height)] whitespace-nowrap [font-style:var(--m3-title-large-font-style)]">
-                  Womens Elite
-                </span>
-              </Button>
-            </Link>
-            <Button
-              variant="outline"
-              className="bg-[#0d0d0d42] text-white border-white rounded-[10px] px-[25px] py-2.5"
-            >
-              <span className="font-m3-title-large font-[number:var(--m3-title-large-font-weight)] text-white text-[length:var(--m3-title-large-font-size)] tracking-[var(--m3-title-large-letter-spacing)] leading-[var(--m3-title-large-line-height)] whitespace-nowrap [font-style:var(--m3-title-large-font-style)]">
-                Schedule &amp; Standings
-              </span>
-            </Button>
-            <Button
-              variant="outline"
-              className="bg-[#0d0d0d42] text-white border-white rounded-[10px] px-[25px] py-2.5"
-            >
-              <span className="font-m3-title-large font-[number:var(--m3-title-large-font-weight)] text-white text-[length:var(--m3-title-large-font-size)] tracking-[var(--m3-title-large-letter-spacing)] leading-[var(--m3-title-large-line-height)] whitespace-nowrap [font-style:var(--m3-title-large-font-style)]">
-                Tournaments
-              </span>
-            </Button>
+        {/* Hero section with carousel */}
+        <div className="relative">
+          <img
+            className="w-full h-[604px] object-cover"
+            alt="Volleyball players"
+            src="/mask-group.png"
+          />
+          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <div className="text-center text-white max-w-[860px] px-4">
+              <h1 className="text-4xl font-bold mb-6">Welcome to OFSL!</h1>
+              <p className="text-xl">
+                Ottawa's premier adult volleyball and badminton league—where
+                sportsmanship meets healthy competition from intermediate to
+                competitive levels.
+              </p>
+              {/* Hero buttons */}
+              <div className="flex gap-4 mt-12 justify-center">
+                <Link to="/volleyball">
+                  <Button
+                    variant="outline"
+                    className="bg-[#0d0d0d42] text-white border-white rounded-[10px] px-[25px] py-2.5"
+                  >
+                    <span className="font-m3-title-large font-[number:var(--m3-title-large-font-weight)] text-white text-[length:var(--m3-title-large-font-size)] tracking-[var(--m3-title-large-letter-spacing)] leading-[var(--m3-title-large-line-height)] whitespace-nowrap [font-style:var(--m3-title-large-font-style)]">
+                      Womens Elite
+                    </span>
+                  </Button>
+                </Link>
+                <Button
+                  variant="outline"
+                  className="bg-[#0d0d0d42] text-white border-white rounded-[10px] px-[25px] py-2.5"
+                >
+                  <span className="font-m3-title-large font-[number:var(--m3-title-large-font-weight)] text-white text-[length:var(--m3-title-large-font-size)] tracking-[var(--m3-title-large-letter-spacing)] leading-[var(--m3-title-large-line-height)] whitespace-nowrap [font-style:var(--m3-title-large-font-style)]">
+                    Schedule &amp; Standings
+                  </span>
+                </Button>
+                <Button
+                  variant="outline"
+                  className="bg-[#0d0d0d42] text-white border-white rounded-[10px] px-[25px] py-2.5"
+                >
+                  <span className="font-m3-title-large font-[number:var(--m3-title-large-font-weight)] text-white text-[length:var(--m3-title-large-font-size)] tracking-[var(--m3-title-large-letter-spacing)] leading-[var(--m3-title-large-line-height)] whitespace-nowrap [font-style:var(--m3-title-large-font-style)]">
+                    Tournaments
+                  </span>
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -233,15 +230,10 @@ export const HomePage = (): JSX.Element => {
               src="/rebase-24dp-000000-fill0-wght300-grad0-opsz24-1.svg"
             />
             <div className="ml-12 flex-1">
-              <div className="font-m3-title-large font-[number:var(--m3-title-large-font-weight)] text-white text-[length:var(--m3-title-large-font-size)] tracking-[var(--m3-title-large-letter-spacing)] leading-[var(--m3-title-large-line-height)] [font-style:var(--m3-title-large-font-style)]">
-                <span className="font-[number:var(--m3-title-large-font-weight)] leading-[var(--m3-title-large-line-height)] font-m3-title-large [font-style:var(--m3-title-large-font-style)] tracking-[var(--m3-title-large-letter-spacing)] text-[length:var(--m3-title-large-font-size)]">
-                  Tournaments <br />
-                </span>
-                <span className="text-[length:var(--m3-title-large-font-size)] leading-[var(--m3-title-large-line-height)] font-m3-title-large [font-style:var(--m3-title-large-font-style)] font-[number:var(--m3-title-large-font-weight)] tracking-[var(--m3-title-large-letter-spacing)]">
-                  Led by James Battiston, former member of the Canadian Beach
-                  National Team.
-                </span>
-              </div>
+              <h2 className="text-2xl font-bold text-white mb-2">Tournaments</h2>
+              <p className="text-white">
+                Led by James Battiston, former member of the Canadian Beach National Team.
+              </p>
             </div>
             <Button className="bg-white text-black rounded-[10px] px-[25px] py-2.5">
               <span className="font-m3-title-large font-[number:var(--m3-title-large-font-weight)] text-black text-[length:var(--m3-title-large-font-size)] tracking-[var(--m3-title-large-letter-spacing)] leading-[var(--m3-title-large-line-height)] whitespace-nowrap [font-style:var(--m3-title-large-font-style)]">
