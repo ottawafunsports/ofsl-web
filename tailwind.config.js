@@ -10,6 +10,7 @@ module.exports = {
         "m3-body-large": "var(--m3-body-large-font-family)",
         "m3-title-large": "var(--m3-title-large-font-family)",
         "m3-title-medium": "var(--m3-title-medium-font-family)",
+        "heading": "var(--heading-font-family)",
         sans: [
           "ui-sans-serif",
           "system-ui",
@@ -42,12 +43,12 @@ module.exports = {
         },
       },
       borderRadius: {
-        lg: "10px",
-        md: "8px",
-        sm: "6px",
+        lg: "20px",
+        md: "16px",
+        sm: "12px",
       },
     },
-    container: { center: true, padding: "2rem", screens: { "2xl": "1400px" } },
+    container: { center: true, padding: "2rem", screens: { "2xl": "1280px" } },
   },
   plugins: [],
 };

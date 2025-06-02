@@ -56,9 +56,9 @@ export const LeaguesPage = (): JSX.Element => {
           imageAlt="Sports players"
           height="500px"
         >
-          <div className="container mx-auto px-4 h-full flex items-center">
+          <div className="max-w-[1280px] mx-auto px-4 h-full flex items-center">
             <div className="max-w-2xl">
-              <h1 className="text-5xl font-bold text-white mb-6">
+              <h1 className="text-5xl text-white mb-6 font-heading">
                 Our Leagues
               </h1>
               <p className="text-xl text-white mb-8">
@@ -66,7 +66,7 @@ export const LeaguesPage = (): JSX.Element => {
                 looking for competitive play or recreational fun, we have
                 leagues for all skill levels.
               </p>
-              <Button className="bg-white text-[#b20000] hover:bg-gray-100">
+              <Button className="bg-white text-[#b20000] hover:bg-gray-100 rounded-[10px]">
                 View Schedule & Standings
               </Button>
             </div>
@@ -74,21 +74,21 @@ export const LeaguesPage = (): JSX.Element => {
         </HeroBanner>
 
         {/* League Types */}
-        <div className="container mx-auto px-4 py-16">
-          <h2 className="text-3xl font-bold mb-12 text-center">
+        <div className="max-w-[1280px] mx-auto px-4 py-16 md:py-24">
+          <h2 className="text-3xl font-bold mb-16 text-center">
             Choose Your Sport
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
             {leagueTypes.map((league, index) => (
               <Link key={index} to={league.link}>
-                <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+                <Card className="overflow-hidden hover:shadow-lg transition-shadow rounded-lg">
                   <img
                     src={league.image}
                     alt={league.title}
-                    className="w-full h-48 object-cover"
+                    className="w-full h-[430px] object-cover rounded-t-lg"
                   />
-                  <CardContent className="p-6">
-                    <h3 className="text-2xl font-bold mb-2">{league.title}</h3>
+                  <CardContent className="p-8">
+                    <h3 className="text-2xl font-bold mb-4">{league.title}</h3>
                     <p className="text-gray-600">{league.description}</p>
                   </CardContent>
                 </Card>
@@ -98,18 +98,18 @@ export const LeaguesPage = (): JSX.Element => {
         </div>
 
         {/* Upcoming Seasons */}
-        <div className="bg-gray-50 py-16">
-          <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold mb-12 text-center">
+        <div className="bg-gray-50 py-16 md:py-24">
+          <div className="max-w-[1280px] mx-auto px-4">
+            <h2 className="text-3xl font-bold mb-16 text-center">
               Upcoming Seasons
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
               {upcomingSeasons.map((season, index) => (
-                <Card key={index} className="bg-white">
-                  <CardContent className="p-6">
-                    <h3 className="text-xl font-bold mb-2">{season.name}</h3>
-                    <p className="text-gray-600 mb-2">{season.dates}</p>
-                    <div className="flex items-center justify-between mt-4">
+                <Card key={index} className="bg-white rounded-lg">
+                  <CardContent className="p-8">
+                    <h3 className="text-xl font-bold mb-4">{season.name}</h3>
+                    <p className="text-gray-600 mb-4">{season.dates}</p>
+                    <div className="flex items-center justify-between mt-6">
                       <span
                         className={`text-sm font-semibold ${
                           season.status === "Registration Open"
@@ -123,7 +123,7 @@ export const LeaguesPage = (): JSX.Element => {
                         {season.spots}
                       </span>
                     </div>
-                    <Button className="w-full mt-4 bg-[#b20000] hover:bg-[#8a0000] text-white">
+                    <Button className="w-full mt-6 bg-[#b20000] hover:bg-[#8a0000] text-white rounded-[10px]">
                       Register Now
                     </Button>
                   </CardContent>
@@ -134,54 +134,54 @@ export const LeaguesPage = (): JSX.Element => {
         </div>
 
         {/* League Features */}
-        <div className="container mx-auto px-4 py-16">
-          <h2 className="text-3xl font-bold mb-12 text-center">
+        <div className="max-w-[1280px] mx-auto px-4 py-16 md:py-24">
+          <h2 className="text-3xl font-bold mb-16 text-center">
             What's Included
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
             <div className="text-center">
-              <div className="w-16 h-16 bg-[#b20000] rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-[#b20000] rounded-lg flex items-center justify-center mx-auto mb-6">
                 <span className="text-white text-2xl">🏆</span>
               </div>
-              <h3 className="text-xl font-bold mb-2">Organized Competition</h3>
+              <h3 className="text-xl font-bold mb-4">Organized Competition</h3>
               <p className="text-gray-600">
                 Professional referees and structured leagues
               </p>
             </div>
             <div className="text-center">
-              <div className="w-16 h-16 bg-[#b20000] rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-[#b20000] rounded-lg flex items-center justify-center mx-auto mb-6">
                 <span className="text-white text-2xl">📊</span>
               </div>
-              <h3 className="text-xl font-bold mb-2">Stats Tracking</h3>
+              <h3 className="text-xl font-bold mb-4">Stats Tracking</h3>
               <p className="text-gray-600">Individual and team statistics</p>
             </div>
             <div className="text-center">
-              <div className="w-16 h-16 bg-[#b20000] rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-[#b20000] rounded-lg flex items-center justify-center mx-auto mb-6">
                 <span className="text-white text-2xl">🏅</span>
               </div>
-              <h3 className="text-xl font-bold mb-2">Season Awards</h3>
+              <h3 className="text-xl font-bold mb-4">Season Awards</h3>
               <p className="text-gray-600">Recognition for top performers</p>
             </div>
             <div className="text-center">
-              <div className="w-16 h-16 bg-[#b20000] rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-[#b20000] rounded-lg flex items-center justify-center mx-auto mb-6">
                 <span className="text-white text-2xl">👥</span>
               </div>
-              <h3 className="text-xl font-bold mb-2">Community Events</h3>
+              <h3 className="text-xl font-bold mb-4">Community Events</h3>
               <p className="text-gray-600">Social gatherings and tournaments</p>
             </div>
           </div>
         </div>
 
         {/* Registration CTA */}
-        <div className="bg-[#b20000] text-white py-16">
-          <div className="container mx-auto px-4 text-center">
-            <h2 className="text-3xl font-bold mb-4">Ready to Join?</h2>
-            <p className="text-xl mb-8">
+        <div className="bg-[#b20000] text-white py-16 md:py-24">
+          <div className="max-w-[1280px] mx-auto px-4 text-center">
+            <h2 className="text-3xl font-bold mb-6">Ready to Join?</h2>
+            <p className="text-xl mb-12">
               Don't miss out on the upcoming season. Register today!
             </p>
             <Button
               variant="outline"
-              className="text-white border-white hover:bg-white hover:text-[#b20000]"
+              className="text-white border-white hover:bg-white hover:text-[#b20000] rounded-[10px]"
             >
               Register Now
             </Button>
@@ -191,4 +191,3 @@ export const LeaguesPage = (): JSX.Element => {
     </div>
   );
 };
-

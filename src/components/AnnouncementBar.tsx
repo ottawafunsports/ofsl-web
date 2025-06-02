@@ -2,13 +2,16 @@ import { Link } from "react-router-dom";
 
 export function AnnouncementBar() {
   return (
-    <div className="w-full h-[38px] bg-black">
-      <div className="max-w-[1920px] mx-auto h-full flex items-center justify-center">
-        <div className="font-normal text-white text-base text-center leading-6">
-          <span className="tracking-[0.08px]">
-            Summer 2025 leagues registration is now open!&nbsp;&nbsp;
+    <div className="w-full bg-black py-2 md:py-2.5">
+      <div className="max-w-[1280px] mx-auto px-4 flex items-center justify-center">
+        <div className="font-normal text-white text-sm md:text-base text-center">
+          <span className="tracking-[0.08px] block md:inline">
+            Summer 2025 leagues registration is now open!
           </span>
-          <Link to="/leagues" className="tracking-[var(--m3-body-large-letter-spacing)] leading-[var(--m3-body-large-line-height)] underline font-m3-body-large font-[number:var(--m3-body-large-font-weight)] text-[length:var(--m3-body-large-font-size)]">
+          <Link 
+            to="/leagues" 
+            className="text-base md:text-lg underline ml-0 md:ml-2 font-bold"
+          >
             Register now
           </Link>
         </div>

@@ -1,0 +1,144 @@
+import React from "react";
+import { Link } from "react-router-dom";
+import { Separator } from "./ui/separator";
+import { Mail, Phone } from "lucide-react";
+
+// Data for footer links
+const footerLinks = {
+  leagues: ["Volleyball", "Badminton", "Pickleball"],
+  getInvolved: ["Newsletter", "Registration", "Partner with us"],
+  usefulLinks: ["Leagues", "Schedule & Standings", "Locations"],
+  siteInfo: ["About us", "Contact", "FAQs"],
+};
+
+export function Footer() {
+  return (
+    <footer className="w-full bg-black text-white">
+      <div className="max-w-[1280px] mx-auto px-4 pt-16 md:pt-24 pb-8 md:pb-12">
+        {/* Logo as its own row */}
+        <div className="mb-10 md:mb-16">
+          <img
+            className="w-[150px] md:w-[182px] h-auto md:h-[38px]"
+            alt="OFSL Logo"
+            src="/group-1-1.png"
+          />
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-10 md:gap-12 mb-16 md:mb-24 items-start">
+          <div className="col-span-1">
+            <h3 className="text-xl font-bold text-white mb-4 md:mb-6">
+              Leagues
+            </h3>
+            <ul className="text-base md:text-lg space-y-2">
+              {footerLinks.leagues.map((link, index) => (
+                <li key={index}>{link}</li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="text-xl font-bold text-white mb-4 md:mb-6">
+              Get involved
+            </h3>
+            <ul className="text-base md:text-lg space-y-2">
+              {footerLinks.getInvolved.map((link, index) => (
+                <li key={index}>{link}</li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="text-xl font-bold text-white mb-4 md:mb-6">
+              Useful links
+            </h3>
+            <ul className="text-base md:text-lg space-y-2">
+              {footerLinks.usefulLinks.map((link, index) => (
+                <li key={index}>{link}</li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="text-xl font-bold text-white mb-4 md:mb-6">
+              Site info
+            </h3>
+            <ul className="text-base md:text-lg space-y-2">
+              <li><Link to="/about-us" className="hover:text-primary hover:underline font-bold">About us</Link></li>
+              <li>Contact</li>
+              <li>FAQs</li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="text-xl font-bold text-white mb-4 md:mb-6">
+              Contact
+            </h3>
+            <div className="text-base md:text-lg mb-6 md:mb-8">
+              <a 
+                href="mailto:ottawafunsports@gmail.com"
+                className="flex items-center gap-2 hover:text-primary hover:underline mb-4 font-bold"
+              >
+                <Mail size={18} />
+                <span>Email</span>
+              </a>
+              <a 
+                href="tel:6137986375"
+                className="flex items-center gap-2 hover:text-primary hover:underline font-bold"
+              >
+                <Phone size={18} />
+                <span>Phone</span>
+              </a>
+            </div>
+            <div className="flex gap-3">
+              <a 
+                href="https://www.facebook.com/OttawaFunSportsLeague" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                aria-label="Facebook"
+              >
+                <img
+                  className="w-[26px] h-[26px] rounded-lg"
+                  alt="Facebook"
+                  src="/social-icons.svg"
+                />
+              </a>
+              <a 
+                href="https://www.instagram.com/ottawafunsports/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                aria-label="Instagram"
+              >
+                <img
+                  className="w-[25px] h-[26px] rounded-lg"
+                  alt="Instagram"
+                  src="/social-icons-2.svg"
+                />
+              </a>
+              <a 
+                href="https://www.instagram.com/ottawafunsports/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                aria-label="TikTok"
+              >
+                <img
+                  className="w-[26px] h-[26px] rounded-lg"
+                  alt="TikTok"
+                  src="/social-icons-1.svg"
+                />
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-col md:flex-row justify-between items-center gap-6 md:gap-0">
+          <div className="text-sm md:text-base text-[#9a9a9a]">
+            © {new Date().getFullYear()} COMMUNITY ACTIVE SPORTS LEAGUE INC.
+          </div>
+          <div className="text-sm md:text-base text-[#9a9a9a]">
+            Privacy Policy&nbsp;&nbsp;|&nbsp;&nbsp;Terms of Use
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
