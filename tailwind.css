@@ -5,6 +5,30 @@
   .all-\[unset\] {
     all: unset;
   }
+  
+  /* Footer link with animated underline effect */
+  .footer-link {
+    position: relative;
+    transition: color 0.2s ease;
+  }
+  
+  .footer-link::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    transform: scaleX(0);
+    height: 1px;
+    bottom: -2px;
+    left: 0;
+    background-color: #ffeae5;
+    transform-origin: bottom right;
+    transition: transform 0.3s ease-out;
+  }
+  
+  .footer-link:hover::after {
+    transform: scaleX(1);
+    transform-origin: bottom left;
+  }
 }
 
 :root {

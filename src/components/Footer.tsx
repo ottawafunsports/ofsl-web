@@ -7,7 +7,7 @@ import { Mail, Phone } from "lucide-react";
 const footerLinks = {
   leagues: ["Volleyball", "Badminton", "Pickleball"],
   getInvolved: ["Newsletter", "Registration", "Partner with us"],
-  usefulLinks: ["Leagues", "Schedule & Standings", "Locations"],
+  usefulLinks: ["Leagues", "Schedule & Standings", "Standards of play"],
   siteInfo: ["About us", "Contact", "FAQs"],
 };
 
@@ -30,9 +30,13 @@ export function Footer() {
               Leagues
             </h3>
             <ul className="text-base md:text-lg space-y-2">
-              {footerLinks.leagues.map((link, index) => (
-                <li key={index}>{link}</li>
-              ))}
+              <li>
+                <Link to="/volleyball" className="footer-link hover:text-[#ffeae5]">
+                  Volleyball
+                </Link>
+              </li>
+              <li>Badminton</li>
+              <li>Pickleball</li>
             </ul>
           </div>
 
@@ -41,9 +45,21 @@ export function Footer() {
               Get involved
             </h3>
             <ul className="text-base md:text-lg space-y-2">
-              {footerLinks.getInvolved.map((link, index) => (
-                <li key={index}>{link}</li>
-              ))}
+              <li>
+                <Link to="/about-us#newsletter-section" className="footer-link hover:text-[#ffeae5]">
+                  Newsletter
+                </Link>
+              </li>
+              <li>
+                <Link to="/signup" className="footer-link hover:text-[#ffeae5]">
+                  Registration
+                </Link>
+              </li>
+              <li>
+                <Link to="/about-us#partners-section" className="footer-link hover:text-[#ffeae5]">
+                  Partner with us
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -52,9 +68,17 @@ export function Footer() {
               Useful links
             </h3>
             <ul className="text-base md:text-lg space-y-2">
-              {footerLinks.usefulLinks.map((link, index) => (
-                <li key={index}>{link}</li>
-              ))}
+              <li>
+                <Link to="/leagues" className="footer-link hover:text-[#ffeae5]">
+                  Leagues
+                </Link>
+              </li>
+              <li>Schedule & Standings</li>
+              <li>
+                <Link to="/standards-of-play" className="footer-link hover:text-[#ffeae5]">
+                  Standards of play
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -63,9 +87,9 @@ export function Footer() {
               Site info
             </h3>
             <ul className="text-base md:text-lg space-y-2">
-              <li><Link to="/about-us" className="hover:text-primary hover:underline font-bold">About us</Link></li>
-              <li>Contact</li>
-              <li>FAQs</li>
+              <li><Link to="/about-us" className="footer-link hover:text-[#ffeae5]">About us</Link></li>
+              <li><Link to="/about-us#contact-section" className="footer-link hover:text-[#ffeae5]">Contact</Link></li>
+              <li><Link to="/about-us#faq-section" className="footer-link hover:text-[#ffeae5]">FAQs</Link></li>
             </ul>
           </div>
 
@@ -73,19 +97,19 @@ export function Footer() {
             <h3 className="text-xl font-bold text-white mb-4 md:mb-6">
               Contact
             </h3>
-            <div className="text-base md:text-lg mb-6 md:mb-8">
+            <div className="text-base md:text-lg mb-6 md:mb-8 text-white">
               <a 
                 href="mailto:ottawafunsports@gmail.com"
-                className="flex items-center gap-2 hover:text-primary hover:underline mb-4 font-bold"
+                className="flex items-center gap-2 footer-link hover:text-[#ffeae5] mb-4"
               >
-                <Mail size={18} />
+                <Mail size={18} className="text-white" />
                 <span>Email</span>
               </a>
               <a 
                 href="tel:6137986375"
-                className="flex items-center gap-2 hover:text-primary hover:underline font-bold"
+                className="flex items-center gap-2 footer-link hover:text-[#ffeae5]"
               >
-                <Phone size={18} />
+                <Phone size={18} className="text-white" />
                 <span>Phone</span>
               </a>
             </div>
@@ -95,9 +119,10 @@ export function Footer() {
                 target="_blank" 
                 rel="noopener noreferrer"
                 aria-label="Facebook"
+                className="bg-white rounded-lg p-1 flex items-center justify-center"
               >
                 <img
-                  className="w-[26px] h-[26px] rounded-lg"
+                  className="w-[24px] h-[24px]"
                   alt="Facebook"
                   src="/social-icons.svg"
                 />
@@ -107,9 +132,10 @@ export function Footer() {
                 target="_blank" 
                 rel="noopener noreferrer"
                 aria-label="Instagram"
+                className="bg-white rounded-lg p-1 flex items-center justify-center"
               >
                 <img
-                  className="w-[25px] h-[26px] rounded-lg"
+                  className="w-[23px] h-[24px]"
                   alt="Instagram"
                   src="/social-icons-2.svg"
                 />
@@ -119,9 +145,10 @@ export function Footer() {
                 target="_blank" 
                 rel="noopener noreferrer"
                 aria-label="TikTok"
+                className="bg-white rounded-lg p-1 flex items-center justify-center"
               >
                 <img
-                  className="w-[26px] h-[26px] rounded-lg"
+                  className="w-[24px] h-[24px]"
                   alt="TikTok"
                   src="/social-icons-1.svg"
                 />

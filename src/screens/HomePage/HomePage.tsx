@@ -214,8 +214,8 @@ export const HomePage = (): JSX.Element => {
 
       {/* Rest of the content with container width */}
       <div className="max-w-[1280px] mx-auto px-4">
-        {/* Diabetes Canada partnership */}
-        <div className="flex justify-center py-12 md:py-16">
+        {/* Diabetes Canada partnership - with reduced padding */}
+        <div className="flex justify-center pt-8 md:pt-12 pb-8 md:pb-12">
           <div className="flex flex-col md:flex-row items-center max-w-[800px] gap-6">
             <img
               className="w-[120px] md:w-[153px] h-auto md:h-[53px] object-contain"

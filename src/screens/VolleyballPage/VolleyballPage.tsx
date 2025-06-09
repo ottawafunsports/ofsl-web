@@ -109,7 +109,7 @@ export const VolleyballPage = (): JSX.Element => {
                   <CardContent className="p-0">
                     <div className="relative">
                       <img
-                        className="w-full h-[400px] object-cover rounded-t-lg"
+                        className="w-full h-[300px] object-cover rounded-t-lg"
                         alt={card.title}
                         src={card.image}
                       />
@@ -129,26 +129,32 @@ export const VolleyballPage = (): JSX.Element => {
         {/* Standards of Play section - Reduced top margin */}
         <div className="max-w-[1280px] mx-auto px-4 mb-16 md:mb-24">
           <Card className="bg-[#b20000] rounded-lg">
-            <CardContent className="flex flex-col md:flex-row items-center p-6 md:p-8 gap-6">
-              <BookOpen className="w-[60px] h-[60px] md:w-[86px] md:h-[86px] text-white" />
-              <div className="md:ml-6 flex-1 text-center md:text-left">
-                <h2 className="text-xl md:text-2xl font-bold text-white">Standards of Play</h2>
+            <CardContent className="flex flex-col md:flex-row items-center p-2 md:p-3 gap-3">
+              <div className="px-4 py-2">
+                <BookOpen className="w-[40px] h-[40px] md:w-[50px] md:h-[60px] text-white" />
               </div>
-              <Button className="bg-white hover:bg-[#0d0d0d42] text-[#b20000] hover:text-white rounded-[10px] border border-white px-[15px] md:px-[25px] py-2.5 w-full md:w-auto">
-                <span className="text-base md:text-lg text-[#b20000] hover:text-white">
-                  View Rules
-                </span>
-              </Button>
+              <div className="md:ml-3 flex-1 text-center md:text-left">
+                <h2 className="text-lg md:text-xl font-bold text-white">Standards of Play</h2>
+              </div>
+              <div className="px-2 md:px-3">
+                <Link to="/standards-of-play">
+                  <Button className="bg-white hover:bg-[#0d0d0d42] text-[#b20000] hover:text-white rounded-[10px] border border-white px-[12px] md:px-[20px] py-1.5 md:py-2 w-full md:w-auto">
+                    <span className="text-sm md:text-base text-[#b20000] hover:text-white">
+                      View Rules
+                    </span>
+                  </Button>
+                </Link>
+              </div>
             </CardContent>
           </Card>
           
           {/* About our volleyball leagues section with 2 columns - Increased padding to 91px */}
-          <div className="mt-[91px] grid grid-cols-1 md:grid-cols-2 gap-12">
+          <div className="mt-[91px] grid grid-cols-1 md:grid-cols-2 gap-12 mb-20 md:mb-28">
             {/* First column with image */}
             <div className="flex items-center justify-center">
               <img 
-                src="/487914691_1191933985971580_6991511257147287853_n.jpg" 
-                alt="OFSL Volleyball Team" 
+                src="/group-2.png" 
+                alt="OFSL Community" 
                 className="rounded-lg w-[400px] h-[400px] object-cover object-[center_35%] shadow-lg"
               />
             </div>
@@ -311,8 +317,8 @@ export const VolleyballPage = (): JSX.Element => {
           </div>
         </div>
         
-        {/* Diabetes Canada partnership section - With fixed equal padding */}
-        <div className="bg-white py-16">
+        {/* Diabetes Canada partnership section - With increased bottom padding */}
+        <div className="bg-white pt-8 pb-24">
           <div className="max-w-[1280px] mx-auto px-4">
             <div className="flex justify-center">
               <div className="flex flex-col md:flex-row items-center max-w-[800px] gap-6">

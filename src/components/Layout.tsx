@@ -10,40 +10,53 @@ export function Layout() {
   const prevScrollY = useRef(0);
   const ticking = useRef(false);
   const lastStateChangeTime = useRef(0);
+  const lastDirection = useRef<'up' | 'down' | null>(null);
 
   useEffect(() => {
-    // Thresholds with hysteresis to prevent flickering
-    const COMPACT_THRESHOLD = 50; // When to switch to compact when scrolling down
-    const EXPAND_THRESHOLD = 40; // When to switch to expanded when scrolling up
+    // Increase the gap between thresholds to prevent oscillation
+    const COMPACT_THRESHOLD = 80; // Increased threshold to switch to compact when scrolling down
+    const EXPAND_THRESHOLD = 30; // Decreased threshold to switch to expanded when scrolling up
     const ANNOUNCEMENT_HIDE_THRESHOLD = 10;
-    const ANNOUNCEMENT_SHOW_THRESHOLD = 0; // Changed to 0 to ensure it always shows at the top
-    const STATE_CHANGE_DELAY = 100; // Minimum ms between state changes
-
+    const ANNOUNCEMENT_SHOW_THRESHOLD = 0;
+    const STATE_CHANGE_DELAY = 200; // Increased delay between state changes
+    const MIN_SCROLL_DISTANCE = 5; // Minimum scroll distance to consider a direction change
+    
     const handleScroll = () => {
       if (!ticking.current) {
         window.requestAnimationFrame(() => {
           const currentScrollY = window.scrollY;
           const now = Date.now();
+          const scrollDistance = Math.abs(currentScrollY - prevScrollY.current);
           const scrollingDown = currentScrollY > prevScrollY.current;
           const timeSinceLastChange = now - lastStateChangeTime.current;
           
+          // Set current direction with minimum distance threshold
+          const currentDirection = scrollingDown ? 'down' : 'up';
+          
+          // Only register direction change if we've scrolled enough
+          if (scrollDistance >= MIN_SCROLL_DISTANCE) {
+            lastDirection.current = currentDirection;
+          }
+          
           // Only process state changes if we've waited long enough
           if (timeSinceLastChange > STATE_CHANGE_DELAY) {
-            // Announcement bar logic with hysteresis
+            // Announcement bar logic
             if (scrollingDown && currentScrollY > ANNOUNCEMENT_HIDE_THRESHOLD && showAnnouncement) {
               setShowAnnouncement(false);
               lastStateChangeTime.current = now;
             } else if (currentScrollY <= ANNOUNCEMENT_SHOW_THRESHOLD && !showAnnouncement) {
-              // Always show announcement when at the top, regardless of scroll direction
               setShowAnnouncement(true);
               lastStateChangeTime.current = now;
             }
             
-            // Compact header logic with hysteresis
-            if (scrollingDown && currentScrollY > COMPACT_THRESHOLD && !isCompactHeader) {
+            // Compact header logic with enhanced hysteresis
+            // Only change states if we're consistently scrolling in one direction
+            if (scrollingDown && lastDirection.current === 'down' && 
+                currentScrollY > COMPACT_THRESHOLD && !isCompactHeader) {
               setIsCompactHeader(true);
               lastStateChangeTime.current = now;
-            } else if (!scrollingDown && currentScrollY < EXPAND_THRESHOLD && isCompactHeader) {
+            } else if (!scrollingDown && lastDirection.current === 'up' && 
+                      currentScrollY < EXPAND_THRESHOLD && isCompactHeader) {
               setIsCompactHeader(false);
               lastStateChangeTime.current = now;
             }
