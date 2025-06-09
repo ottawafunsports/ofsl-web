@@ -57,11 +57,12 @@ export function SignupPage() {
       }
       
       // Step 2: Insert user data into the users table
+      // Use the auth user ID as both the id and auth_id to match the RLS policy
       const now = new Date().toISOString();
       const { error: userError } = await supabase
         .from('users')
         .insert({
-          id: authData.user.id,
+          id: authData.user.id, // This should match the RLS policy requirement
           auth_id: authData.user.id,
           name,
           phone,
