@@ -574,3 +574,503 @@ export function LeagueDetailPage() {
                         </li>
                         <li className="flex items-start">
                           <span className="mr-2">•</span>
+                          <span>Solid positional understanding</span>
+                        </li>
+                      </ul>
+                    )}
+                    
+                    {league.skillLevel === 'Advanced' && (
+                      <ul className="space-y-2 text-[#6F6F6F]">
+                        <li className="flex items-start">
+                          <span className="mr-2">•</span>
+                          <span>Significant playing experience</span>
+                        </li>
+                        <li className="flex items-start">
+                          <span className="mr-2">•</span>
+                          <span>Strong fundamental skills</span>
+                        </li>
+                        <li className="flex items-start">
+                          <span className="mr-2">•</span>
+                          <span>Good tactical understanding</span>
+                        </li>
+                        <li className="flex items-start">
+                          <span className="mr-2">•</span>
+                          <span>Ability to execute complex plays</span>
+                        </li>
+                      </ul>
+                    )}
+                    
+                    {league.skillLevel === 'Intermediate' && (
+                      <ul className="space-y-2 text-[#6F6F6F]">
+                        <li className="flex items-start">
+                          <span className="mr-2">•</span>
+                          <span>Basic understanding of rules and strategies</span>
+                        </li>
+                        <li className="flex items-start">
+                          <span className="mr-2">•</span>
+                          <span>Consistent serving and receiving</span>
+                        </li>
+                        <li className="flex items-start">
+                          <span className="mr-2">•</span>
+                          <span>Some previous playing experience</span>
+                        </li>
+                        <li className="flex items-start">
+                          <span className="mr-2">•</span>
+                          <span>Ability to maintain rallies</span>
+                        </li>
+                      </ul>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Additional league information */}
+                <div>
+                  <h2 className="text-2xl font-bold text-[#6F6F6F] mb-4">Additional Information</h2>
+                  <ul className="space-y-2 text-[#6F6F6F]">
+                    <li className="flex items-start">
+                      <span className="mr-2">•</span>
+                      <span>League runs for 12 weeks with 10 regular season games and 2 weeks of playoffs</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="mr-2">•</span>
+                      <span>Registered teams receive a schedule of all games for the season</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="mr-2">•</span>
+                      <span>All equipment provided (except personal gear)</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="mr-2">•</span>
+                      <span>Please review our <Link to="/standards-of-play" className="text-[#B20000] underline">standards of play</Link> for complete rules</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            )}
+
+            {/* Schedule View - Only for Volleyball */}
+            {activeView === 'schedule' && (
+              <div>
+                <h2 className="text-2xl font-bold text-[#6F6F6F] mb-6">League Schedule</h2>
+                
+                {/* Week header - Left justified */}
+                <div className="mb-4 text-left">
+                  <p className="font-medium text-[#6F6F6F]">
+                    Week 1 - June 5, 2025
+                  </p>
+                </div>
+                
+                {/* Display tiers for the current week */}
+                <div className="space-y-6">
+                  {mockSchedule[0].tiers.map((tier, tierIndex) => (
+                    <Card key={tierIndex} className="shadow-md overflow-hidden rounded-lg">
+                      <CardContent className="p-0 overflow-hidden">
+                        {/* Tier Header - Updated with right-justified info and icons */}
+                        <div className="bg-[#F8F8F8] border-b p-4">
+                          <div className="flex justify-between items-center">
+                            {/* Left side - Tier Number with Submit Scores link below */}
+                            <div>
+                              <h3 className="font-bold text-[#6F6F6F] text-xl">
+                                Tier {tier.tierNumber}
+                              </h3>
+                              <button 
+                                onClick={() => openScoreSubmissionModal(tier.tierNumber)}
+                                className="text-sm text-[#B20000] hover:underline"
+                              >
+                                Submit scores
+                              </button>
+                            </div>
+                            
+                            {/* Right side - Location, Time, Court info with icons */}
+                            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-end sm:items-center text-right">
+                              <div className="flex items-center">
+                                <MapPin className="h-4 w-4 text-[#B20000] mr-1.5" />
+                                <span className="text-sm text-[#6F6F6F]">{tier.location}</span>
+                              </div>
+                              
+                              <div className="flex items-center">
+                                <Clock className="h-4 w-4 text-[#B20000] mr-1.5" />
+                                <span className="text-sm text-[#6F6F6F]">{tier.time}</span>
+                              </div>
+                              
+                              <div className="flex items-center">
+                                <Home className="h-4 w-4 text-[#B20000] mr-1.5" />
+                                <span className="text-sm text-[#6F6F6F]">{tier.court}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Teams by Position in a table layout with fixed column widths for consistency */}
+                        <div className="overflow-hidden">
+                          <table className="w-full table-fixed">
+                            <colgroup>
+                              <col style={{ width: '20%' }} />
+                              <col style={{ width: '60%' }} />
+                              <col style={{ width: '20%' }} />
+                            </colgroup>
+                            <thead className="bg-white">
+                              <tr>
+                                <th className="px-4 py-3 text-left text-sm font-medium text-[#6F6F6F]">Position</th>
+                                <th className="px-4 py-3 text-left text-sm font-medium text-[#6F6F6F]">Team</th>
+                                <th className="px-4 py-3 text-left text-sm font-medium text-[#6F6F6F]">Ranking</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-200">
+                              {/* Position A */}
+                              <tr className="bg-white">
+                                <td className="px-4 py-3 text-sm font-medium text-[#6F6F6F]">A</td>
+                                <td className="px-4 py-3 text-sm text-[#6F6F6F] truncate">{tier.teams.A?.name || "-"}</td>
+                                <td className="px-4 py-3 text-sm text-[#6F6F6F] text-left">{tier.teams.A?.ranking || "-"}</td>
+                              </tr>
+                              
+                              {/* Position B */}
+                              <tr className="bg-gray-50">
+                                <td className="px-4 py-3 text-sm font-medium text-[#6F6F6F]">B</td>
+                                <td className="px-4 py-3 text-sm text-[#6F6F6F] truncate">{tier.teams.B?.name || "-"}</td>
+                                <td className="px-4 py-3 text-sm text-[#6F6F6F] text-left">{tier.teams.B?.ranking || "-"}</td>
+                              </tr>
+                              
+                              {/* Position C */}
+                              <tr className="bg-white">
+                                <td className="px-4 py-3 text-sm font-medium text-[#6F6F6F]">C</td>
+                                <td className="px-4 py-3 text-sm text-[#6F6F6F] truncate">{tier.teams.C?.name || "-"}</td>
+                                <td className="px-4 py-3 text-sm text-[#6F6F6F] text-left">{tier.teams.C?.ranking || "-"}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Standings View */}
+            {activeView === 'standings' && (
+              <div>
+                <h2 className="text-2xl font-bold text-[#6F6F6F] mb-6">League Standings</h2>
+                
+                {/* Standings table */}
+                <Card className="shadow-md overflow-hidden rounded-lg">
+                  <CardContent className="p-0 overflow-hidden">
+                    <div className="overflow-hidden">
+                      <table className="w-full table-fixed">
+                        <colgroup>
+                          <col style={{ width: '10%' }} />
+                          <col style={{ width: '40%' }} />
+                          <col style={{ width: '12.5%' }} />
+                          <col style={{ width: '12.5%' }} />
+                          <col style={{ width: '12.5%' }} />
+                          <col style={{ width: '12.5%' }} />
+                        </colgroup>
+                        <thead className="bg-gray-50 border-b">
+                          <tr>
+                            <th className="px-4 py-3 text-left text-sm font-medium text-[#6F6F6F] rounded-tl-lg">Rank</th>
+                            <th className="px-4 py-3 text-left text-sm font-medium text-[#6F6F6F]">Team</th>
+                            <th className="px-4 py-3 text-center text-sm font-medium text-[#6F6F6F]">Wins</th>
+                            <th className="px-4 py-3 text-center text-sm font-medium text-[#6F6F6F]">Losses</th>
+                            <th className="px-4 py-3 text-center text-sm font-medium text-[#6F6F6F]">Points</th>
+                            <th className="px-4 py-3 text-center text-sm font-medium text-[#6F6F6F] hidden md:table-cell rounded-tr-lg">Diff</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200">
+                          {mockStandings.map((team, index) => (
+                            <tr 
+                              key={team.id} 
+                              className={`${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} ${
+                                index === mockStandings.length - 1 ? 'last-row' : ''
+                              }`}
+                            >
+                              <td className={`px-4 py-3 text-sm font-medium text-[#6F6F6F] ${
+                                index === mockStandings.length - 1 ? 'rounded-bl-lg' : ''
+                              }`}>{index + 1}</td>
+                              <td className="px-4 py-3 text-sm text-[#6F6F6F]">{team.team}</td>
+                              <td className="px-4 py-3 text-sm text-[#6F6F6F] text-center">{team.wins}</td>
+                              <td className="px-4 py-3 text-sm text-[#6F6F6F] text-center">{team.losses}</td>
+                              <td className="px-4 py-3 text-sm text-[#6F6F6F] text-center">{team.points}</td>
+                              <td className={`px-4 py-3 text-sm text-[#6F6F6F] text-center hidden md:table-cell ${
+                                index === mockStandings.length - 1 ? 'rounded-br-lg' : ''
+                              }`}>{team.differentials}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Score Submission Modal */}
+      {showScoreSubmissionModal && selectedTier !== null && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-[#6F6F6F]">Submit Scores - Tier {selectedTier}</h2>
+                <button 
+                  onClick={closeScoreSubmissionModal}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Team Legend */}
+              <div className="bg-gray-50 p-4 rounded-lg mb-6">
+                <h3 className="font-bold text-[#6F6F6F] mb-2">Teams</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {['A', 'B', 'C'].map((position) => {
+                    const tier = mockSchedule[0].tiers.find(t => t.tierNumber === selectedTier);
+                    const teamName = tier ? getTeamNameFromPosition(tier, position) : '';
+                    
+                    return (
+                      <div key={position} className="flex items-center">
+                        <span className="font-bold text-[#B20000] w-8">
+                          {position}:
+                        </span>
+                        <span className="text-[#6F6F6F] truncate">
+                          {teamName || 'No team'}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Game Scores Form */}
+              <form>
+                <div className="mb-6">
+                  <h3 className="font-bold text-[#6F6F6F] mb-4">Game Scores</h3>
+                  
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full bg-white border border-gray-200 rounded-lg">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-4 py-2 border-b text-left text-sm font-medium text-[#6F6F6F]">Game</th>
+                          <th className="px-4 py-2 border-b text-left text-sm font-medium text-[#6F6F6F]">Matchup</th>
+                          <th className="px-4 py-2 border-b text-center text-sm font-medium text-[#6F6F6F]">Score</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {/* Game 1 */}
+                        <tr>
+                          <td className="px-4 py-3 border-b">
+                            <span className="font-medium">Game 1</span>
+                          </td>
+                          <td className="px-4 py-3 border-b">
+                            <span>A vs C</span>
+                          </td>
+                          <td className="px-4 py-3 border-b">
+                            <div className="flex items-center justify-center gap-2">
+                              <input 
+                                type="number"
+                                min="0" 
+                                className="w-16 px-2 py-1 border rounded text-center"
+                                placeholder="0"
+                              />
+                              <span>-</span>
+                              <input
+                                type="number"
+                                min="0"
+                                className="w-16 px-2 py-1 border rounded text-center" 
+                                placeholder="0"
+                              />
+                            </div>
+                          </td>
+                        </tr>
+                        
+                        {/* Game 2 */}
+                        <tr>
+                          <td className="px-4 py-3 border-b">
+                            <span className="font-medium">Game 2</span>
+                          </td>
+                          <td className="px-4 py-3 border-b">
+                            <span>A vs C</span>
+                          </td>
+                          <td className="px-4 py-3 border-b">
+                            <div className="flex items-center justify-center gap-2">
+                              <input 
+                                type="number"
+                                min="0" 
+                                className="w-16 px-2 py-1 border rounded text-center"
+                                placeholder="0" 
+                              />
+                              <span>-</span>
+                              <input
+                                type="number"
+                                min="0"
+                                className="w-16 px-2 py-1 border rounded text-center"
+                                placeholder="0"
+                              />
+                            </div>
+                          </td>
+                        </tr>
+                        
+                        {/* Game 3 */}
+                        <tr>
+                          <td className="px-4 py-3 border-b">
+                            <span className="font-medium">Game 3</span>
+                          </td>
+                          <td className="px-4 py-3 border-b">
+                            <span>A vs B</span>
+                          </td>
+                          <td className="px-4 py-3 border-b">
+                            <div className="flex items-center justify-center gap-2">
+                              <input 
+                                type="number"
+                                min="0" 
+                                className="w-16 px-2 py-1 border rounded text-center"
+                                placeholder="0" 
+                              />
+                              <span>-</span>
+                              <input
+                                type="number"
+                                min="0"
+                                className="w-16 px-2 py-1 border rounded text-center"
+                                placeholder="0"
+                              />
+                            </div>
+                          </td>
+                        </tr>
+
+                        {/* Game 4 */}
+                        <tr>
+                          <td className="px-4 py-3 border-b">
+                            <span className="font-medium">Game 4</span>
+                          </td>
+                          <td className="px-4 py-3 border-b">
+                            <span>A vs B</span>
+                          </td>
+                          <td className="px-4 py-3 border-b">
+                            <div className="flex items-center justify-center gap-2">
+                              <input 
+                                type="number"
+                                min="0" 
+                                className="w-16 px-2 py-1 border rounded text-center"
+                                placeholder="0" 
+                              />
+                              <span>-</span>
+                              <input
+                                type="number"
+                                min="0"
+                                className="w-16 px-2 py-1 border rounded text-center"
+                                placeholder="0"
+                              />
+                            </div>
+                          </td>
+                        </tr>
+
+                        {/* Game 5 */}
+                        <tr>
+                          <td className="px-4 py-3 border-b">
+                            <span className="font-medium">Game 5</span>
+                          </td>
+                          <td className="px-4 py-3 border-b">
+                            <span>B vs C</span>
+                          </td>
+                          <td className="px-4 py-3 border-b">
+                            <div className="flex items-center justify-center gap-2">
+                              <input 
+                                type="number"
+                                min="0" 
+                                className="w-16 px-2 py-1 border rounded text-center"
+                                placeholder="0" 
+                              />
+                              <span>-</span>
+                              <input
+                                type="number"
+                                min="0"
+                                className="w-16 px-2 py-1 border rounded text-center"
+                                placeholder="0"
+                              />
+                            </div>
+                          </td>
+                        </tr>
+
+                        {/* Game 6 */}
+                        <tr>
+                          <td className="px-4 py-3">
+                            <span className="font-medium">Game 6</span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <span>B vs C</span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center justify-center gap-2">
+                              <input 
+                                type="number"
+                                min="0" 
+                                className="w-16 px-2 py-1 border rounded text-center"
+                                placeholder="0" 
+                              />
+                              <span>-</span>
+                              <input
+                                type="number"
+                                min="0"
+                                className="w-16 px-2 py-1 border rounded text-center"
+                                placeholder="0"
+                              />
+                            </div>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Spare Players Section */}
+                <div className="mb-6">
+                  <h3 className="font-bold text-[#6F6F6F] mb-4">Spare Players</h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {['A', 'B', 'C'].map((teamPosition) => {
+                      const tier = mockSchedule[0].tiers.find(t => t.tierNumber === selectedTier);
+                      const teamName = tier ? getTeamNameFromPosition(tier, teamPosition) : '';
+                      
+                      return (
+                        <div key={teamPosition} className="mb-4">
+                          <label className="block text-sm font-medium text-[#6F6F6F] mb-2">
+                            Team {teamPosition} {teamName ? `(${teamName})` : ''} Spares
+                          </label>
+                          <textarea 
+                            className="w-full px-3 py-2 border rounded-md text-sm"
+                            rows={3}
+                            placeholder="Enter spare player names..."
+                          ></textarea>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+                
+                <div className="flex justify-end gap-4">
+                  <Button 
+                    type="button" 
+                    onClick={closeScoreSubmissionModal}
+                    className="bg-gray-200 hover:bg-gray-300 text-[#6F6F6F] rounded-[10px] px-6 py-2"
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] px-6 py-2"
+                  >
+                    Submit Scores
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
