@@ -11,30 +11,33 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ScrollToTop } from "./components/ScrollToTop";
 import { LeagueDetailPage } from "./screens/LeagueDetailPage";
+import { ToastProvider } from "./components/ui/toast";
 
 export function App() {
   return (
-    <AuthProvider>
-      <ScrollToTop />
-      <Routes>
-        <Route element={<Layout />}>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/volleyball" element={<VolleyballPage />} />
-          <Route path="/leagues" element={<LeaguesPage />} />
-          <Route path="/leagues/:id" element={<LeagueDetailPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignupPage />} />
-          <Route path="/about-us" element={<AboutUsPage />} />
-          <Route path="/standards-of-play" element={<StandardsOfPlayPage />} />
-          
-          {/* Example protected route - uncomment when needed */}
-          {/* <Route path="/profile" element={
-            <ProtectedRoute>
-              <ProfilePage />
-            </ProtectedRoute>
-          } /> */}
-        </Route>
-      </Routes>
-    </AuthProvider>
+    <ToastProvider>
+      <AuthProvider>
+        <ScrollToTop />
+        <Routes>
+          <Route element={<Layout />}>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/volleyball" element={<VolleyballPage />} />
+            <Route path="/leagues" element={<LeaguesPage />} />
+            <Route path="/leagues/:id" element={<LeagueDetailPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
+            <Route path="/about-us" element={<AboutUsPage />} />
+            <Route path="/standards-of-play" element={<StandardsOfPlayPage />} />
+            
+            {/* Example protected route - uncomment when needed */}
+            {/* <Route path="/profile" element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            } /> */}
+          </Route>
+        </Routes>
+      </AuthProvider>
+    </ToastProvider>
   );
 }

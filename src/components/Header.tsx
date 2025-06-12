@@ -4,6 +4,7 @@ import { Button } from "./ui/button";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList } from "./ui/navigation-menu";
 import { useAuth } from "../contexts/AuthContext";
+import { useToast } from "./ui/toast";
 
 interface HeaderProps {
   isCompact?: boolean;
@@ -15,6 +16,7 @@ export function Header({ isCompact = false }: HeaderProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const { showToast } = useToast();
 
   const isActive = (path: string) => {
     return location.pathname === path;
@@ -34,6 +36,7 @@ export function Header({ isCompact = false }: HeaderProps) {
 
   const handleLogout = async () => {
     await signOut();
+    showToast("You have been successfully logged out", "success");
     navigate('/');
     setIsUserDropdownOpen(false);
   };
