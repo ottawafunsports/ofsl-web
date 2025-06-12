@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
@@ -28,6 +28,7 @@ import {
 
 interface Team {
   id: number;
+  league_id?: number; // Add league_id to map to the leagues page
   season_name: string;
   sport: string;
   skill_level: string;
@@ -58,6 +59,7 @@ export const DashboardPage = (): JSX.Element => {
   const { user } = useAuth();
   const { showToast } = useToast();
   const location = useLocation();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'teams' | 'account'>(
     location.pathname === '/my-account' ? 'account' : 'teams'
   );
@@ -88,6 +90,7 @@ export const DashboardPage = (): JSX.Element => {
   const mockTeams: Team[] = [
     {
       id: 1,
+      league_id: 1, // Maps to Elite Womens Volleyball league
       season_name: "Elite Womens Volleyball - Winter 2025",
       sport: "Volleyball",
       skill_level: "Elite",
@@ -100,6 +103,7 @@ export const DashboardPage = (): JSX.Element => {
     },
     {
       id: 2,
+      league_id: 2, // Maps to Coed Intermediate Volleyball league
       season_name: "Coed Intermediate Volleyball - Winter 2025",
       sport: "Volleyball",
       skill_level: "Intermediate",
@@ -112,6 +116,7 @@ export const DashboardPage = (): JSX.Element => {
     },
     {
       id: 3,
+      league_id: 3, // Maps to Advanced Badminton league
       season_name: "Advanced Badminton - Fall 2024",
       sport: "Badminton",
       skill_level: "Advanced",
@@ -259,6 +264,15 @@ export const DashboardPage = (): JSX.Element => {
     }
   };
 
+  const handleViewDetails = (team: Team) => {
+    if (team.league_id) {
+      navigate(`/leagues/${team.league_id}`);
+    } else {
+      // Fallback if no league_id is available
+      showToast('League details not available', 'error');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -401,6 +415,7 @@ export const DashboardPage = (): JSX.Element => {
                           <Button 
                             variant="outline" 
                             size="sm"
+                            onClick={() => handleViewDetails(team)}
                             className="border-[#B20000] text-[#B20000] hover:bg-[#B20000] hover:text-white"
                           >
                             View Details
