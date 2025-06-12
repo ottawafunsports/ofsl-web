@@ -12,6 +12,7 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ScrollToTop } from "./components/ScrollToTop";
 import { LeagueDetailPage } from "./screens/LeagueDetailPage";
 import { ToastProvider } from "./components/ui/toast";
+import { DashboardPage } from "./screens/DashboardPage";
 
 export function App() {
   return (
@@ -28,6 +29,18 @@ export function App() {
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/about-us" element={<AboutUsPage />} />
             <Route path="/standards-of-play" element={<StandardsOfPlayPage />} />
+            
+            {/* Protected dashboard routes */}
+            <Route path="/my-teams" element={
+              <ProtectedRoute>
+                <DashboardPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/my-account" element={
+              <ProtectedRoute>
+                <DashboardPage />
+              </ProtectedRoute>
+            } />
             
             {/* Example protected route - uncomment when needed */}
             {/* <Route path="/profile" element={
