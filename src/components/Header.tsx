@@ -136,7 +136,7 @@ export function Header({ isCompact = false }: HeaderProps) {
                   <div className="py-2">
                     <Link 
                       to="/my-teams" 
-                      className="block px-4 py-2 text-[#6F6F6F] hover:bg-gray-50 hover:text-[#B20000] transition-colors"
+                      className="block px-4 py-2 text-[#6F6F6F] hover:bg-gray-50 hover:text-[#B20000] transition-colors first:rounded-t-lg"
                       onClick={() => setIsUserDropdownOpen(false)}
                     >
                       My Teams
@@ -150,7 +150,7 @@ export function Header({ isCompact = false }: HeaderProps) {
                     </Link>
                     <button 
                       onClick={handleLogout}
-                      className="w-full text-left px-4 py-2 text-[#6F6F6F] hover:bg-gray-50 hover:text-[#B20000] transition-colors"
+                      className="w-full text-left px-4 py-2 text-[#6F6F6F] hover:bg-gray-50 hover:text-[#B20000] transition-colors last:rounded-b-lg"
                     >
                       Logout
                     </button>
