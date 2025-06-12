@@ -572,4 +572,276 @@ export function LeagueDetailPage() {
                           <span className="mr-2">•</span>
                           <span>Advanced techniques and strategies</span>
                         </li>
-                        <li className="flex items-start
+                        <li className="flex items-start">
+                          <span className="mr-2">•</span>
+                          <span>Team-based play with organized systems</span>
+                        </li>
+                      </ul>
+                    )}
+                    
+                    {league.skillLevel === 'Advanced' && (
+                      <ul className="space-y-2 text-[#6F6F6F]">
+                        <li className="flex items-start">
+                          <span className="mr-2">•</span>
+                          <span>Significant playing experience required</span>
+                        </li>
+                        <li className="flex items-start">
+                          <span className="mr-2">•</span>
+                          <span>Strong fundamental skills</span>
+                        </li>
+                        <li className="flex items-start">
+                          <span className="mr-2">•</span>
+                          <span>Understanding of game strategy</span>
+                        </li>
+                        <li className="flex items-start">
+                          <span className="mr-2">•</span>
+                          <span>Consistent execution under pressure</span>
+                        </li>
+                      </ul>
+                    )}
+                    
+                    {league.skillLevel === 'Intermediate' && (
+                      <ul className="space-y-2 text-[#6F6F6F]">
+                        <li className="flex items-start">
+                          <span className="mr-2">•</span>
+                          <span>Basic to moderate playing experience</span>
+                        </li>
+                        <li className="flex items-start">
+                          <span className="mr-2">•</span>
+                          <span>Understanding of fundamental rules</span>
+                        </li>
+                        <li className="flex items-start">
+                          <span className="mr-2">•</span>
+                          <span>Developing consistent technique</span>
+                        </li>
+                        <li className="flex items-start">
+                          <span className="mr-2">•</span>
+                          <span>Beginning strategic understanding</span>
+                        </li>
+                      </ul>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Schedule View - Only for Volleyball */}
+            {activeView === 'schedule' && league.sport === 'Volleyball' && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold text-[#6F6F6F]">Schedule</h2>
+                  <div className="flex items-center space-x-2">
+                    <Button variant="outline" size="sm">
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <span className="text-sm font-medium text-[#6F6F6F]">Week 1</span>
+                    <Button variant="outline" size="sm">
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                {mockSchedule.map((week, weekIndex) => (
+                  <div key={weekIndex} className="space-y-4">
+                    <div className="text-center">
+                      <h3 className="text-lg font-semibold text-[#6F6F6F]">Week {week.week}</h3>
+                      <p className="text-sm text-[#6F6F6F]">{week.date}</p>
+                    </div>
+
+                    <div className="grid gap-4">
+                      {week.tiers.map((tier, tierIndex) => (
+                        <Card key={tierIndex} className="border border-gray-200">
+                          <CardContent className="p-4">
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="flex items-center space-x-2">
+                                <span className="text-sm font-medium text-[#B20000]">Tier {tier.tierNumber}</span>
+                                <span className="text-xs text-[#6F6F6F]">•</span>
+                                <span className="text-xs text-[#6F6F6F]">{tier.location}</span>
+                                <span className="text-xs text-[#6F6F6F]">•</span>
+                                <span className="text-xs text-[#6F6F6F]">{tier.time}</span>
+                              </div>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => openScoreSubmissionModal(tier.tierNumber)}
+                                className="text-xs"
+                              >
+                                Submit Score
+                              </Button>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                              {/* Team A */}
+                              <div className="text-center p-3 bg-gray-50 rounded">
+                                <div className="text-xs text-[#6F6F6F] mb-1">{tier.courts.A}</div>
+                                <div className="font-medium text-[#6F6F6F]">
+                                  {tier.teams.A ? (
+                                    <>
+                                      <div className="text-xs text-[#B20000]">#{tier.teams.A.ranking}</div>
+                                      <div>{tier.teams.A.name}</div>
+                                    </>
+                                  ) : (
+                                    <span className="text-gray-400">TBD</span>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Team B */}
+                              <div className="text-center p-3 bg-gray-50 rounded">
+                                <div className="text-xs text-[#6F6F6F] mb-1">{tier.courts.B}</div>
+                                <div className="font-medium text-[#6F6F6F]">
+                                  {tier.teams.B ? (
+                                    <>
+                                      <div className="text-xs text-[#B20000]">#{tier.teams.B.ranking}</div>
+                                      <div>{tier.teams.B.name}</div>
+                                    </>
+                                  ) : (
+                                    <span className="text-gray-400">TBD</span>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Team C */}
+                              <div className="text-center p-3 bg-gray-50 rounded">
+                                <div className="text-xs text-[#6F6F6F] mb-1">{tier.courts.C}</div>
+                                <div className="font-medium text-[#6F6F6F]">
+                                  {tier.teams.C ? (
+                                    <>
+                                      <div className="text-xs text-[#B20000]">#{tier.teams.C.ranking}</div>
+                                      <div>{tier.teams.C.name}</div>
+                                    </>
+                                  ) : (
+                                    <span className="text-gray-400">TBD</span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Standings View - Only for Volleyball */}
+            {activeView === 'standings' && league.sport === 'Volleyball' && (
+              <div className="space-y-6">
+                <h2 className="text-2xl font-bold text-[#6F6F6F]">Standings</h2>
+                
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse">
+                    <thead>
+                      <tr className="border-b border-gray-200">
+                        <th className="text-left py-3 px-4 font-medium text-[#6F6F6F]">Rank</th>
+                        <th className="text-left py-3 px-4 font-medium text-[#6F6F6F]">Team</th>
+                        <th className="text-center py-3 px-4 font-medium text-[#6F6F6F]">W</th>
+                        <th className="text-center py-3 px-4 font-medium text-[#6F6F6F]">L</th>
+                        <th className="text-center py-3 px-4 font-medium text-[#6F6F6F]">PF</th>
+                        <th className="text-center py-3 px-4 font-medium text-[#6F6F6F]">PA</th>
+                        <th className="text-center py-3 px-4 font-medium text-[#6F6F6F]">Diff</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {mockStandings.map((team, index) => (
+                        <tr key={team.id} className="border-b border-gray-100 hover:bg-gray-50">
+                          <td className="py-3 px-4">
+                            <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-medium ${
+                              index < 3 ? 'bg-[#B20000] text-white' : 'bg-gray-200 text-[#6F6F6F]'
+                            }`}>
+                              {index + 1}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 font-medium text-[#6F6F6F]">{team.team}</td>
+                          <td className="py-3 px-4 text-center text-[#6F6F6F]">{team.wins}</td>
+                          <td className="py-3 px-4 text-center text-[#6F6F6F]">{team.losses}</td>
+                          <td className="py-3 px-4 text-center text-[#6F6F6F]">{team.points}</td>
+                          <td className="py-3 px-4 text-center text-[#6F6F6F]">{team.pointsAgainst}</td>
+                          <td className={`py-3 px-4 text-center font-medium ${
+                            team.differentials.startsWith('+') ? 'text-green-600' : 
+                            team.differentials.startsWith('-') ? 'text-red-600' : 'text-[#6F6F6F]'
+                          }`}>
+                            {team.differentials}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Score Submission Modal */}
+        {showScoreSubmissionModal && selectedTier && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-[#6F6F6F]">Submit Score - Tier {selectedTier}</h3>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={closeScoreSubmissionModal}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              <div className="space-y-4">
+                <p className="text-sm text-[#6F6F6F]">Enter the match results for this tier:</p>
+                
+                {/* Score input form would go here */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-[#6F6F6F]">Team A vs Team B</span>
+                    <div className="flex items-center space-x-2">
+                      <input type="number" className="w-12 h-8 text-center border rounded" placeholder="0" />
+                      <span className="text-[#6F6F6F]">-</span>
+                      <input type="number" className="w-12 h-8 text-center border rounded" placeholder="0" />
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-[#6F6F6F]">Team B vs Team C</span>
+                    <div className="flex items-center space-x-2">
+                      <input type="number" className="w-12 h-8 text-center border rounded" placeholder="0" />
+                      <span className="text-[#6F6F6F]">-</span>
+                      <input type="number" className="w-12 h-8 text-center border rounded" placeholder="0" />
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-[#6F6F6F]">Team A vs Team C</span>
+                    <div className="flex items-center space-x-2">
+                      <input type="number" className="w-12 h-8 text-center border rounded" placeholder="0" />
+                      <span className="text-[#6F6F6F]">-</span>
+                      <input type="number" className="w-12 h-8 text-center border rounded" placeholder="0" />
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex space-x-3 pt-4">
+                  <Button
+                    className="flex-1 bg-[#B20000] hover:bg-[#8A0000] text-white"
+                    onClick={closeScoreSubmissionModal}
+                  >
+                    <Save className="h-4 w-4 mr-2" />
+                    Submit Scores
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={closeScoreSubmissionModal}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
