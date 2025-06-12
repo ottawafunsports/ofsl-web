@@ -320,51 +320,9 @@ const getSpotsText = (spots: number) => {
 
 export function LeagueDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const [activeView, setActiveView] = useState<'info' | 'schedule' | 'standings'>('info');
+  const [activeView, setActiveView] = useState<'info' | 'schedule' | 'standings' | 'team'>('info');
   const [showScoreSubmissionModal, setShowScoreSubmissionModal] = useState(false);
   const [selectedTier, setSelectedTier] = useState<number | null>(null);
-  
-  // Team management state
-  const [teamPlayers, setTeamPlayers] = useState([
-    {
-      id: 1,
-      name: "Sarah Johnson",
-      email: "sarah.johnson@email.com",
-      position: "Outside Hitter",
-      userType: "Captain"
-    },
-    {
-      id: 2,
-      name: "Mike Chen",
-      email: "mike.chen@email.com",
-      position: "Setter",
-      userType: "Co-Captain"
-    },
-    {
-      id: 3,
-      name: "Emma Davis",
-      email: "emma.davis@email.com",
-      position: "Middle Blocker",
-      userType: "Player"
-    },
-    {
-      id: 4,
-      name: "Alex Rodriguez",
-      email: "alex.rodriguez@email.com",
-      position: "Libero",
-      userType: "Player"
-    }
-  ]);
-  const [showAddPlayerForm, setShowAddPlayerForm] = useState(false);
-  const [editingPlayer, setEditingPlayer] = useState<number | null>(null);
-  const [newPlayer, setNewPlayer] = useState({
-    name: '',
-    email: '',
-    position: '',
-    userType: 'Player'
-  });
-
-  const { showToast } = useToast();
 
   // Get team name from position
   const getTeamNameFromPosition = (tier: any, position: string) => {
@@ -554,6 +512,20 @@ export function LeagueDetailPage() {
                         <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#B20000]"></div>
                       )}
                     </div>
+
+                    <div 
+                      onClick={() => setActiveView('team')}
+                      className={`px-6 py-3 text-center cursor-pointer relative transition-all ${
+                        activeView === 'team' 
+                          ? 'text-[#B20000] font-medium' 
+                          : 'text-[#6F6F6F] hover:text-[#B20000]'
+                      }`}
+                    >
+                      <span>Team</span>
+                      {activeView === 'team' && (
+                        <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#B20000]"></div>
+                      )}
+                    </div>
                   </>
                 )}
               </div>
@@ -587,4 +559,18 @@ export function LeagueDetailPage() {
                         </li>
                         <li className="flex items-start">
                           <span className="mr-2">•</span>
-                          
+                          <span>Advanced offensive and defensive systems</span>
+                        </li>
+                        <li className="flex items-start">
+                          <span className="mr-2">•</span>
+                          <span>Consistent high-level execution</span>
+                        </li>
+                        <li className="flex items-start">
+                          <span className="mr-2">•</span>
+                          <span>Specialized positions and strategic play</span>
+                        </li>
+                      </ul>
+                    )}
+                    
+                    {league.skillLevel === 'Competitive' && (
+                      <ul
