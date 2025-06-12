@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent } from '../../components/ui/card';
 import { Separator } from '../../components/ui/separator';
-import { ChevronLeft, ChevronRight, MapPin, Calendar, Clock, DollarSign, Users, Award, Home } from 'lucide-react';
+import { ChevronLeft, ChevronRight, MapPin, Calendar, Clock, DollarSign, Users, Award, Home, UserPlus, Save, X, Edit3, Trash2 } from 'lucide-react';
 
 // Mock data for leagues - using same data as LeaguesPage for now
 const leagueData = [
@@ -320,7 +320,7 @@ const getSpotsText = (spots: number) => {
 
 export function LeagueDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const [activeView, setActiveView] = useState<'info' | 'schedule' | 'standings' | 'team'>('info');
+  const [activeView, setActiveView] = useState<'info' | 'schedule' | 'standings'>('info');
   const [showScoreSubmissionModal, setShowScoreSubmissionModal] = useState(false);
   const [selectedTier, setSelectedTier] = useState<number | null>(null);
 
@@ -512,20 +512,6 @@ export function LeagueDetailPage() {
                         <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#B20000]"></div>
                       )}
                     </div>
-
-                    <div 
-                      onClick={() => setActiveView('team')}
-                      className={`px-6 py-3 text-center cursor-pointer relative transition-all ${
-                        activeView === 'team' 
-                          ? 'text-[#B20000] font-medium' 
-                          : 'text-[#6F6F6F] hover:text-[#B20000]'
-                      }`}
-                    >
-                      <span>Team</span>
-                      {activeView === 'team' && (
-                        <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#B20000]"></div>
-                      )}
-                    </div>
                   </>
                 )}
               </div>
@@ -573,4 +559,17 @@ export function LeagueDetailPage() {
                     )}
                     
                     {league.skillLevel === 'Competitive' && (
-                      <ul
+                      <ul className="space-y-2 text-[#6F6F6F]">
+                        <li className="flex items-start">
+                          <span className="mr-2">•</span>
+                          <span>Strong competitive experience</span>
+                        </li>
+                        <li className="flex items-start">
+                          <span className="mr-2">•</span>
+                          <span>Consistent offensive and defensive execution</span>
+                        </li>
+                        <li className="flex items-start">
+                          <span className="mr-2">•</span>
+                          <span>Advanced techniques and strategies</span>
+                        </li>
+                        <li className="flex items-start
