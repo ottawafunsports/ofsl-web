@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 import { Menu, X, ChevronDown } from "lucide-react";
@@ -13,10 +13,28 @@ interface HeaderProps {
 export function Header({ isCompact = false }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { showToast } = useToast();
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsUserDropdownOpen(false);
+      }
+    }
+
+    if (isUserDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isUserDropdownOpen]);
 
   const isActive = (path: string) => {
     return location.pathname === path;
@@ -122,7 +140,7 @@ export function Header({ isCompact = false }: HeaderProps) {
 
           {/* Login/Logout button */}
           {user ? (
-            <div className="ml-8 relative">
+            <div className="ml-8 relative" ref={dropdownRef}>
               <button 
                 onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
                 className="flex items-center gap-2 text-white font-medium py-2 px-6 transition-all duration-200 text-base md:text-lg
