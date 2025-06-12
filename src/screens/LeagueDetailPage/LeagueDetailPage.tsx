@@ -1042,31 +1042,29 @@ export function LeagueDetailPage() {
                           </label>
                           <textarea 
                             className="w-full px-3 py-2 border rounded-md text-sm"
-                            rows={3}
-                            placeholder="Enter spare player names..."
-                          ></textarea>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-                
-                <div className="flex justify-end gap-4">
-                  <Button 
-                    type="button" 
-                    onClick={closeScoreSubmissionModal}
-                    className="bg-gray-200 hover:bg-gray-300 text-[#6F6F6F] rounded-[10px] px-6 py-2"
-                  >
-                    Cancel
-                  </Button>
-                  <Button 
-                    type="submit" 
-                    className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] px-6 py-2"
-                  >
-                    Submit Scores
-                  </Button>
-                </div>
-              </form>
+          {/* Skill Level Requirements */}
+          <div className="bg-white">
+            <h3 className="text-xl font-bold text-[#6F6F6F] mb-4 flex items-center">
+              <Target className="h-5 w-5 mr-2 text-[#B20000]" />
+              Skill Level Requirements
+            </h3>
+            <div className="space-y-3">
+              <div className="flex items-center">
+                <CheckCircle className="h-4 w-4 text-green-600 mr-2" />
+                <span className="text-[#6F6F6F]">Consistent serving and passing abilities</span>
+              </div>
+              <div className="flex items-center">
+                <CheckCircle className="h-4 w-4 text-green-600 mr-2" />
+                <span className="text-[#6F6F6F]">Understanding of volleyball strategy and positioning</span>
+              </div>
+              <div className="flex items-center">
+                <CheckCircle className="h-4 w-4 text-green-600 mr-2" />
+                <span className="text-[#6F6F6F]">Ability to execute advanced techniques (spikes, blocks, sets)</span>
+              </div>
+              <div className="flex items-center">
+                <CheckCircle className="h-4 w-4 text-green-600 mr-2" />
+                <span className="text-[#6F6F6F]">Competitive mindset and strong teamwork skills</span>
+              </div>
             </div>
           </div>
         </div>
