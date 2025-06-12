@@ -38,6 +38,7 @@ interface Team {
   status: string;
   next_game?: string;
   record?: string;
+  role?: string; // Add role field
 }
 
 interface UserProfile {
@@ -99,7 +100,8 @@ export const DashboardPage = (): JSX.Element => {
       cost: 250,
       status: "Active",
       next_game: "Jan 15, 2025 - 7:00 PM",
-      record: "8-2"
+      record: "8-2",
+      role: "Captain"
     },
     {
       id: 2,
@@ -112,7 +114,8 @@ export const DashboardPage = (): JSX.Element => {
       cost: 200,
       status: "Active",
       next_game: "Jan 17, 2025 - 8:00 PM",
-      record: "5-5"
+      record: "5-5",
+      role: "Captain"
     },
     {
       id: 3,
@@ -124,7 +127,8 @@ export const DashboardPage = (): JSX.Element => {
       location: "Rideau High School",
       cost: 180,
       status: "Completed",
-      record: "12-3"
+      record: "12-3",
+      role: "Player"
     }
   ];
 
@@ -273,6 +277,20 @@ export const DashboardPage = (): JSX.Element => {
     }
   };
 
+  // Function to get role badge color based on role
+  const getRoleBadgeColor = (role: string) => {
+    switch (role) {
+      case 'Captain':
+        return 'bg-blue-100 text-blue-800';
+      case 'Co-Captain':
+        return 'bg-purple-100 text-purple-800';
+      case 'Player':
+        return 'bg-gray-100 text-gray-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -409,6 +427,12 @@ export const DashboardPage = (): JSX.Element => {
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
+                          {/* Role badge - only show for volleyball leagues */}
+                          {team.sport === "Volleyball" && team.role && (
+                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${getRoleBadgeColor(team.role)}`}>
+                              {team.role}
+                            </span>
+                          )}
                           <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(team.status)}`}>
                             {team.status}
                           </span>
