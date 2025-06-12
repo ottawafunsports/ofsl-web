@@ -4,6 +4,7 @@ import { Button } from "./ui/button";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList } from "./ui/navigation-menu";
 import { useAuth } from "../contexts/AuthContext";
+import { useToast } from "./ui/toast";
 
 interface HeaderProps {
   isCompact?: boolean;
@@ -15,6 +16,7 @@ export function Header({ isCompact = false }: HeaderProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, userProfile, signOut } = useAuth();
+  const { showToast } = useToast();
 
   // Function to get first name from full name
   const getFirstName = (fullName: string | null) => {
@@ -39,8 +41,7 @@ export function Header({ isCompact = false }: HeaderProps) {
 
   const handleLogout = async () => {
     await signOut();
-    // Simple alert for now - can be replaced with a proper toast system later
-    alert("You have been successfully logged out");
+    showToast("You have been successfully logged out", "success");
     navigate('/');
     setIsUserDropdownOpen(false);
   };
