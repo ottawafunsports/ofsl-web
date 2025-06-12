@@ -15,9 +15,14 @@ export function Header({ isCompact = false }: HeaderProps) {
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const { user, userProfile, signOut } = useAuth();
   const { showToast } = useToast();
 
+  // Function to get first name from full name
+  const getFirstName = (fullName: string | null) => {
+    if (!fullName) return 'User';
+    return fullName.split(' ')[0];
+  };
   const isActive = (path: string) => {
     return location.pathname === path;
   };
@@ -129,7 +134,7 @@ export function Header({ isCompact = false }: HeaderProps) {
                   before:content-[''] before:absolute before:inset-0 before:bg-black/10 before:rounded-[10px]
                   hover:before:bg-black/20 border border-white rounded-[10px] relative z-10"
               >
-                <span>MyOFSL</span>
+                <span>Hi {getFirstName(userProfile?.name)}!</span>
                 <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isUserDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
               
