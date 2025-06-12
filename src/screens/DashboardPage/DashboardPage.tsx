@@ -38,6 +38,7 @@ interface Team {
   status: string;
   next_game?: string;
   record?: string;
+  role: 'captain' | 'co-captain' | 'player'; // Add role field
 }
 
 interface UserProfile {
@@ -99,7 +100,8 @@ export const DashboardPage = (): JSX.Element => {
       cost: 250,
       status: "Active",
       next_game: "Jan 15, 2025 - 7:00 PM",
-      record: "8-2"
+      record: "8-2",
+      role: "captain"
     },
     {
       id: 2,
@@ -112,7 +114,8 @@ export const DashboardPage = (): JSX.Element => {
       cost: 200,
       status: "Active",
       next_game: "Jan 17, 2025 - 8:00 PM",
-      record: "5-5"
+      record: "5-5",
+      role: "captain"
     },
     {
       id: 3,
@@ -124,7 +127,8 @@ export const DashboardPage = (): JSX.Element => {
       location: "Rideau High School",
       cost: 180,
       status: "Completed",
-      record: "12-3"
+      record: "12-3",
+      role: "player"
     }
   ];
 
@@ -246,6 +250,34 @@ export const DashboardPage = (): JSX.Element => {
         return 'bg-yellow-100 text-yellow-800';
       default:
         return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  // Function to get role badge color
+  const getRoleBadgeColor = (role: string) => {
+    switch (role) {
+      case 'captain':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'co-captain':
+        return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'player':
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  // Function to get role display text
+  const getRoleDisplayText = (role: string) => {
+    switch (role) {
+      case 'captain':
+        return 'Captain';
+      case 'co-captain':
+        return 'Co-Captain';
+      case 'player':
+        return 'Player';
+      default:
+        return 'Player';
     }
   };
 
@@ -409,6 +441,9 @@ export const DashboardPage = (): JSX.Element => {
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getRoleBadgeColor(team.role)}`}>
+                            {getRoleDisplayText(team.role)}
+                          </span>
                           <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(team.status)}`}>
                             {team.status}
                           </span>
