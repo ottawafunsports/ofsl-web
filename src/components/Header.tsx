@@ -38,16 +38,11 @@ export function Header({ isCompact = false }: HeaderProps) {
   };
 
   const handleLogout = async () => {
-    try {
-      await signOut();
-      setIsUserDropdownOpen(false);
-      navigate('/');
-      // Simple alert for now - can be replaced with a proper toast system later
-      alert("You have been successfully logged out");
-    } catch (error) {
-      console.error('Logout error:', error);
-      alert("There was an error logging out. Please try again.");
-    }
+    await signOut();
+    // Simple alert for now - can be replaced with a proper toast system later
+    alert("You have been successfully logged out");
+    navigate('/');
+    setIsUserDropdownOpen(false);
   };
 
   // Determine height and logo size based on compact state
