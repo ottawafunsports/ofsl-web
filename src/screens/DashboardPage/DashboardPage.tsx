@@ -1410,7 +1410,6 @@ export const DashboardPage = (): JSX.Element => {
                               <Edit3 className="h-4 w-4 mr-1" />
                               Edit
                             </Button>
-                            </div>
                           </div>
                         </div>
                       )}
