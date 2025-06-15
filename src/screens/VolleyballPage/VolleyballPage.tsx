@@ -78,7 +78,7 @@ export const VolleyballPage = (): JSX.Element => {
                 className="w-full sm:w-auto bg-[#0d0d0d42] text-white border border-white rounded-[10px] px-[15px] md:px-[25px] py-2.5"
               >
                 <span className="text-base md:text-lg text-white">
-                  Schedule &amp; Standings
+                  Schedule & Standings
                 </span>
               </Button>
             </div>
@@ -184,7 +184,6 @@ export const VolleyballPage = (): JSX.Element => {
                   <span>To register a team, captains must create an account under registration and be approved by the league.</span>
                 </li>
               </ul>
-              <Link to="/leagues" className="self-start">
               <Link to="/leagues?sport=Volleyball" className="self-start">
                 <Button className="bg-[#b20000] hover:bg-[#8a0000] text-white rounded-[10px] px-6 py-3">
                   Register now
