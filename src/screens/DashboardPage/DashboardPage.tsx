@@ -131,6 +131,16 @@ export const DashboardPage = (): JSX.Element => {
     end_time: '',
     notes: ''
   });
+  const [editingAssignment, setEditingAssignment] = useState<number | null>(null);
+  const [editAssignmentForm, setEditAssignmentForm] = useState({
+    school_id: 0,
+    night: '',
+    tier: '',
+    sport: '',
+    start_time: '',
+    end_time: '',
+    notes: ''
+  });
 
   // Mock data for schools and assignments
   const mockSchools: School[] = [
@@ -358,6 +368,76 @@ export const DashboardPage = (): JSX.Element => {
     });
     setShowAddAssignment(false);
     showToast('School assignment added successfully', 'success');
+  };
+
+  // Handle editing assignment
+  const handleEditAssignment = (assignment: SchoolAssignment) => {
+    setEditingAssignment(assignment.id);
+    setEditAssignmentForm({
+      school_id: assignment.school_id,
+      night: assignment.night,
+      tier: assignment.tier,
+      sport: assignment.sport,
+      start_time: assignment.start_time,
+      end_time: assignment.end_time,
+      notes: assignment.notes || ''
+    });
+  };
+
+  // Handle saving edited assignment
+  const handleSaveEditedAssignment = () => {
+    if (!editAssignmentForm.school_id || !editAssignmentForm.night || !editAssignmentForm.tier || !editAssignmentForm.sport || !editAssignmentForm.start_time || !editAssignmentForm.end_time) {
+      showToast('All fields except notes are required', 'error');
+      return;
+    }
+
+    const selectedSchool = schools.find(s => s.id === editAssignmentForm.school_id);
+    if (!selectedSchool) {
+      showToast('Selected school not found', 'error');
+      return;
+    }
+
+    setSchoolAssignments(prev => prev.map(assignment => 
+      assignment.id === editingAssignment 
+        ? {
+            ...assignment,
+            school_id: editAssignmentForm.school_id,
+            school_name: selectedSchool.name,
+            night: editAssignmentForm.night,
+            tier: editAssignmentForm.tier,
+            sport: editAssignmentForm.sport,
+            start_time: editAssignmentForm.start_time,
+            end_time: editAssignmentForm.end_time,
+            notes: editAssignmentForm.notes
+          }
+        : assignment
+    ));
+
+    setEditingAssignment(null);
+    setEditAssignmentForm({
+      school_id: 0,
+      night: '',
+      tier: '',
+      sport: '',
+      start_time: '',
+      end_time: '',
+      notes: ''
+    });
+    showToast('Assignment updated successfully', 'success');
+  };
+
+  // Handle canceling edit
+  const handleCancelEdit = () => {
+    setEditingAssignment(null);
+    setEditAssignmentForm({
+      school_id: 0,
+      night: '',
+      tier: '',
+      sport: '',
+      start_time: '',
+      end_time: '',
+      notes: ''
+    });
   };
 
   // Check if user is admin (mock check for now)
@@ -1171,32 +1251,169 @@ export const DashboardPage = (): JSX.Element => {
                 <div className="space-y-4">
                   {schoolAssignments.map((assignment) => (
                     <div key={assignment.id} className="border border-gray-200 rounded-lg p-4">
-                      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                      {editingAssignment === assignment.id ? (
+                        // Edit form
                         <div>
-                          <h3 className="text-lg font-bold text-[#6F6F6F] mb-2">
-                            {assignment.school_name}
-                          </h3>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm text-[#6F6F6F]">
+                          <h3 className="text-lg font-medium text-[#6F6F6F] mb-4">Edit Assignment</h3>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                              <strong>Night:</strong> {assignment.night}
+                              <label className="block text-sm font-medium text-[#6F6F6F] mb-1">
+                                School *
+                              </label>
+                              <select
+                                value={editAssignmentForm.school_id}
+                                onChange={(e) => setEditAssignmentForm(prev => ({ ...prev, school_id: parseInt(e.target.value) }))}
+                                className="w-full h-12 px-4 rounded-lg border border-[#D4D4D4] focus:border-[#B20000] focus:ring-[#B20000] focus:outline-none"
+                              >
+                                <option value={0}>Select School</option>
+                                {schools.map((school) => (
+                                  <option key={school.id} value={school.id}>
+                                    {school.name}
+                                  </option>
+                                ))}
+                              </select>
                             </div>
                             <div>
-                              <strong>Tier:</strong> {assignment.tier}
+                              <label className="block text-sm font-medium text-[#6F6F6F] mb-1">
+                                Night *
+                              </label>
+                              <select
+                                value={editAssignmentForm.night}
+                                onChange={(e) => setEditAssignmentForm(prev => ({ ...prev, night: e.target.value }))}
+                                className="w-full h-12 px-4 rounded-lg border border-[#D4D4D4] focus:border-[#B20000] focus:ring-[#B20000] focus:outline-none"
+                              >
+                                <option value="">Select Night</option>
+                                <option value="Monday">Monday</option>
+                                <option value="Tuesday">Tuesday</option>
+                                <option value="Wednesday">Wednesday</option>
+                                <option value="Thursday">Thursday</option>
+                                <option value="Friday">Friday</option>
+                                <option value="Saturday">Saturday</option>
+                                <option value="Sunday">Sunday</option>
+                              </select>
                             </div>
                             <div>
-                              <strong>Sport:</strong> {assignment.sport}
+                              <label className="block text-sm font-medium text-[#6F6F6F] mb-1">
+                                Tier *
+                              </label>
+                              <select
+                                value={editAssignmentForm.tier}
+                                onChange={(e) => setEditAssignmentForm(prev => ({ ...prev, tier: e.target.value }))}
+                                className="w-full h-12 px-4 rounded-lg border border-[#D4D4D4] focus:border-[#B20000] focus:ring-[#B20000] focus:outline-none"
+                              >
+                                <option value="">Select Tier</option>
+                                <option value="Tier 1">Tier 1</option>
+                                <option value="Tier 2">Tier 2</option>
+                                <option value="Tier 3">Tier 3</option>
+                              </select>
                             </div>
                             <div>
-                              <strong>Time:</strong> {assignment.start_time} - {assignment.end_time}
+                              <label className="block text-sm font-medium text-[#6F6F6F] mb-1">
+                                Sport *
+                              </label>
+                              <select
+                                value={editAssignmentForm.sport}
+                                onChange={(e) => setEditAssignmentForm(prev => ({ ...prev, sport: e.target.value }))}
+                                className="w-full h-12 px-4 rounded-lg border border-[#D4D4D4] focus:border-[#B20000] focus:ring-[#B20000] focus:outline-none"
+                              >
+                                <option value="">Select Sport</option>
+                                <option value="Volleyball">Volleyball</option>
+                                <option value="Badminton">Badminton</option>
+                                <option value="Basketball">Basketball</option>
+                                <option value="Pickleball">Pickleball</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-[#6F6F6F] mb-1">
+                                Start Time *
+                              </label>
+                              <Input
+                                type="time"
+                                value={editAssignmentForm.start_time}
+                                onChange={(e) => setEditAssignmentForm(prev => ({ ...prev, start_time: e.target.value }))}
+                                className="w-full"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-[#6F6F6F] mb-1">
+                                End Time *
+                              </label>
+                              <Input
+                                type="time"
+                                value={editAssignmentForm.end_time}
+                                onChange={(e) => setEditAssignmentForm(prev => ({ ...prev, end_time: e.target.value }))}
+                                className="w-full"
+                              />
+                            </div>
+                            <div className="md:col-span-2">
+                              <label className="block text-sm font-medium text-[#6F6F6F] mb-1">
+                                Notes
+                              </label>
+                              <Input
+                                value={editAssignmentForm.notes}
+                                onChange={(e) => setEditAssignmentForm(prev => ({ ...prev, notes: e.target.value }))}
+                                className="w-full"
+                              />
                             </div>
                           </div>
-                          {assignment.notes && (
-                            <p className="text-sm text-gray-500 mt-2">
-                              <strong>Notes:</strong> {assignment.notes}
-                            </p>
-                          )}
+                          <div className="flex gap-3 mt-4">
+                            <Button
+                              onClick={handleSaveEditedAssignment}
+                              className="bg-[#B20000] hover:bg-[#8A0000] text-white"
+                            >
+                              <Save className="h-4 w-4 mr-2" />
+                              Save Changes
+                            </Button>
+                            <Button
+                              onClick={handleCancelEdit}
+                              variant="outline"
+                            >
+                              <X className="h-4 w-4 mr-2" />
+                              Cancel
+                            </Button>
+                          </div>
                         </div>
-                      </div>
+                      ) : (
+                        // Display view
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                          <div>
+                            <h3 className="text-lg font-bold text-[#6F6F6F] mb-2">
+                              {assignment.school_name}
+                            </h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm text-[#6F6F6F]">
+                              <div>
+                                <strong>Night:</strong> {assignment.night}
+                              </div>
+                              <div>
+                                <strong>Tier:</strong> {assignment.tier}
+                              </div>
+                              <div>
+                                <strong>Sport:</strong> {assignment.sport}
+                              </div>
+                              <div>
+                                <strong>Time:</strong> {assignment.start_time} - {assignment.end_time}
+                              </div>
+                            </div>
+                            {assignment.notes && (
+                              <p className="text-sm text-gray-500 mt-2">
+                                <strong>Notes:</strong> {assignment.notes}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              onClick={() => handleEditAssignment(assignment)}
+                              variant="outline"
+                              size="sm"
+                              className="border-[#B20000] text-[#B20000] hover:bg-[#B20000] hover:text-white"
+                            >
+                              <Edit3 className="h-4 w-4 mr-1" />
+                              Edit
+                            </Button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
