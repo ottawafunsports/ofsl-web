@@ -302,7 +302,7 @@ export const LeaguesPage = (): JSX.Element => {
       case 'Basketball':
         return "/Basketball.png";
       case 'Pickleball':
-        return "/Pickleball.png";
+        return "/pickleball.png";
       default:
         return "";
     }
