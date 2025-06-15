@@ -1,6 +1,7 @@
 import { Route, Routes, useLocation } from "react-router-dom";
 import { HomePage } from "./screens/HomePage";
 import { VolleyballPage } from "./screens/VolleyballPage";
+import { BadmintonPage } from "./screens/BadmintonPage";
 import { LeaguesPage } from "./screens/LeaguesPage";
 import { LoginPage } from "./screens/LoginPage";
 import { SignupPage } from "./screens/SignupPage";
@@ -23,6 +24,7 @@ export function App() {
           <Route element={<Layout />}>
             <Route path="/" element={<HomePage />} />
             <Route path="/volleyball" element={<VolleyballPage />} />
+            <Route path="/badminton" element={<BadmintonPage />} />
             <Route path="/leagues" element={<LeaguesPage />} />
             <Route path="/leagues/:id" element={<LeagueDetailPage />} />
             <Route path="/login" element={<LoginPage />} />
