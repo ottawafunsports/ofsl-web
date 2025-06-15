@@ -63,7 +63,7 @@ export const VolleyballPage = (): JSX.Element => {
               OFSL's volleyball leagues are organized to provide participants with a structured environment that encourages sportsmanship, physical activity and healthy competition free of negative attitudes.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center">
-              <Link to="/leagues" className="w-full sm:w-auto">
+              <Link to="/leagues?sport=Volleyball" className="w-full sm:w-auto">
                 <Button
                   variant="outline"
                   className="w-full sm:w-auto bg-[#0d0d0d42] text-white border border-white rounded-[10px] px-[15px] md:px-[25px] py-2.5"
@@ -186,7 +186,7 @@ export const VolleyballPage = (): JSX.Element => {
               </ul>
               <Link to="/leagues" className="self-start">
                 <Button className="bg-[#b20000] hover:bg-[#8a0000] text-white rounded-[10px] px-6 py-3">
-                  Register your team
+                  Register now
                 </Button>
               </Link>
             </div>
@@ -348,7 +348,7 @@ export const VolleyballPage = (): JSX.Element => {
             <p className="text-xl mb-8 max-w-2xl mx-auto">
               Join thousands of athletes in our community.
             </p>
-            <Link to="/leagues">
+            <Link to="/leagues?sport=Volleyball">
               <Button
                 className="bg-white hover:bg-[#0d0d0d42] text-[#b20000] hover:text-white rounded-[10px] border border-white px-[15px] md:px-[25px] py-2.5"
               >
