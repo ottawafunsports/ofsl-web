@@ -185,6 +185,7 @@ export const VolleyballPage = (): JSX.Element => {
                 </li>
               </ul>
               <Link to="/leagues" className="self-start">
+              <Link to="/leagues?sport=Volleyball" className="self-start">
                 <Button className="bg-[#b20000] hover:bg-[#8a0000] text-white rounded-[10px] px-6 py-3">
                   Register now
                 </Button>
