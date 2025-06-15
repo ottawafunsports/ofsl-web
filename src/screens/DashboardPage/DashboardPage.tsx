@@ -23,10 +23,7 @@ import {
   Save,
   X,
   CheckCircle,
-  AlertCircle,
-  Building2,
-  Plus,
-  Trash2
+  AlertCircle
 } from "lucide-react";
 
 interface Team {
@@ -59,42 +56,16 @@ interface NotificationSettings {
   payment_reminders: boolean;
 }
 
-interface Gym {
-  id: number;
-  gym: string;
-  address: string;
-  instructions: string;
-  created_at: string;
-}
-
-interface Season {
-  id: number;
-  season: string;
-  sport_id: number;
-  gym_id: number | null;
-  day_of_the_week: number;
-  active: boolean;
-}
-
-interface Sport {
-  id: number;
-  name: string;
-}
-
 export const DashboardPage = (): JSX.Element => {
   const { user } = useAuth();
   const { showToast } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'teams' | 'account' | 'gyms'>(
+  const [activeTab, setActiveTab] = useState<'teams' | 'account'>(
     location.pathname === '/my-account' ? 'account' : 'teams'
   );
   const [teams, setTeams] = useState<Team[]>([]);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [gyms, setGyms] = useState<Gym[]>([]);
-  const [seasons, setSeasons] = useState<Season[]>([]);
-  const [sports, setSports] = useState<Sport[]>([]);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [notifications, setNotifications] = useState<NotificationSettings>({
     email_notifications: true,
     game_reminders: true,
@@ -115,20 +86,6 @@ export const DashboardPage = (): JSX.Element => {
     newPassword: '',
     confirmPassword: ''
   });
-
-  // Gym management state
-  const [newGym, setNewGym] = useState({
-    gym: '',
-    address: '',
-    instructions: ''
-  });
-  const [editingGym, setEditingGym] = useState<number | null>(null);
-  const [editGymForm, setEditGymForm] = useState({
-    gym: '',
-    address: '',
-    instructions: ''
-  });
-  const [gymAssignments, setGymAssignments] = useState<Record<number, number | null>>({});
 
   // Mock data for teams - in real app, this would come from the database
   const mockTeams: Team[] = [
@@ -178,25 +135,8 @@ export const DashboardPage = (): JSX.Element => {
   useEffect(() => {
     if (user) {
       fetchUserData();
-      checkAdminStatus();
     }
   }, [user]);
-
-  const checkAdminStatus = async () => {
-    try {
-      const { data: profile, error } = await supabase
-        .from('users')
-        .select('is_admin')
-        .eq('auth_id', user?.id)
-        .single();
-
-      if (!error && profile) {
-        setIsAdmin(profile.is_admin || false);
-      }
-    } catch (error) {
-      console.error('Error checking admin status:', error);
-    }
-  };
 
   const fetchUserData = async () => {
     try {
@@ -225,66 +165,12 @@ export const DashboardPage = (): JSX.Element => {
       // For now, use mock data for teams
       // In a real app, you would fetch from registrations table
       setTeams(mockTeams);
-
-      // Fetch gyms, seasons, and sports if user is admin
-      if (isAdmin) {
-        await fetchGymsAndSeasons();
-      }
       
     } catch (error) {
       console.error('Error fetching user data:', error);
       showToast('Error loading dashboard data', 'error');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchGymsAndSeasons = async () => {
-    try {
-      // Fetch gyms
-      const { data: gymsData, error: gymsError } = await supabase
-        .from('gyms')
-        .select('*')
-        .order('gym');
-
-      if (gymsError) {
-        console.error('Error fetching gyms:', gymsError);
-      } else {
-        setGyms(gymsData || []);
-      }
-
-      // Fetch seasons
-      const { data: seasonsData, error: seasonsError } = await supabase
-        .from('seasons')
-        .select('*')
-        .order('season');
-
-      if (seasonsError) {
-        console.error('Error fetching seasons:', seasonsError);
-      } else {
-        setSeasons(seasonsData || []);
-        
-        // Initialize gym assignments
-        const assignments: Record<number, number | null> = {};
-        seasonsData?.forEach(season => {
-          assignments[season.id] = season.gym_id;
-        });
-        setGymAssignments(assignments);
-      }
-
-      // Fetch sports
-      const { data: sportsData, error: sportsError } = await supabase
-        .from('sports')
-        .select('*')
-        .order('name');
-
-      if (sportsError) {
-        console.error('Error fetching sports:', sportsError);
-      } else {
-        setSports(sportsData || []);
-      }
-    } catch (error) {
-      console.error('Error fetching gyms and seasons:', error);
     }
   };
 
@@ -354,121 +240,6 @@ export const DashboardPage = (): JSX.Element => {
     showToast('Notification preferences updated', 'success');
   };
 
-  const handleAddGym = async () => {
-    if (!newGym.gym.trim() || !newGym.address.trim()) {
-      showToast('Gym name and address are required', 'error');
-      return;
-    }
-
-    try {
-      const { error } = await supabase
-        .from('gyms')
-        .insert({
-          gym: newGym.gym,
-          address: newGym.address,
-          instructions: newGym.instructions
-        });
-
-      if (error) {
-        console.error('Error adding gym:', error);
-        showToast('Error adding gym', 'error');
-      } else {
-        setNewGym({ gym: '', address: '', instructions: '' });
-        await fetchGymsAndSeasons();
-        showToast('Gym added successfully', 'success');
-      }
-    } catch (error) {
-      console.error('Error adding gym:', error);
-      showToast('Error adding gym', 'error');
-    }
-  };
-
-  const handleEditGym = (gym: Gym) => {
-    setEditingGym(gym.id);
-    setEditGymForm({
-      gym: gym.gym,
-      address: gym.address,
-      instructions: gym.instructions
-    });
-  };
-
-  const handleUpdateGym = async () => {
-    if (!editGymForm.gym.trim() || !editGymForm.address.trim()) {
-      showToast('Gym name and address are required', 'error');
-      return;
-    }
-
-    try {
-      const { error } = await supabase
-        .from('gyms')
-        .update({
-          gym: editGymForm.gym,
-          address: editGymForm.address,
-          instructions: editGymForm.instructions
-        })
-        .eq('id', editingGym);
-
-      if (error) {
-        console.error('Error updating gym:', error);
-        showToast('Error updating gym', 'error');
-      } else {
-        setEditingGym(null);
-        await fetchGymsAndSeasons();
-        showToast('Gym updated successfully', 'success');
-      }
-    } catch (error) {
-      console.error('Error updating gym:', error);
-      showToast('Error updating gym', 'error');
-    }
-  };
-
-  const handleDeleteGym = async (gymId: number) => {
-    if (!confirm('Are you sure you want to delete this gym? This action cannot be undone.')) {
-      return;
-    }
-
-    try {
-      const { error } = await supabase
-        .from('gyms')
-        .delete()
-        .eq('id', gymId);
-
-      if (error) {
-        console.error('Error deleting gym:', error);
-        showToast('Error deleting gym', 'error');
-      } else {
-        await fetchGymsAndSeasons();
-        showToast('Gym deleted successfully', 'success');
-      }
-    } catch (error) {
-      console.error('Error deleting gym:', error);
-      showToast('Error deleting gym', 'error');
-    }
-  };
-
-  const handleGymAssignment = async (seasonId: number, gymId: number | null) => {
-    try {
-      const { error } = await supabase
-        .from('seasons')
-        .update({ gym_id: gymId })
-        .eq('id', seasonId);
-
-      if (error) {
-        console.error('Error updating gym assignment:', error);
-        showToast('Error updating gym assignment', 'error');
-      } else {
-        setGymAssignments(prev => ({
-          ...prev,
-          [seasonId]: gymId
-        }));
-        showToast('Gym assignment updated successfully', 'success');
-      }
-    } catch (error) {
-      console.error('Error updating gym assignment:', error);
-      showToast('Error updating gym assignment', 'error');
-    }
-  };
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Active':
@@ -520,16 +291,6 @@ export const DashboardPage = (): JSX.Element => {
     }
   };
 
-  const getDayName = (dayNumber: number) => {
-    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    return days[dayNumber] || 'Unknown';
-  };
-
-  const getSportName = (sportId: number) => {
-    const sport = sports.find(s => s.id === sportId);
-    return sport?.name || 'Unknown';
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -575,19 +336,6 @@ export const DashboardPage = (): JSX.Element => {
             <Settings className="inline-block w-5 h-5 mr-2" />
             Account Settings
           </button>
-          {isAdmin && (
-            <button
-              onClick={() => setActiveTab('gyms')}
-              className={`px-6 py-3 font-medium text-lg border-b-2 transition-colors ${
-                activeTab === 'gyms'
-                  ? 'border-[#B20000] text-[#B20000]'
-                  : 'border-transparent text-[#6F6F6F] hover:text-[#B20000]'
-              }`}
-            >
-              <Building2 className="inline-block w-5 h-5 mr-2" />
-              Gym Management
-            </button>
-          )}
         </div>
 
         {/* Teams Tab */}
@@ -953,219 +701,6 @@ export const DashboardPage = (): JSX.Element => {
                       </button>
                     </div>
                   ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {/* Gym Management Tab - Only visible to admins */}
-        {activeTab === 'gyms' && isAdmin && (
-          <div className="space-y-8">
-            {/* Add New Gym */}
-            <Card>
-              <CardContent className="p-6">
-                <h2 className="text-2xl font-bold text-[#6F6F6F] mb-6 flex items-center">
-                  <Plus className="h-6 w-6 mr-2" />
-                  Add New Gym
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  <div>
-                    <label className="block text-sm font-medium text-[#6F6F6F] mb-1">
-                      Gym Name *
-                    </label>
-                    <Input
-                      value={newGym.gym}
-                      onChange={(e) => setNewGym(prev => ({ ...prev, gym: e.target.value }))}
-                      placeholder="Enter gym name"
-                      className="w-full"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-[#6F6F6F] mb-1">
-                      Address *
-                    </label>
-                    <Input
-                      value={newGym.address}
-                      onChange={(e) => setNewGym(prev => ({ ...prev, address: e.target.value }))}
-                      placeholder="Enter gym address"
-                      className="w-full"
-                    />
-                  </div>
-                </div>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-[#6F6F6F] mb-1">
-                    Instructions
-                  </label>
-                  <textarea
-                    value={newGym.instructions}
-                    onChange={(e) => setNewGym(prev => ({ ...prev, instructions: e.target.value }))}
-                    placeholder="Enter any special instructions for accessing this gym"
-                    className="w-full px-4 py-3 rounded-lg border border-[#D4D4D4] focus:border-[#B20000] focus:ring-[#B20000] focus:outline-none resize-none"
-                    rows={3}
-                  />
-                </div>
-                <Button
-                  onClick={handleAddGym}
-                  className="bg-[#B20000] hover:bg-[#8A0000] text-white"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Gym
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Existing Gyms */}
-            <Card>
-              <CardContent className="p-6">
-                <h2 className="text-2xl font-bold text-[#6F6F6F] mb-6 flex items-center">
-                  <Building2 className="h-6 w-6 mr-2" />
-                  Existing Gyms
-                </h2>
-                <div className="space-y-4">
-                  {gyms.map((gym) => (
-                    <div key={gym.id} className="border border-gray-200 rounded-lg p-4">
-                      {editingGym === gym.id ? (
-                        <div className="space-y-4">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                              <label className="block text-sm font-medium text-[#6F6F6F] mb-1">
-                                Gym Name *
-                              </label>
-                              <Input
-                                value={editGymForm.gym}
-                                onChange={(e) => setEditGymForm(prev => ({ ...prev, gym: e.target.value }))}
-                                className="w-full"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-sm font-medium text-[#6F6F6F] mb-1">
-                                Address *
-                              </label>
-                              <Input
-                                value={editGymForm.address}
-                                onChange={(e) => setEditGymForm(prev => ({ ...prev, address: e.target.value }))}
-                                className="w-full"
-                              />
-                            </div>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-[#6F6F6F] mb-1">
-                              Instructions
-                            </label>
-                            <textarea
-                              value={editGymForm.instructions}
-                              onChange={(e) => setEditGymForm(prev => ({ ...prev, instructions: e.target.value }))}
-                              className="w-full px-4 py-3 rounded-lg border border-[#D4D4D4] focus:border-[#B20000] focus:ring-[#B20000] focus:outline-none resize-none"
-                              rows={3}
-                            />
-                          </div>
-                          <div className="flex gap-3">
-                            <Button
-                              onClick={handleUpdateGym}
-                              className="bg-[#B20000] hover:bg-[#8A0000] text-white"
-                            >
-                              <Save className="h-4 w-4 mr-2" />
-                              Save Changes
-                            </Button>
-                            <Button
-                              onClick={() => setEditingGym(null)}
-                              variant="outline"
-                            >
-                              <X className="h-4 w-4 mr-2" />
-                              Cancel
-                            </Button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1">
-                            <h3 className="text-lg font-bold text-[#6F6F6F] mb-2">{gym.gym}</h3>
-                            <p className="text-[#6F6F6F] mb-1">
-                              <MapPin className="h-4 w-4 inline mr-1" />
-                              {gym.address}
-                            </p>
-                            {gym.instructions && (
-                              <p className="text-sm text-gray-500 mt-2">{gym.instructions}</p>
-                            )}
-                          </div>
-                          <div className="flex gap-2">
-                            <Button
-                              onClick={() => handleEditGym(gym)}
-                              variant="outline"
-                              size="sm"
-                              className="border-[#B20000] text-[#B20000] hover:bg-[#B20000] hover:text-white"
-                            >
-                              <Edit3 className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              onClick={() => handleDeleteGym(gym.id)}
-                              variant="outline"
-                              size="sm"
-                              className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                  {gyms.length === 0 && (
-                    <p className="text-center text-[#6F6F6F] py-8">No gyms added yet.</p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Gym Assignments */}
-            <Card>
-              <CardContent className="p-6">
-                <h2 className="text-2xl font-bold text-[#6F6F6F] mb-6 flex items-center">
-                  <MapPin className="h-6 w-6 mr-2" />
-                  Gym Assignments
-                </h2>
-                <div className="space-y-4">
-                  {seasons.map((season) => (
-                    <div key={season.id} className="border border-gray-200 rounded-lg p-4">
-                      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                        <div className="flex-1">
-                          <h3 className="text-lg font-bold text-[#6F6F6F] mb-1">{season.season}</h3>
-                          <div className="flex items-center gap-4 text-sm text-[#6F6F6F]">
-                            <span>{getSportName(season.sport_id)}</span>
-                            <span>•</span>
-                            <span>{getDayName(season.day_of_the_week)}</span>
-                            <span>•</span>
-                            <span className={`px-2 py-1 rounded-full text-xs ${
-                              season.active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                            }`}>
-                              {season.active ? 'Active' : 'Inactive'}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="min-w-[200px]">
-                          <label className="block text-sm font-medium text-[#6F6F6F] mb-1">
-                            Assigned Gym
-                          </label>
-                          <select
-                            value={gymAssignments[season.id] || ''}
-                            onChange={(e) => handleGymAssignment(season.id, e.target.value ? parseInt(e.target.value) : null)}
-                            className="w-full px-3 py-2 border border-[#D4D4D4] rounded-lg focus:border-[#B20000] focus:ring-[#B20000] focus:outline-none"
-                          >
-                            <option value="">No gym assigned</option>
-                            {gyms.map((gym) => (
-                              <option key={gym.id} value={gym.id}>
-                                {gym.gym}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  {seasons.length === 0 && (
-                    <p className="text-center text-[#6F6F6F] py-8">No seasons found.</p>
-                  )}
                 </div>
               </CardContent>
             </Card>
