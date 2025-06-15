@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
 import { ChevronDown, X, MapPin, Calendar, Clock, Users, DollarSign } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
 // Filter options data - Updated to use regions for locations
 const filterOptions = {
@@ -158,6 +158,8 @@ const leagueData = [
 ];
 
 export const LeaguesPage = (): JSX.Element => {
+  const [searchParams] = useSearchParams();
+  
   // Filter state
   const [filters, setFilters] = useState({
     sport: "All Sports",
@@ -172,6 +174,17 @@ export const LeaguesPage = (): JSX.Element => {
   
   // Refs for dropdown components
   const dropdownRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  // Initialize filters from URL parameters
+  useEffect(() => {
+    const sportParam = searchParams.get('sport');
+    if (sportParam && filterOptions.sport.includes(sportParam)) {
+      setFilters(prev => ({
+        ...prev,
+        sport: sportParam
+      }));
+    }
+  }, [searchParams]);
 
   // Effect to close dropdown when clicking outside
   useEffect(() => {

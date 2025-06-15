@@ -53,7 +53,7 @@ export const BadmintonPage = (): JSX.Element => {
               OFSL's badminton leagues offer competitive play for all skill levels, from intermediate to advanced players. Experience fast-paced action and improve your game in a supportive community environment.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center">
-              <Link to="/leagues" className="w-full sm:w-auto">
+              <Link to="/leagues?sport=Badminton" className="w-full sm:w-auto">
                 <Button
                   variant="outline"
                   className="w-full sm:w-auto bg-[#0d0d0d42] text-white border border-white rounded-[10px] px-[15px] md:px-[25px] py-2.5"
@@ -174,7 +174,7 @@ export const BadmintonPage = (): JSX.Element => {
                   <span>Individual registration - we'll match you with players of similar skill level.</span>
                 </li>
               </ul>
-              <Link to="/leagues" className="self-start">
+              <Link to="/leagues?sport=Badminton" className="self-start">
                 <Button className="bg-[#b20000] hover:bg-[#8a0000] text-white rounded-[10px] px-6 py-3">
                   Register now
                 </Button>
@@ -338,7 +338,7 @@ export const BadmintonPage = (): JSX.Element => {
             <p className="text-xl mb-8 max-w-2xl mx-auto">
               Join our badminton community and experience competitive play at your skill level.
             </p>
-            <Link to="/leagues">
+            <Link to="/leagues?sport=Badminton">
               <Button
                 className="bg-white hover:bg-[#0d0d0d42] text-[#b20000] hover:text-white rounded-[10px] border border-white px-[15px] md:px-[25px] py-2.5"
               >
