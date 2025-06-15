@@ -764,4 +764,447 @@ export const DashboardPage = (): JSX.Element => {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-[#6F6F6F] mb-1
+                      <label className="block text-sm font-medium text-[#6F6F6F] mb-1">
+                        Confirm New Password
+                      </label>
+                      <Input
+                        type="password"
+                        value={passwordForm.confirmPassword}
+                        onChange={(e) => setPasswordForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                        className="w-full"
+                      />
+                    </div>
+                    <div className="flex gap-3">
+                      <Button
+                        onClick={handlePasswordUpdate}
+                        className="bg-[#B20000] hover:bg-[#8A0000] text-white"
+                      >
+                        <Save className="h-4 w-4 mr-2" />
+                        Update Password
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          setEditingPassword(false);
+                          setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+                        }}
+                        variant="outline"
+                      >
+                        <X className="h-4 w-4 mr-2" />
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <p className="text-[#6F6F6F] mb-4">
+                      Keep your account secure by using a strong password.
+                    </p>
+                    <p className="text-sm text-[#6F6F6F]">
+                      Last updated: Never
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Notification Settings */}
+            <Card>
+              <CardContent className="p-6">
+                <h2 className="text-2xl font-bold text-[#6F6F6F] flex items-center mb-6">
+                  <Bell className="h-6 w-6 mr-2" />
+                  Notification Preferences
+                </h2>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-medium text-[#6F6F6F]">Email Notifications</h3>
+                      <p className="text-sm text-gray-500">Receive general updates via email</p>
+                    </div>
+                    <button
+                      onClick={() => handleNotificationChange('email_notifications')}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        notifications.email_notifications ? 'bg-[#B20000]' : 'bg-gray-200'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          notifications.email_notifications ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                  <Separator />
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-medium text-[#6F6F6F]">Game Reminders</h3>
+                      <p className="text-sm text-gray-500">Get notified before upcoming games</p>
+                    </div>
+                    <button
+                      onClick={() => handleNotificationChange('game_reminders')}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        notifications.game_reminders ? 'bg-[#B20000]' : 'bg-gray-200'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          notifications.game_reminders ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                  <Separator />
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-medium text-[#6F6F6F]">League Updates</h3>
+                      <p className="text-sm text-gray-500">Stay informed about league news and changes</p>
+                    </div>
+                    <button
+                      onClick={() => handleNotificationChange('league_updates')}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        notifications.league_updates ? 'bg-[#B20000]' : 'bg-gray-200'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          notifications.league_updates ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                  <Separator />
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-medium text-[#6F6F6F]">Payment Reminders</h3>
+                      <p className="text-sm text-gray-500">Receive reminders for upcoming payments</p>
+                    </div>
+                    <button
+                      onClick={() => handleNotificationChange('payment_reminders')}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        notifications.payment_reminders ? 'bg-[#B20000]' : 'bg-gray-200'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          notifications.payment_reminders ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Schools Tab - Admin Only */}
+        {activeTab === 'schools' && isAdmin && (
+          <div className="space-y-8">
+            {/* Schools Management */}
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-[#6F6F6F] flex items-center">
+                    <MapPin className="h-6 w-6 mr-2" />
+                    Schools
+                  </h2>
+                  <Button
+                    onClick={() => setShowAddSchool(true)}
+                    className="bg-[#B20000] hover:bg-[#8A0000] text-white"
+                  >
+                    Add School
+                  </Button>
+                </div>
+
+                {showAddSchool && (
+                  <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
+                    <h3 className="text-lg font-medium text-[#6F6F6F] mb-4">Add New School</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-[#6F6F6F] mb-1">
+                          School Name *
+                        </label>
+                        <Input
+                          value={newSchool.name}
+                          onChange={(e) => setNewSchool(prev => ({ ...prev, name: e.target.value }))}
+                          className="w-full"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-[#6F6F6F] mb-1">
+                          Address *
+                        </label>
+                        <Input
+                          value={newSchool.address}
+                          onChange={(e) => setNewSchool(prev => ({ ...prev, address: e.target.value }))}
+                          className="w-full"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-[#6F6F6F] mb-1">
+                          Contact Person
+                        </label>
+                        <Input
+                          value={newSchool.contact_person}
+                          onChange={(e) => setNewSchool(prev => ({ ...prev, contact_person: e.target.value }))}
+                          className="w-full"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-[#6F6F6F] mb-1">
+                          Contact Phone
+                        </label>
+                        <Input
+                          value={newSchool.contact_phone}
+                          onChange={(e) => setNewSchool(prev => ({ ...prev, contact_phone: e.target.value }))}
+                          className="w-full"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-[#6F6F6F] mb-1">
+                          Contact Email
+                        </label>
+                        <Input
+                          type="email"
+                          value={newSchool.contact_email}
+                          onChange={(e) => setNewSchool(prev => ({ ...prev, contact_email: e.target.value }))}
+                          className="w-full"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-[#6F6F6F] mb-1">
+                          Notes
+                        </label>
+                        <Input
+                          value={newSchool.notes}
+                          onChange={(e) => setNewSchool(prev => ({ ...prev, notes: e.target.value }))}
+                          className="w-full"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex gap-3 mt-4">
+                      <Button
+                        onClick={handleAddSchool}
+                        className="bg-[#B20000] hover:bg-[#8A0000] text-white"
+                      >
+                        Add School
+                      </Button>
+                      <Button
+                        onClick={() => setShowAddSchool(false)}
+                        variant="outline"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-4">
+                  {schools.map((school) => (
+                    <div key={school.id} className="border border-gray-200 rounded-lg p-4">
+                      <h3 className="text-lg font-bold text-[#6F6F6F] mb-2">{school.name}</h3>
+                      <p className="text-[#6F6F6F] mb-2">{school.address}</p>
+                      {school.contact_person && (
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-[#6F6F6F]">
+                          <div>
+                            <strong>Contact:</strong> {school.contact_person}
+                          </div>
+                          {school.contact_phone && (
+                            <div>
+                              <strong>Phone:</strong> {school.contact_phone}
+                            </div>
+                          )}
+                          {school.contact_email && (
+                            <div>
+                              <strong>Email:</strong> {school.contact_email}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      {school.notes && (
+                        <p className="text-sm text-gray-500 mt-2">
+                          <strong>Notes:</strong> {school.notes}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* School Assignments */}
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-[#6F6F6F] flex items-center">
+                    <Calendar className="h-6 w-6 mr-2" />
+                    School Assignments
+                  </h2>
+                  <Button
+                    onClick={() => setShowAddAssignment(true)}
+                    className="bg-[#B20000] hover:bg-[#8A0000] text-white"
+                  >
+                    Add Assignment
+                  </Button>
+                </div>
+
+                {showAddAssignment && (
+                  <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
+                    <h3 className="text-lg font-medium text-[#6F6F6F] mb-4">Add New Assignment</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-[#6F6F6F] mb-1">
+                          School *
+                        </label>
+                        <select
+                          value={newAssignment.school_id}
+                          onChange={(e) => setNewAssignment(prev => ({ ...prev, school_id: parseInt(e.target.value) }))}
+                          className="w-full h-12 px-4 rounded-lg border border-[#D4D4D4] focus:border-[#B20000] focus:ring-[#B20000] focus:outline-none"
+                        >
+                          <option value={0}>Select School</option>
+                          {schools.map((school) => (
+                            <option key={school.id} value={school.id}>
+                              {school.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-[#6F6F6F] mb-1">
+                          Night *
+                        </label>
+                        <select
+                          value={newAssignment.night}
+                          onChange={(e) => setNewAssignment(prev => ({ ...prev, night: e.target.value }))}
+                          className="w-full h-12 px-4 rounded-lg border border-[#D4D4D4] focus:border-[#B20000] focus:ring-[#B20000] focus:outline-none"
+                        >
+                          <option value="">Select Night</option>
+                          <option value="Monday">Monday</option>
+                          <option value="Tuesday">Tuesday</option>
+                          <option value="Wednesday">Wednesday</option>
+                          <option value="Thursday">Thursday</option>
+                          <option value="Friday">Friday</option>
+                          <option value="Saturday">Saturday</option>
+                          <option value="Sunday">Sunday</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-[#6F6F6F] mb-1">
+                          Tier *
+                        </label>
+                        <select
+                          value={newAssignment.tier}
+                          onChange={(e) => setNewAssignment(prev => ({ ...prev, tier: e.target.value }))}
+                          className="w-full h-12 px-4 rounded-lg border border-[#D4D4D4] focus:border-[#B20000] focus:ring-[#B20000] focus:outline-none"
+                        >
+                          <option value="">Select Tier</option>
+                          <option value="Tier 1">Tier 1</option>
+                          <option value="Tier 2">Tier 2</option>
+                          <option value="Tier 3">Tier 3</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-[#6F6F6F] mb-1">
+                          Sport *
+                        </label>
+                        <select
+                          value={newAssignment.sport}
+                          onChange={(e) => setNewAssignment(prev => ({ ...prev, sport: e.target.value }))}
+                          className="w-full h-12 px-4 rounded-lg border border-[#D4D4D4] focus:border-[#B20000] focus:ring-[#B20000] focus:outline-none"
+                        >
+                          <option value="">Select Sport</option>
+                          <option value="Volleyball">Volleyball</option>
+                          <option value="Badminton">Badminton</option>
+                          <option value="Basketball">Basketball</option>
+                          <option value="Pickleball">Pickleball</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-[#6F6F6F] mb-1">
+                          Start Time *
+                        </label>
+                        <Input
+                          type="time"
+                          value={newAssignment.start_time}
+                          onChange={(e) => setNewAssignment(prev => ({ ...prev, start_time: e.target.value }))}
+                          className="w-full"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-[#6F6F6F] mb-1">
+                          End Time *
+                        </label>
+                        <Input
+                          type="time"
+                          value={newAssignment.end_time}
+                          onChange={(e) => setNewAssignment(prev => ({ ...prev, end_time: e.target.value }))}
+                          className="w-full"
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-[#6F6F6F] mb-1">
+                          Notes
+                        </label>
+                        <Input
+                          value={newAssignment.notes}
+                          onChange={(e) => setNewAssignment(prev => ({ ...prev, notes: e.target.value }))}
+                          className="w-full"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex gap-3 mt-4">
+                      <Button
+                        onClick={handleAddAssignment}
+                        className="bg-[#B20000] hover:bg-[#8A0000] text-white"
+                      >
+                        Add Assignment
+                      </Button>
+                      <Button
+                        onClick={() => setShowAddAssignment(false)}
+                        variant="outline"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-4">
+                  {schoolAssignments.map((assignment) => (
+                    <div key={assignment.id} className="border border-gray-200 rounded-lg p-4">
+                      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div>
+                          <h3 className="text-lg font-bold text-[#6F6F6F] mb-2">
+                            {assignment.school_name}
+                          </h3>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm text-[#6F6F6F]">
+                            <div>
+                              <strong>Night:</strong> {assignment.night}
+                            </div>
+                            <div>
+                              <strong>Tier:</strong> {assignment.tier}
+                            </div>
+                            <div>
+                              <strong>Sport:</strong> {assignment.sport}
+                            </div>
+                            <div>
+                              <strong>Time:</strong> {assignment.start_time} - {assignment.end_time}
+                            </div>
+                          </div>
+                          {assignment.notes && (
+                            <p className="text-sm text-gray-500 mt-2">
+                              <strong>Notes:</strong> {assignment.notes}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
