@@ -49,6 +49,28 @@ interface UserProfile {
   preferred_position?: string;
 }
 
+interface School {
+  id: number;
+  name: string;
+  address: string;
+  contact_person?: string;
+  contact_phone?: string;
+  contact_email?: string;
+  notes?: string;
+}
+
+interface SchoolAssignment {
+  id: number;
+  school_id: number;
+  school_name: string;
+  night: string;
+  tier: string;
+  sport: string;
+  start_time: string;
+  end_time: string;
+  notes?: string;
+}
+
 interface NotificationSettings {
   email_notifications: boolean;
   game_reminders: boolean;
@@ -61,11 +83,13 @@ export const DashboardPage = (): JSX.Element => {
   const { showToast } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'teams' | 'account'>(
+  const [activeTab, setActiveTab] = useState<'teams' | 'account' | 'schools'>(
     location.pathname === '/my-account' ? 'account' : 'teams'
   );
   const [teams, setTeams] = useState<Team[]>([]);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [schools, setSchools] = useState<School[]>([]);
+  const [schoolAssignments, setSchoolAssignments] = useState<SchoolAssignment[]>([]);
   const [notifications, setNotifications] = useState<NotificationSettings>({
     email_notifications: true,
     game_reminders: true,
@@ -86,6 +110,42 @@ export const DashboardPage = (): JSX.Element => {
     newPassword: '',
     confirmPassword: ''
   });
+
+  // School management state
+  const [showAddSchool, setShowAddSchool] = useState(false);
+  const [showAddAssignment, setShowAddAssignment] = useState(false);
+  const [newSchool, setNewSchool] = useState({
+    name: '',
+    address: '',
+    contact_person: '',
+    contact_phone: '',
+    contact_email: '',
+    notes: ''
+  });
+  const [newAssignment, setNewAssignment] = useState({
+    school_id: 0,
+    night: '',
+    tier: '',
+    sport: '',
+    start_time: '',
+    end_time: '',
+    notes: ''
+  });
+
+  // Mock data for schools and assignments
+  const mockSchools: School[] = [
+    { id: 1, name: "Carleton University", address: "1125 Colonel By Dr, Ottawa, ON K1S 5B6", contact_person: "John Smith", contact_phone: "613-520-2600", contact_email: "facilities@carleton.ca" },
+    { id: 2, name: "University of Ottawa", address: "75 Laurier Ave E, Ottawa, ON K1N 6N5", contact_person: "Jane Doe", contact_phone: "613-562-5700", contact_email: "sports@uottawa.ca" },
+    { id: 3, name: "Glebe Collegiate", address: "212 Glebe Ave, Ottawa, ON K1S 2C9", contact_person: "Mike Johnson", contact_phone: "613-239-2501", contact_email: "admin@glebecollegiate.ca" },
+    { id: 4, name: "Rideau High School", address: "815 St Laurent Blvd, Ottawa, ON K1K 3A7", contact_person: "Sarah Wilson", contact_phone: "613-745-9411", contact_email: "office@rideauhigh.ca" }
+  ];
+
+  const mockAssignments: SchoolAssignment[] = [
+    { id: 1, school_id: 1, school_name: "Carleton University", night: "Monday", tier: "Tier 1", sport: "Volleyball", start_time: "7:00 PM", end_time: "10:00 PM", notes: "Main gym" },
+    { id: 2, school_id: 2, school_name: "University of Ottawa", night: "Tuesday", tier: "Tier 2", sport: "Volleyball", start_time: "7:00 PM", end_time: "9:00 PM", notes: "Montpetit Hall" },
+    { id: 3, school_id: 3, school_name: "Glebe Collegiate", night: "Wednesday", tier: "Tier 1", sport: "Badminton", start_time: "6:30 PM", end_time: "9:30 PM" },
+    { id: 4, school_id: 1, school_name: "Carleton University", night: "Thursday", tier: "Tier 3", sport: "Volleyball", start_time: "8:00 PM", end_time: "11:00 PM", notes: "Secondary gym" }
+  ];
 
   // Mock data for teams - in real app, this would come from the database
   const mockTeams: Team[] = [
@@ -165,6 +225,8 @@ export const DashboardPage = (): JSX.Element => {
       // For now, use mock data for teams
       // In a real app, you would fetch from registrations table
       setTeams(mockTeams);
+      setSchools(mockSchools);
+      setSchoolAssignments(mockAssignments);
       
     } catch (error) {
       console.error('Error fetching user data:', error);
@@ -239,6 +301,67 @@ export const DashboardPage = (): JSX.Element => {
     // In a real app, you would save this to the database
     showToast('Notification preferences updated', 'success');
   };
+
+  // Handle adding new school
+  const handleAddSchool = () => {
+    if (!newSchool.name || !newSchool.address) {
+      showToast('School name and address are required', 'error');
+      return;
+    }
+
+    const school: School = {
+      id: schools.length + 1,
+      ...newSchool
+    };
+
+    setSchools(prev => [...prev, school]);
+    setNewSchool({
+      name: '',
+      address: '',
+      contact_person: '',
+      contact_phone: '',
+      contact_email: '',
+      notes: ''
+    });
+    setShowAddSchool(false);
+    showToast('School added successfully', 'success');
+  };
+
+  // Handle adding new assignment
+  const handleAddAssignment = () => {
+    if (!newAssignment.school_id || !newAssignment.night || !newAssignment.tier || !newAssignment.sport || !newAssignment.start_time || !newAssignment.end_time) {
+      showToast('All fields except notes are required', 'error');
+      return;
+    }
+
+    const selectedSchool = schools.find(s => s.id === newAssignment.school_id);
+    if (!selectedSchool) {
+      showToast('Selected school not found', 'error');
+      return;
+    }
+
+    const assignment: SchoolAssignment = {
+      id: schoolAssignments.length + 1,
+      school_name: selectedSchool.name,
+      ...newAssignment
+    };
+
+    setSchoolAssignments(prev => [...prev, assignment]);
+    setNewAssignment({
+      school_id: 0,
+      night: '',
+      tier: '',
+      sport: '',
+      start_time: '',
+      end_time: '',
+      notes: ''
+    });
+    setShowAddAssignment(false);
+    showToast('School assignment added successfully', 'success');
+  };
+
+  // Check if user is admin (mock check for now)
+  const isAdmin = userProfile?.name === 'Admin User'; // This would be replaced with actual admin check
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -336,6 +459,19 @@ export const DashboardPage = (): JSX.Element => {
             <Settings className="inline-block w-5 h-5 mr-2" />
             Account Settings
           </button>
+          {isAdmin && (
+            <button
+              onClick={() => setActiveTab('schools')}
+              className={`px-6 py-3 font-medium text-lg border-b-2 transition-colors ${
+                activeTab === 'schools'
+                  ? 'border-[#B20000] text-[#B20000]'
+                  : 'border-transparent text-[#6F6F6F] hover:text-[#B20000]'
+              }`}
+            >
+              <MapPin className="inline-block w-5 h-5 mr-2" />
+              Manage Schools
+            </button>
+          )}
         </div>
 
         {/* Teams Tab */}
@@ -628,85 +764,4 @@ export const DashboardPage = (): JSX.Element => {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-[#6F6F6F] mb-1">
-                        Confirm New Password
-                      </label>
-                      <Input
-                        type="password"
-                        value={passwordForm.confirmPassword}
-                        onChange={(e) => setPasswordForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                        className="w-full"
-                      />
-                    </div>
-                    <div className="flex gap-3">
-                      <Button
-                        onClick={handlePasswordUpdate}
-                        className="bg-[#B20000] hover:bg-[#8A0000] text-white"
-                      >
-                        <Save className="h-4 w-4 mr-2" />
-                        Update Password
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          setEditingPassword(false);
-                          setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-                        }}
-                        variant="outline"
-                      >
-                        <X className="h-4 w-4 mr-2" />
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-[#6F6F6F]">
-                    Password was last updated on your account creation date.
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Notification Settings */}
-            <Card>
-              <CardContent className="p-6">
-                <h2 className="text-2xl font-bold text-[#6F6F6F] mb-6 flex items-center">
-                  <Bell className="h-6 w-6 mr-2" />
-                  Notification Preferences
-                </h2>
-                <div className="space-y-4">
-                  {Object.entries(notifications).map(([key, value]) => (
-                    <div key={key} className="flex items-center justify-between py-2">
-                      <div>
-                        <h3 className="font-medium text-[#6F6F6F]">
-                          {key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                        </h3>
-                        <p className="text-sm text-gray-500">
-                          {key === 'email_notifications' && 'Receive general email notifications'}
-                          {key === 'game_reminders' && 'Get reminders before your games'}
-                          {key === 'league_updates' && 'Stay updated on league news and changes'}
-                          {key === 'payment_reminders' && 'Receive payment due date reminders'}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => handleNotificationChange(key as keyof NotificationSettings)}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                          value ? 'bg-[#B20000]' : 'bg-gray-200'
-                        }`}
-                      >
-                        <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                            value ? 'translate-x-6' : 'translate-x-1'
-                          }`}
-                        />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
+                      <label className="block text-sm font-medium text-[#6F6F6F] mb-1
