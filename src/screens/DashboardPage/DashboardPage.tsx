@@ -361,7 +361,7 @@ export const DashboardPage = (): JSX.Element => {
   };
 
   // Check if user is admin (mock check for now)
-  const isAdmin = userProfile?.name === 'Admin User'; // This would be replaced with actual admin check
+  const isAdmin = true; // Temporarily enabled for testing - This would be replaced with actual admin check
 
   const getStatusColor = (status: string) => {
     switch (status) {
