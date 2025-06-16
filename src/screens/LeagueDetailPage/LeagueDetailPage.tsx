@@ -1044,23 +1044,24 @@ export function LeagueDetailPage() {
                             className="w-full px-3 py-2 border rounded-md text-sm"
                             rows={3}
                             placeholder="Enter spare player names..."
-                          ></textarea>
+                          />
                         </div>
                       );
                     })}
                   </div>
                 </div>
-                
+
+                {/* Submit Button */}
                 <div className="flex justify-end gap-4">
-                  <Button 
-                    type="button" 
+                  <Button
+                    type="button"
                     onClick={closeScoreSubmissionModal}
-                    className="bg-gray-200 hover:bg-gray-300 text-[#6F6F6F] rounded-[10px] px-6 py-2"
+                    className="bg-gray-500 hover:bg-gray-600 text-white rounded-[10px] px-6 py-2"
                   >
                     Cancel
                   </Button>
-                  <Button 
-                    type="submit" 
+                  <Button
+                    type="submit"
                     className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] px-6 py-2"
                   >
                     Submit Scores

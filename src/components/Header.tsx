@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ChevronDown } from "lucide-react";
 import { NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList } from "./ui/navigation-menu";
 import { useAuth } from "../contexts/AuthContext";
+import { useToast } from "./ui/toast";
 
 interface HeaderProps {
   isCompact?: boolean;
@@ -11,9 +12,29 @@ interface HeaderProps {
 
 export function Header({ isCompact = false }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const { showToast } = useToast();
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsUserDropdownOpen(false);
+      }
+    }
+
+    if (isUserDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isUserDropdownOpen]);
 
   const isActive = (path: string) => {
     return location.pathname === path;
@@ -33,7 +54,9 @@ export function Header({ isCompact = false }: HeaderProps) {
 
   const handleLogout = async () => {
     await signOut();
+    showToast("You have been successfully logged out", "success");
     navigate('/');
+    setIsUserDropdownOpen(false);
   };
 
   // Determine height and logo size based on compact state
@@ -117,14 +140,45 @@ export function Header({ isCompact = false }: HeaderProps) {
 
           {/* Login/Logout button */}
           {user ? (
-            <button 
-              onClick={handleLogout}
-              className="ml-8 relative text-white font-medium py-2 px-6 transition-all duration-200 text-base md:text-lg
-                before:content-[''] before:absolute before:inset-0 before:bg-black/10 before:rounded-[10px]
-                hover:before:bg-black/20 border border-white rounded-[10px]"
-            >
-              Logout
-            </button>
+            <div className="ml-8 relative" ref={dropdownRef}>
+              <button 
+                onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
+                className="flex items-center gap-2 text-white font-medium py-2 px-6 transition-all duration-200 text-base md:text-lg
+                  before:content-[''] before:absolute before:inset-0 before:bg-black/10 before:rounded-[10px]
+                  hover:before:bg-black/20 border border-white rounded-[10px] relative z-10"
+              >
+                <span>MyOFSL</span>
+                <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isUserDropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
+              
+              {/* Dropdown Menu */}
+              {isUserDropdownOpen && (
+                <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                  <div className="py-2">
+                    <Link 
+                      to="/my-teams" 
+                      className="block px-4 py-2 text-[#6F6F6F] hover:bg-gray-50 hover:text-[#B20000] transition-colors first:rounded-t-lg"
+                      onClick={() => setIsUserDropdownOpen(false)}
+                    >
+                      My Teams
+                    </Link>
+                    <Link 
+                      to="/my-account" 
+                      className="block px-4 py-2 text-[#6F6F6F] hover:bg-gray-50 hover:text-[#B20000] transition-colors"
+                      onClick={() => setIsUserDropdownOpen(false)}
+                    >
+                      My Account
+                    </Link>
+                    <button 
+                      onClick={handleLogout}
+                      className="w-full text-left px-4 py-2 text-[#6F6F6F] hover:bg-gray-50 hover:text-[#B20000] transition-colors last:rounded-b-lg"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           ) : (
             <Link 
               to="/login" 

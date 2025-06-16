@@ -1,0 +1,1 @@
+export { BadmintonPage } from "./BadmintonPage";

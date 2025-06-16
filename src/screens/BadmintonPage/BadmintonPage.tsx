@@ -4,48 +4,38 @@ import { HeroBanner } from "../../components/HeroBanner";
 import { Link } from "react-router-dom";
 import { BookOpen, Star } from "lucide-react";
 
-export const VolleyballPage = (): JSX.Element => {
-  // League card data
+export const BadmintonPage = (): JSX.Element => {
+  // League card data for badminton
   const leagueCards = [
     {
-      title: "Indoor Elite Womens",
-      image: "/womens-elite-card.jpg",
-      link: "/leagues/womens-elite"
+      title: "Advanced Singles",
+      image: "/badminton-card.png",
+      link: "/leagues/badminton-advanced-singles"
     },
     {
-      title: "Indoor Coed Intermediate 6s",
-      image: "/indoor-coed.jpg",
-      link: "/leagues/coed-intermediate"
+      title: "Intermediate Doubles",
+      image: "/coed-badminton.png",
+      link: "/leagues/badminton-intermediate-doubles"
     },
     {
-      title: "Indoor Coed Advanced 6s",
-      image: "/indoor-coed.jpg",
-      link: "/leagues/coed-advanced"
+      title: "Competitive Singles",
+      image: "/badminton-card.png",
+      link: "/leagues/badminton-competitive-singles"
     },
     {
-      title: "Indoor Womens Int/Adv 6s",
-      image: "/womens-elite-card.jpg",
-      link: "/leagues/womens-int-adv"
+      title: "Coed Intermediate Doubles",
+      image: "/coed-badminton.png",
+      link: "/leagues/badminton-coed-intermediate"
     },
     {
-      title: "Indoor Mens Int/Adv 6s",
-      image: "/indoor-coed.jpg",
-      link: "/leagues/mens-int-adv"
+      title: "Advanced Doubles",
+      image: "/badminton-card.png",
+      link: "/leagues/badminton-advanced-doubles"
     },
     {
-      title: "Indoor Coed Int/Adv 4s",
-      image: "/indoor-coed.jpg",
-      link: "/leagues/coed-int-adv-4s"
-    },
-    {
-      title: "Indoor Coed Competitive 6s",
-      image: "/571North-CR3_0335-Indoor-VB-Header-Featured.jpg",
-      link: "/leagues/coed-competitive-6s"
-    },
-    {
-      title: "Indoor Coed Competitive 4s",
-      image: "/571North-CR3_0335-Indoor-VB-Header-Featured.jpg",
-      link: "/leagues/coed-competitive-4s"
+      title: "Competitive Doubles",
+      image: "/coed-badminton.png",
+      link: "/leagues/badminton-competitive-doubles"
     },
   ];
 
@@ -53,17 +43,17 @@ export const VolleyballPage = (): JSX.Element => {
     <div className="bg-white flex flex-row justify-center w-full">
       <div className="bg-white w-full relative">
         <HeroBanner
-          image="/adult-open-play-1920x963.jpg"
-          imageAlt="Volleyball players"
+          image="/coed-badminton.png"
+          imageAlt="Badminton players"
           height="500px"
         >
           <div className="text-center text-white">
-            <h1 className="text-5xl mb-4 font-heading">Volleyball Leagues</h1>
+            <h1 className="text-5xl mb-4 font-heading">Badminton Leagues</h1>
             <p className="text-xl max-w-2xl mx-auto mb-8">
-              OFSL's volleyball leagues are organized to provide participants with a structured environment that encourages sportsmanship, physical activity and healthy competition free of negative attitudes.
+              OFSL's badminton leagues offer competitive play for all skill levels, from intermediate to advanced players. Experience fast-paced action and improve your game in a supportive community environment.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center">
-              <Link to="/leagues?sport=Volleyball" className="w-full sm:w-auto">
+              <Link to="/leagues?sport=Badminton" className="w-full sm:w-auto">
                 <Button
                   variant="outline"
                   className="w-full sm:w-auto bg-[#0d0d0d42] text-white border border-white rounded-[10px] px-[15px] md:px-[25px] py-2.5"
@@ -85,20 +75,20 @@ export const VolleyballPage = (): JSX.Element => {
           </div>
         </HeroBanner>
 
-        {/* League Types Section - Reduced bottom padding */}
+        {/* League Types Section */}
         <div className="max-w-[1280px] mx-auto px-4 pt-16 md:pt-24 pb-8 md:pb-12">
           <h2 className="text-3xl font-bold text-center mb-16">
             Find a league for you
           </h2>
           
-          {/* Added text about volleyball divisions */}
+          {/* About badminton leagues text */}
           <div className="text-center mb-12">
             <p className="max-w-[1080px] mx-auto font-normal text-[#6f6f6f] text-base md:text-lg leading-6 md:leading-7">
-              OFSL offers several nights of Advanced-Intermediate and Intermediate volleyball consisting of four separate divisions: Women, Co-ed, Men and Elite Womens. For the 2024/25 season, each league follows a tiered system or schedule. Our tiered and hybrid system is designed to allow every team to find a level of play that is even and fair.
+              OFSL badminton leagues feature both singles and doubles play across multiple skill levels. Our leagues are designed to provide competitive matches while maintaining a fun and inclusive atmosphere. Whether you're looking to improve your technique or compete at a high level, we have a league that's right for you.
             </p>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">
             {leagueCards.map((card, index) => (
               <Link 
                 to={card.link} 
@@ -126,7 +116,7 @@ export const VolleyballPage = (): JSX.Element => {
           </div>
         </div>
         
-        {/* Standards of Play section - Reduced top margin */}
+        {/* Standards of Play section */}
         <div className="max-w-[1280px] mx-auto px-4 mb-16 md:mb-24">
           <Card className="bg-[#b20000] rounded-lg">
             <CardContent className="flex flex-col md:flex-row items-center p-2 md:p-3 gap-3">
@@ -148,43 +138,43 @@ export const VolleyballPage = (): JSX.Element => {
             </CardContent>
           </Card>
           
-          {/* About our volleyball leagues section with 2 columns - Increased padding to 91px */}
+          {/* About our badminton leagues section with 2 columns */}
           <div className="mt-[91px] grid grid-cols-1 md:grid-cols-2 gap-12 mb-20 md:mb-28">
             {/* First column with image */}
             <div className="flex items-center justify-center">
               <img 
-                src="/group-2.png" 
-                alt="OFSL Community" 
-                className="rounded-lg w-[400px] h-[400px] object-cover object-[center_35%] shadow-lg"
+                src="/coed-badminton.png" 
+                alt="Badminton Players" 
+                className="rounded-lg w-[400px] h-[400px] object-cover object-center shadow-lg"
               />
             </div>
             
             {/* Second column with text and button */}
             <div className="flex flex-col justify-center">
-              <h3 className="text-2xl md:text-3xl font-bold text-[#6F6F6F] mb-6">About our volleyball leagues</h3>
+              <h3 className="text-2xl md:text-3xl font-bold text-[#6F6F6F] mb-6">About our badminton leagues</h3>
               <ul className="space-y-3 text-[#6F6F6F] text-base md:text-lg mb-8">
                 <li className="flex items-start">
                   <span className="mr-2">•</span>
-                  <span>Separated by tiers which are updated every week after the games.</span>
+                  <span>Both singles and doubles formats available across all skill levels.</span>
                 </li>
                 <li className="flex items-start">
                   <span className="mr-2">•</span>
-                  <span>Focused on individuals who play at an intermediate to elite skill level.</span>
+                  <span>Focused on players who want competitive yet enjoyable matches.</span>
                 </li>
                 <li className="flex items-start">
                   <span className="mr-2">•</span>
-                  <span>Schools and play times may vary between tiers.</span>
+                  <span>Professional-grade shuttlecocks provided for all league play.</span>
                 </li>
                 <li className="flex items-start">
                   <span className="mr-2">•</span>
-                  <span>You must be registered in to see the standings and schedules.</span>
+                  <span>Multiple courts available to ensure optimal playing conditions.</span>
                 </li>
                 <li className="flex items-start">
                   <span className="mr-2">•</span>
-                  <span>To register a team, captains must create an account under registration and be approved by the league.</span>
+                  <span>Individual registration - we'll match you with players of similar skill level.</span>
                 </li>
               </ul>
-              <Link to="/leagues?sport=Volleyball" className="self-start">
+              <Link to="/leagues?sport=Badminton" className="self-start">
                 <Button className="bg-[#b20000] hover:bg-[#8a0000] text-white rounded-[10px] px-6 py-3">
                   Register now
                 </Button>
@@ -192,7 +182,7 @@ export const VolleyballPage = (): JSX.Element => {
             </div>
           </div>
           
-          {/* Skill Levels section - 4 columns - Increased padding to 95px */}
+          {/* Skill Levels section - 4 columns */}
           <div className="mt-[95px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {/* Elite Level */}
             <div className="bg-gray-50 p-8 rounded-lg">
@@ -206,19 +196,19 @@ export const VolleyballPage = (): JSX.Element => {
               <ul className="space-y-3 text-[#6F6F6F]">
                 <li className="flex items-start">
                   <span className="mr-2">•</span>
-                  <span>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</span>
+                  <span>Tournament-level play with advanced techniques and strategies.</span>
                 </li>
                 <li className="flex items-start">
                   <span className="mr-2">•</span>
-                  <span>Sed do eiusmod tempor incididunt ut labore et dolore.</span>
+                  <span>Consistent power and precision in all shots.</span>
                 </li>
                 <li className="flex items-start">
                   <span className="mr-2">•</span>
-                  <span>Ut enim ad minim veniam, quis nostrud exercitation.</span>
+                  <span>Excellent court coverage and anticipation skills.</span>
                 </li>
                 <li className="flex items-start">
                   <span className="mr-2">•</span>
-                  <span>Duis aute irure dolor in reprehenderit in voluptate.</span>
+                  <span>Strong tactical awareness and game management.</span>
                 </li>
               </ul>
             </div>
@@ -235,24 +225,24 @@ export const VolleyballPage = (): JSX.Element => {
               <ul className="space-y-3 text-[#6F6F6F]">
                 <li className="flex items-start">
                   <span className="mr-2">•</span>
-                  <span>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</span>
+                  <span>Strong fundamental skills with developing advanced techniques.</span>
                 </li>
                 <li className="flex items-start">
                   <span className="mr-2">•</span>
-                  <span>Sed do eiusmod tempor incididunt ut labore et dolore.</span>
+                  <span>Good court positioning and shot selection.</span>
                 </li>
                 <li className="flex items-start">
                   <span className="mr-2">•</span>
-                  <span>Ut enim ad minim veniam, quis nostrud exercitation.</span>
+                  <span>Consistent rallies with occasional power shots.</span>
                 </li>
                 <li className="flex items-start">
                   <span className="mr-2">•</span>
-                  <span>Duis aute irure dolor in reprehenderit in voluptate.</span>
+                  <span>Understanding of basic tactics and game flow.</span>
                 </li>
               </ul>
             </div>
             
-            {/* Advanced Level - Updated to have 2.5 stars */}
+            {/* Advanced Level */}
             <div className="bg-gray-50 p-8 rounded-lg">
               <div className="flex mb-4">
                 <Star className="text-[#b20000] fill-[#b20000]" />
@@ -269,24 +259,24 @@ export const VolleyballPage = (): JSX.Element => {
               <ul className="space-y-3 text-[#6F6F6F]">
                 <li className="flex items-start">
                   <span className="mr-2">•</span>
-                  <span>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</span>
+                  <span>Solid technique in all basic strokes and serves.</span>
                 </li>
                 <li className="flex items-start">
                   <span className="mr-2">•</span>
-                  <span>Sed do eiusmod tempor incididunt ut labore et dolore.</span>
+                  <span>Good footwork and court movement.</span>
                 </li>
                 <li className="flex items-start">
                   <span className="mr-2">•</span>
-                  <span>Ut enim ad minim veniam, quis nostrud exercitation.</span>
+                  <span>Ability to maintain longer rallies with control.</span>
                 </li>
                 <li className="flex items-start">
                   <span className="mr-2">•</span>
-                  <span>Duis aute irure dolor in reprehenderit in voluptate.</span>
+                  <span>Basic understanding of doubles positioning.</span>
                 </li>
               </ul>
             </div>
             
-            {/* Intermediate Level - Updated to have 2 stars */}
+            {/* Intermediate Level */}
             <div className="bg-gray-50 p-8 rounded-lg">
               <div className="flex mb-4">
                 <Star className="text-[#b20000] fill-[#b20000]" />
@@ -298,26 +288,26 @@ export const VolleyballPage = (): JSX.Element => {
               <ul className="space-y-3 text-[#6F6F6F]">
                 <li className="flex items-start">
                   <span className="mr-2">•</span>
-                  <span>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</span>
+                  <span>Comfortable with basic strokes and serves.</span>
                 </li>
                 <li className="flex items-start">
                   <span className="mr-2">•</span>
-                  <span>Sed do eiusmod tempor incididunt ut labore et dolore.</span>
+                  <span>Developing consistency in shot placement.</span>
                 </li>
                 <li className="flex items-start">
                   <span className="mr-2">•</span>
-                  <span>Ut enim ad minim veniam, quis nostrud exercitation.</span>
+                  <span>Learning proper footwork and court positioning.</span>
                 </li>
                 <li className="flex items-start">
                   <span className="mr-2">•</span>
-                  <span>Duis aute irure dolor in reprehenderit in voluptate.</span>
+                  <span>Eager to improve and learn new techniques.</span>
                 </li>
               </ul>
             </div>
           </div>
         </div>
         
-        {/* Diabetes Canada partnership section - With increased bottom padding */}
+        {/* Diabetes Canada partnership section */}
         <div className="bg-white pt-8 pb-24">
           <div className="max-w-[1280px] mx-auto px-4">
             <div className="flex justify-center">
@@ -346,9 +336,9 @@ export const VolleyballPage = (): JSX.Element => {
           <div className="max-w-[1280px] mx-auto px-4 text-center text-white">
             <h2 className="text-3xl font-bold mb-4">Ready to play?</h2>
             <p className="text-xl mb-8 max-w-2xl mx-auto">
-              Join thousands of athletes in our community.
+              Join our badminton community and experience competitive play at your skill level.
             </p>
-            <Link to="/leagues?sport=Volleyball">
+            <Link to="/leagues?sport=Badminton">
               <Button
                 className="bg-white hover:bg-[#0d0d0d42] text-[#b20000] hover:text-white rounded-[10px] border border-white px-[15px] md:px-[25px] py-2.5"
               >
