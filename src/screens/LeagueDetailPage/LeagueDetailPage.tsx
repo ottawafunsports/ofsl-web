@@ -3,8 +3,7 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useLeagueData } from "../../hooks/useLeagueData";
 import { LeagueHero } from "../../components/league/LeagueHero";
-import { LeagueInfo } from "../../components/league/LeagueInfo";
-import { LeagueSchedule } from "../../components/league/LeagueSchedule";
+import { LeagueTabs } from "../../components/league/LeagueTabs";
 import { RegistrationModal } from "../../components/league/RegistrationModal";
 
 export function LeagueDetailPage() {
@@ -40,9 +39,7 @@ export function LeagueDetailPage() {
         onRegisterClick={handleRegisterClick}
       />
       
-      <LeagueInfo league={league} />
-      
-      <LeagueSchedule league={league} />
+      <LeagueTabs league={league} />
       
       <RegistrationModal
         isOpen={isRegistrationModalOpen}
