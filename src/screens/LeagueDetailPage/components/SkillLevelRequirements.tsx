@@ -31,7 +31,7 @@ export function SkillLevelRequirements({ skillLevel }: SkillLevelRequirementsPro
             {skillLevel} Level
           </span>
         </div>
-        
+      
         {/* Skill level descriptions based on league's skill level */}
         {skillLevel === 'Elite' && (
           <ul className="space-y-2 text-[#6F6F6F]">
