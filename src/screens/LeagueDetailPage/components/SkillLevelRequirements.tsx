@@ -24,7 +24,14 @@ export function SkillLevelRequirements({ skillLevel }: SkillLevelRequirementsPro
   return (
     <div>
       <h2 className="text-2xl font-bold text-[#6F6F6F] mb-4">Skill Level Requirements</h2>
-      <div className="bg-white p-6 rounded-lg">
+      <div className="bg-gray-50 p-6 rounded-lg">
+        <div className="flex items-center mb-4">
+          <Award className="h-6 w-6 text-[#B20000] mr-2" />
+          <span className={`text-sm font-medium py-1 px-3 rounded-full ${getSkillLevelColor(skillLevel)}`}>
+            {skillLevel} Level
+          </span>
+        </div>
+      
         {/* Skill level descriptions based on league's skill level */}
         {skillLevel === 'Elite' && (
           <ul className="space-y-2 text-[#6F6F6F]">
