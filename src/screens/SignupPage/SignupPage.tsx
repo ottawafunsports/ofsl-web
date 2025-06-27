@@ -15,7 +15,6 @@ export function SignupPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { signIn } = useAuth();
 
   // Phone number formatting function
   const formatPhoneNumber = (value: string) => {
@@ -83,9 +82,19 @@ export function SignupPage() {
         setError("Failed to create user account");
         return;
       }
+
+      // Step 2: Wait a moment for the auth state to be properly set
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Step 3: Get the current session to ensure we're authenticated
+      const { data: sessionData } = await supabase.auth.getSession();
       
-      // Step 2: Insert user data into the users table
-      // Use the auth user ID as both the id and auth_id to match the RLS policy
+      if (!sessionData.session) {
+        setError("Authentication failed. Please try logging in manually.");
+        return;
+      }
+      
+      // Step 4: Insert user data into the users table (now that we're authenticated)
       const now = new Date().toISOString();
       const { error: userError } = await supabase
         .from('users')
@@ -102,21 +111,29 @@ export function SignupPage() {
       
       if (userError) {
         console.error("Error inserting user data:", userError);
-        // Try to clean up the auth user if we failed to create the profile
-        await supabase.auth.signOut();
-        setError("Failed to create user profile. Please try again.");
+        
+        // If we can't create the user profile, try to clean up the auth user
+        try {
+          await supabase.auth.signOut();
+        } catch (cleanupError) {
+          console.error("Error during cleanup:", cleanupError);
+        }
+        
+        // Provide more specific error message based on the error
+        if (userError.message.includes('row-level security')) {
+          setError("Account creation failed due to security restrictions. Please contact support.");
+        } else {
+          setError(`Failed to create user profile: ${userError.message}`);
+        }
         return;
       }
       
-      // Step 3: Log the user in
-      await signIn(email, password);
-      
-      // Step 4: Redirect to home page
+      // Step 5: Navigate to success page (user is already signed in from the signup)
       navigate('/');
       
     } catch (err) {
-      console.error(err);
-      setError("An unexpected error occurred");
+      console.error("Unexpected error during signup:", err);
+      setError("An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
