@@ -4,6 +4,7 @@ import { useToast } from '../../../components/ui/toast';
 import { supabase } from '../../../lib/supabase';
 import { Users, Calendar, CheckCircle } from 'lucide-react';
 import { TeamDetailsModal } from './TeamDetailsModal';
+import { getDayName } from '../../../lib/leagues';
 
 interface Team {
   id: number;
@@ -15,7 +16,11 @@ interface Team {
   active: boolean;
   created_at: string;
   league: {
+    id: number;
     name: string;
+    day_of_week: number | null;
+    cost: number | null;
+    gym_ids: number[] | null;
     sports: {
       name: string;
     } | null;
@@ -28,6 +33,11 @@ interface Team {
     name: string;
     email: string;
   }>;
+  gyms: Array<{
+    id: number;
+    gym: string | null;
+    address: string | null;
+  }>;
 }
 
 export function TeamsTab() {
@@ -39,10 +49,13 @@ export function TeamsTab() {
   const [showTeamDetailsModal, setShowTeamDetailsModal] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
 
-  // Mock data for stats - in real app this would come from actual data
+  // Stats calculations from actual data
   const activeTeams = teams.filter(team => team.active).length;
-  const nextGameDate = "Jan 15";
-  const totalWins = 13;
+  
+  // For now, using placeholder data for stats that require additional tables
+  // In a real implementation, these would come from schedule/games tables
+  const nextGameDate = "TBD"; // Would come from schedule table
+  const totalWins = "TBD"; // Would come from games/results table
 
   useEffect(() => {
     loadUserTeams();
@@ -54,11 +67,19 @@ export function TeamsTab() {
     try {
       setTeamsLoading(true);
       
+      // Fetch teams with league and sport information
       const { data: teamsData, error } = await supabase
         .from('teams')
         .select(`
           *,
-          leagues:league_id(name, sports:sport_id(name)),
+          leagues:league_id(
+            id,
+            name,
+            day_of_week,
+            cost,
+            gym_ids,
+            sports:sport_id(name)
+          ),
           skills:skill_level_id(name)
         `)
         .or(`captain_id.eq.${userProfile.id},roster.cs.{${userProfile.id}}`)
@@ -67,8 +88,13 @@ export function TeamsTab() {
 
       if (error) throw error;
 
-      const teamsWithRosterDetails = await Promise.all(
+      // Process teams and fetch additional data
+      const teamsWithFullDetails = await Promise.all(
         (teamsData || []).map(async (team) => {
+          let rosterDetails: Array<{ id: string; name: string; email: string; }> = [];
+          let gyms: Array<{ id: number; gym: string | null; address: string | null; }> = [];
+
+          // Fetch roster details if roster exists
           if (team.roster && team.roster.length > 0) {
             const { data: rosterData, error: rosterError } = await supabase
               .from('users')
@@ -77,32 +103,36 @@ export function TeamsTab() {
 
             if (rosterError) {
               console.error('Error loading roster for team:', team.id, rosterError);
-              return {
-                ...team,
-                league: team.leagues,
-                skill: team.skills,
-                roster_details: []
-              };
+            } else {
+              rosterDetails = rosterData || [];
             }
+          }
 
-            return {
-              ...team,
-              league: team.leagues,
-              skill: team.skills,
-              roster_details: rosterData || []
-            };
+          // Fetch gym details if gym_ids exist in league
+          if (team.leagues?.gym_ids && team.leagues.gym_ids.length > 0) {
+            const { data: gymsData, error: gymsError } = await supabase
+              .from('gyms')
+              .select('id, gym, address')
+              .in('id', team.leagues.gym_ids);
+
+            if (gymsError) {
+              console.error('Error loading gyms for league:', team.league_id, gymsError);
+            } else {
+              gyms = gymsData || [];
+            }
           }
 
           return {
             ...team,
             league: team.leagues,
             skill: team.skills,
-            roster_details: []
+            roster_details: rosterDetails,
+            gyms: gyms
           };
         })
       );
 
-      setTeams(teamsWithRosterDetails);
+      setTeams(teamsWithFullDetails);
     } catch (error) {
       console.error('Error loading user teams:', error);
       showToast('Failed to load teams', 'error');
@@ -118,6 +148,18 @@ export function TeamsTab() {
 
   const handlePlayersUpdated = () => {
     loadUserTeams();
+  };
+
+  // Helper function to get primary gym location
+  const getPrimaryLocation = (gyms: Array<{ gym: string | null }>) => {
+    if (!gyms || gyms.length === 0) return 'Location TBD';
+    return gyms[0]?.gym || 'Location TBD';
+  };
+
+  // Helper function to format cost
+  const formatCost = (cost: number | null) => {
+    if (!cost) return 'Cost TBD';
+    return `$${cost}`;
   };
 
   if (teamsLoading) {
@@ -182,26 +224,26 @@ export function TeamsTab() {
                     <div className="flex flex-wrap items-center gap-4 text-sm text-[#6F6F6F] mb-2">
                       <div className="flex items-center gap-1">
                         <Calendar className="h-4 w-4" />
-                        <span>Monday</span>
+                        <span>{getDayName(team.league?.day_of_week) || 'Day TBD'}</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M12,2C8.13,2 5,5.13 5,9c0,5.25 7,13 7,13s7,-7.75 7,-13C19,5.13 15.87,2 12,2zM7,9c0,-2.76 2.24,-5 5,-5s5,2.24 5,5c0,2.88 -2.88,7.19 -5,9.88C9.92,16.21 7,11.85 7,9z"/>
                           <circle cx="12" cy="9" r="2.5"/>
                         </svg>
-                        <span>Carleton University</span>
+                        <span>{getPrimaryLocation(team.gyms)}</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <span>$</span>
-                        <span>$250</span>
+                        <span>{formatCost(team.league?.cost)}</span>
                       </div>
                       <div>
-                        <span>Record: 8-2</span>
+                        <span>Record: TBD</span>
                       </div>
                     </div>
                     
                     <div className="text-sm text-[#6F6F6F]">
-                      <span className="font-medium">Next Game:</span> Jan 15, 2025 - 7:00 PM
+                      <span className="font-medium">Next Game:</span> Schedule TBD
                     </div>
                   </div>
 
@@ -241,3 +283,4 @@ export function TeamsTab() {
     </div>
   );
 }
+</Action>
