@@ -223,7 +223,7 @@ export function TeamRegistrationModal({
             <div className="bg-blue-50 p-4 rounded-lg">
               <p className="text-sm text-blue-800">
                 <strong>Note:</strong> You will be automatically added as the team captain and first player. 
-                After registration, you can add more players to your team from the "My Teams" page.
+                After registration, you can add more players to your team from the "My Teams\" page.
                 Registration fees will be tracked and due within 30 days.
               </p>
             </div>
