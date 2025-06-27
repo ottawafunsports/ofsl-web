@@ -74,6 +74,18 @@ export function SignupPage() {
       });
       
       if (authError) {
+        // Handle specific rate limit error
+        if (authError.message.includes('rate limit') || authError.message.includes('Email rate limit exceeded')) {
+          setError("Too many signup attempts. Please wait a few minutes before trying again, or contact support if this persists.");
+          return;
+        }
+        
+        // Handle "User already registered" error
+        if (authError.message.includes('already registered') || authError.message.includes('already exists')) {
+          setError("An account with this email already exists. Please try logging in instead.");
+          return;
+        }
+        
         setError(authError.message);
         return;
       }
@@ -111,19 +123,43 @@ export function SignupPage() {
         // User is signed in and profile created, redirect to home
         navigate('/');
       } else {
-        // User needs to confirm email first
-        // For now, we'll redirect to login with a message
-        // In a real app, you might want to show a "check your email" page
-        navigate('/login', { 
-          state: { 
-            message: "Account created successfully! Please check your email to confirm your account, then log in." 
-          } 
-        });
+        // User needs to confirm email first OR email confirmation is disabled but session hasn't updated yet
+        // Try to create the profile anyway since the auth user was created
+        const now = new Date().toISOString();
+        const { error: userError } = await supabase
+          .from('users')
+          .insert({
+            id: authData.user.id,
+            auth_id: authData.user.id,
+            name,
+            phone,
+            email,
+            date_created: now,
+            date_modified: now,
+            is_admin: false,
+          });
+        
+        if (userError) {
+          console.error("Error inserting user data:", userError);
+          // If profile creation fails, provide helpful message
+          navigate('/login', { 
+            state: { 
+              message: "Account created successfully! Please try logging in. If you received a confirmation email, please verify your email first." 
+            } 
+          });
+        } else {
+          // Profile created successfully
+          navigate('/login', { 
+            state: { 
+              message: "Account created successfully! You can now log in with your credentials." 
+            } 
+          });
+        }
       }
       
     } catch (err) {
       console.error("Unexpected error during signup:", err);
-      setError("An unexpected error occurred. Please try again.");
+      setError("An unexpected error occurred. Please try again later.");
     } finally {
       setLoading(false);
     }
