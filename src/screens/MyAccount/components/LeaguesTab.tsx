@@ -6,7 +6,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../components/ui/toast';
 import { supabase } from '../../../lib/supabase';
 import { fetchSports, fetchSkills, type League } from '../../../lib/leagues';
-import { Plus, Edit2, Trash2, X } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Save } from 'lucide-react';
 
 interface Sport {
   id: number;
@@ -48,10 +48,25 @@ export function LeaguesTab() {
   const [skills, setSkills] = useState<Skill[]>([]);
   const [gyms, setGyms] = useState<Gym[]>([]);
   const [showNewLeagueForm, setShowNewLeagueForm] = useState(false);
+  const [editingLeague, setEditingLeague] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   
   const [newLeague, setNewLeague] = useState<NewLeague>({
+    name: '',
+    description: '',
+    additional_info: '',
+    sport_id: null,
+    skill_id: null,
+    day_of_week: null,
+    start_date: '',
+    end_date: '',
+    cost: null,
+    max_teams: 20,
+    gym_ids: []
+  });
+
+  const [editLeague, setEditLeague] = useState<NewLeague>({
     name: '',
     description: '',
     additional_info: '',
@@ -152,6 +167,84 @@ export function LeaguesTab() {
     } catch (error) {
       console.error('Error creating league:', error);
       showToast('Failed to create league', 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleEditLeague = (league: League) => {
+    setEditingLeague(league.id);
+    setEditLeague({
+      name: league.name,
+      description: league.description || '',
+      additional_info: league.additional_info || '',
+      sport_id: league.sport_id,
+      skill_id: league.skill_id,
+      day_of_week: league.day_of_week,
+      start_date: league.start_date || '',
+      end_date: league.end_date || '',
+      cost: league.cost,
+      max_teams: league.max_teams || 20,
+      gym_ids: league.gym_ids || []
+    });
+  };
+
+  const handleUpdateLeague = async () => {
+    if (!editingLeague) return;
+
+    try {
+      setSaving(true);
+      
+      const { error } = await supabase
+        .from('leagues')
+        .update({
+          name: editLeague.name,
+          description: editLeague.description,
+          additional_info: editLeague.additional_info,
+          sport_id: editLeague.sport_id,
+          skill_id: editLeague.skill_id,
+          day_of_week: editLeague.day_of_week,
+          start_date: editLeague.start_date,
+          end_date: editLeague.end_date,
+          cost: editLeague.cost,
+          max_teams: editLeague.max_teams,
+          gym_ids: editLeague.gym_ids
+        })
+        .eq('id', editingLeague);
+
+      if (error) throw error;
+
+      showToast('League updated successfully!', 'success');
+      setEditingLeague(null);
+      loadData();
+    } catch (error) {
+      console.error('Error updating league:', error);
+      showToast('Failed to update league', 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteLeague = async (leagueId: number) => {
+    if (!confirm('Are you sure you want to delete this league? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      setSaving(true);
+      
+      const { error } = await supabase
+        .from('leagues')
+        .delete()
+        .eq('id', leagueId);
+
+      if (error) throw error;
+
+      showToast('League deleted successfully!', 'success');
+      loadData();
+    } catch (error) {
+      console.error('Error deleting league:', error);
+      showToast('Failed to delete league', 'error');
     } finally {
       setSaving(false);
     }
@@ -376,26 +469,142 @@ export function LeaguesTab() {
         {leagues.map(league => (
           <Card key={league.id}>
             <CardContent className="p-6">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="text-lg font-bold text-[#6F6F6F] mb-2">{league.name}</h3>
-                  <div className="text-sm text-[#6F6F6F] space-y-1">
-                    <p><span className="font-medium">Sport:</span> {league.sport_name}</p>
-                    <p><span className="font-medium">Skill Level:</span> {league.skill_name}</p>
-                    <p><span className="font-medium">Day:</span> {getDayName(league.day_of_week)}</p>
-                    <p><span className="font-medium">Cost:</span> ${league.cost}</p>
-                    <p><span className="font-medium">Max Teams:</span> {league.max_teams}</p>
+              {editingLeague === league.id ? (
+                // Edit Form
+                <div className="space-y-6">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-xl font-bold text-[#6F6F6F]">Edit League</h3>
+                    <Button
+                      onClick={() => setEditingLeague(null)}
+                      className="text-gray-500 hover:text-gray-700"
+                    >
+                      <X className="h-5 w-5" />
+                    </Button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-[#6F6F6F] mb-2">League Name</label>
+                      <Input
+                        value={editLeague.name}
+                        onChange={(e) => setEditLeague({ ...editLeague, name: e.target.value })}
+                        className="w-full"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Sport</label>
+                      <select
+                        value={editLeague.sport_id || ''}
+                        onChange={(e) => setEditLeague({ ...editLeague, sport_id: e.target.value ? parseInt(e.target.value) : null })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
+                      >
+                        <option value="">Select sport...</option>
+                        {sports.map(sport => (
+                          <option key={sport.id} value={sport.id}>{sport.name}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Skill Level</label>
+                      <select
+                        value={editLeague.skill_id || ''}
+                        onChange={(e) => setEditLeague({ ...editLeague, skill_id: e.target.value ? parseInt(e.target.value) : null })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
+                      >
+                        <option value="">Select skill level...</option>
+                        {skills.map(skill => (
+                          <option key={skill.id} value={skill.id}>{skill.name}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Day of Week</label>
+                      <select
+                        value={editLeague.day_of_week || ''}
+                        onChange={(e) => setEditLeague({ ...editLeague, day_of_week: e.target.value ? parseInt(e.target.value) : null })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
+                      >
+                        <option value="">Select day...</option>
+                        <option value="0">Sunday</option>
+                        <option value="1">Monday</option>
+                        <option value="2">Tuesday</option>
+                        <option value="3">Wednesday</option>
+                        <option value="4">Thursday</option>
+                        <option value="5">Friday</option>
+                        <option value="6">Saturday</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Cost ($)</label>
+                      <Input
+                        type="number"
+                        value={editLeague.cost || ''}
+                        onChange={(e) => setEditLeague({ ...editLeague, cost: e.target.value ? parseFloat(e.target.value) : null })}
+                        className="w-full"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Max Teams</label>
+                      <Input
+                        type="number"
+                        value={editLeague.max_teams}
+                        onChange={(e) => setEditLeague({ ...editLeague, max_teams: parseInt(e.target.value) || 20 })}
+                        className="w-full"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4">
+                    <Button
+                      onClick={handleUpdateLeague}
+                      disabled={saving}
+                      className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] px-6 py-2 flex items-center gap-2"
+                    >
+                      <Save className="h-4 w-4" />
+                      {saving ? 'Saving...' : 'Save Changes'}
+                    </Button>
+                    <Button
+                      onClick={() => setEditingLeague(null)}
+                      className="bg-gray-500 hover:bg-gray-600 text-white rounded-[10px] px-6 py-2"
+                    >
+                      Cancel
+                    </Button>
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <Button className="bg-blue-500 hover:bg-blue-600 text-white rounded-[8px] px-3 py-1 text-sm">
-                    <Edit2 className="h-4 w-4" />
-                  </Button>
-                  <Button className="bg-red-500 hover:bg-red-600 text-white rounded-[8px] px-3 py-1 text-sm">
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+              ) : (
+                // View Mode
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="text-lg font-bold text-[#6F6F6F] mb-2">{league.name}</h3>
+                    <div className="text-sm text-[#6F6F6F] space-y-1">
+                      <p><span className="font-medium">Sport:</span> {league.sport_name}</p>
+                      <p><span className="font-medium">Skill Level:</span> {league.skill_name}</p>
+                      <p><span className="font-medium">Day:</span> {getDayName(league.day_of_week)}</p>
+                      <p><span className="font-medium">Cost:</span> ${league.cost}</p>
+                      <p><span className="font-medium">Max Teams:</span> {league.max_teams}</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button 
+                      onClick={() => handleEditLeague(league)}
+                      className="bg-blue-500 hover:bg-blue-600 text-white rounded-[8px] px-3 py-1 text-sm"
+                    >
+                      <Edit2 className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      onClick={() => handleDeleteLeague(league.id)}
+                      className="bg-red-500 hover:bg-red-600 text-white rounded-[8px] px-3 py-1 text-sm"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-              </div>
+              )}
             </CardContent>
           </Card>
         ))}
