@@ -18,7 +18,9 @@ interface Team {
   created_at: string;
   league: {
     name: string;
-    sport_name: string;
+    sports: {
+      name: string;
+    } | null;
   } | null;
   skill: {
     name: string;
@@ -140,7 +142,7 @@ export function TeamsTab() {
                     <h3 className="text-xl font-bold text-[#6F6F6F] mb-2">{team.name}</h3>
                     <div className="text-sm text-[#6F6F6F] space-y-1">
                       <p><span className="font-medium">League:</span> {team.league?.name || 'Unknown'}</p>
-                      <p><span className="font-medium">Sport:</span> {team.league?.sport_name || 'Unknown'}</p>
+                      <p><span className="font-medium">Sport:</span> {team.league?.sports?.name || 'Unknown'}</p>
                       {team.skill && (
                         <p><span className="font-medium">Skill Level:</span> {team.skill.name}</p>
                       )}

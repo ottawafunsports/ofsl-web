@@ -12,7 +12,7 @@ export function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const { signIn, signInWithGoogle } = useAuth();
+  const { signIn, signInWithGoogle, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -22,6 +22,13 @@ export function LoginPage() {
       setSuccessMessage(location.state.message);
     }
   }, [location.state]);
+
+  // Redirect if user is already logged in
+  useEffect(() => {
+    if (user) {
+      navigate("/");
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,14 +47,12 @@ export function LoginPage() {
       
       if (error) {
         setError(error.message);
-      } else {
-        // Redirect to home page on successful login
-        navigate("/");
+        setLoading(false);
       }
+      // Don't set loading to false on success - the redirect will handle it
     } catch (err) {
       setError("An unexpected error occurred");
       console.error(err);
-    } finally {
       setLoading(false);
     }
   };
