@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
-import { X, Plus, Trash2 } from 'lucide-react';
+import { X, Plus, Trash2, CheckCircle, XCircle, Clock, Mail } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import { useToast } from '../../../components/ui/toast';
 
@@ -14,6 +14,17 @@ interface AddPlayersModalProps {
   onPlayersAdded: () => void;
 }
 
+interface PlayerEmail {
+  email: string;
+  status: 'pending' | 'found' | 'not-found' | 'invited' | 'error';
+  userDetails?: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  errorMessage?: string;
+}
+
 export function AddPlayersModal({ 
   showModal, 
   closeModal, 
@@ -22,118 +33,256 @@ export function AddPlayersModal({
   currentRoster,
   onPlayersAdded 
 }: AddPlayersModalProps) {
-  const [emails, setEmails] = useState<string[]>(['']);
+  const [playerEmails, setPlayerEmails] = useState<PlayerEmail[]>([{ email: '', status: 'pending' }]);
   const [loading, setLoading] = useState(false);
+  const [checking, setChecking] = useState(false);
   const { showToast } = useToast();
 
   const addEmailField = () => {
-    setEmails([...emails, '']);
+    setPlayerEmails([...playerEmails, { email: '', status: 'pending' }]);
   };
 
   const removeEmailField = (index: number) => {
-    if (emails.length > 1) {
-      setEmails(emails.filter((_, i) => i !== index));
+    if (playerEmails.length > 1) {
+      setPlayerEmails(playerEmails.filter((_, i) => i !== index));
     }
   };
 
   const updateEmail = (index: number, value: string) => {
-    const newEmails = [...emails];
-    newEmails[index] = value;
-    setEmails(newEmails);
+    const newEmails = [...playerEmails];
+    newEmails[index] = { email: value, status: 'pending' };
+    setPlayerEmails(newEmails);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const validEmails = emails.filter(email => email.trim() && email.includes('@'));
+  const checkEmails = async () => {
+    const validEmails = playerEmails.filter(pe => pe.email.trim() && pe.email.includes('@'));
     
     if (validEmails.length === 0) {
       showToast('Please enter at least one valid email address', 'error');
       return;
     }
 
-    setLoading(true);
+    setChecking(true);
 
     try {
-      // Find users by email addresses
+      // Check which emails exist in the database
+      const emails = validEmails.map(pe => pe.email.trim());
       const { data: users, error: usersError } = await supabase
         .from('users')
         .select('id, email, name')
-        .in('email', validEmails);
+        .in('email', emails);
 
       if (usersError) throw usersError;
 
-      const foundUserIds = users?.map(user => user.id) || [];
       const foundEmails = users?.map(user => user.email) || [];
-      const notFoundEmails = validEmails.filter(email => !foundEmails.includes(email));
+      
+      // Update the status of each email
+      const updatedEmails = playerEmails.map(pe => {
+        if (!pe.email.trim() || !pe.email.includes('@')) {
+          return pe;
+        }
 
-      if (notFoundEmails.length > 0) {
-        showToast(
-          `The following emails were not found: ${notFoundEmails.join(', ')}. Only registered users will be added.`,
-          'warning'
-        );
+        const user = users?.find(u => u.email === pe.email.trim());
+        if (user) {
+          return {
+            ...pe,
+            status: 'found' as const,
+            userDetails: user
+          };
+        } else {
+          return {
+            ...pe,
+            status: 'not-found' as const
+          };
+        }
+      });
+
+      setPlayerEmails(updatedEmails);
+      
+      const foundCount = updatedEmails.filter(pe => pe.status === 'found').length;
+      const notFoundCount = updatedEmails.filter(pe => pe.status === 'not-found').length;
+      
+      if (foundCount > 0) {
+        showToast(`Found ${foundCount} registered user(s)${notFoundCount > 0 ? `, ${notFoundCount} will need invites` : ''}`, 'success');
+      } else if (notFoundCount > 0) {
+        showToast(`${notFoundCount} email(s) not found - invites will be sent`, 'warning');
       }
 
-      if (foundUserIds.length === 0) {
-        showToast('No registered users found with the provided email addresses', 'error');
-        setLoading(false);
-        return;
+    } catch (error: any) {
+      console.error('Error checking emails:', error);
+      showToast(error.message || 'Failed to check emails', 'error');
+    } finally {
+      setChecking(false);
+    }
+  };
+
+  const sendInviteEmail = async (email: string) => {
+    try {
+      // Get team and league details for the invite
+      const { data: teamData, error: teamError } = await supabase
+        .from('teams')
+        .select(`
+          name,
+          leagues:league_id(name),
+          users:captain_id(name)
+        `)
+        .eq('id', teamId)
+        .single();
+
+      if (teamError) throw teamError;
+
+      const inviteData = {
+        email: email,
+        teamName: teamData.name,
+        leagueName: teamData.leagues?.name || 'OFSL League',
+        captainName: teamData.users?.name || 'Team Captain'
+      };
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-invite`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(inviteData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to send invite');
       }
+
+      return true;
+    } catch (error) {
+      console.error('Error sending invite:', error);
+      return false;
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const validEmails = playerEmails.filter(pe => pe.email.trim() && pe.email.includes('@'));
+    
+    if (validEmails.length === 0) {
+      showToast('Please enter at least one valid email address', 'error');
+      return;
+    }
+
+    // Check if emails have been validated
+    const hasUncheckedEmails = validEmails.some(pe => pe.status === 'pending');
+    if (hasUncheckedEmails) {
+      showToast('Please check emails first to see which users exist', 'warning');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Get users that were found
+      const foundUsers = playerEmails.filter(pe => pe.status === 'found' && pe.userDetails);
+      const foundUserIds = foundUsers.map(pe => pe.userDetails!.id);
+      
+      // Get emails that need invites
+      const emailsToInvite = playerEmails.filter(pe => pe.status === 'not-found');
 
       // Filter out users already on the team
       const newPlayerIds = foundUserIds.filter(userId => !currentRoster.includes(userId));
 
-      if (newPlayerIds.length === 0) {
-        showToast('All users are already on this team', 'warning');
-        setLoading(false);
-        return;
-      }
+      // Add found users to the team
+      if (newPlayerIds.length > 0) {
+        const updatedRoster = [...currentRoster, ...newPlayerIds];
+        
+        const { error: teamError } = await supabase
+          .from('teams')
+          .update({ roster: updatedRoster })
+          .eq('id', teamId);
 
-      // Update team roster
-      const updatedRoster = [...currentRoster, ...newPlayerIds];
-      
-      const { error: teamError } = await supabase
-        .from('teams')
-        .update({ roster: updatedRoster })
-        .eq('id', teamId);
+        if (teamError) throw teamError;
 
-      if (teamError) throw teamError;
-
-      // Update each user's team_ids array
-      for (const userId of newPlayerIds) {
-        const { data: userData, error: fetchError } = await supabase
-          .from('users')
-          .select('team_ids')
-          .eq('id', userId)
-          .single();
-
-        if (fetchError) {
-          console.error(`Error fetching user ${userId}:`, fetchError);
-          continue;
-        }
-
-        const currentTeamIds = userData.team_ids || [];
-        if (!currentTeamIds.includes(teamId)) {
-          const updatedTeamIds = [...currentTeamIds, teamId];
-          
-          const { error: updateError } = await supabase
+        // Update each user's team_ids array
+        for (const userId of newPlayerIds) {
+          const { data: userData, error: fetchError } = await supabase
             .from('users')
-            .update({ team_ids: updatedTeamIds })
-            .eq('id', userId);
+            .select('team_ids')
+            .eq('id', userId)
+            .single();
 
-          if (updateError) {
-            console.error(`Error updating user ${userId}:`, updateError);
+          if (fetchError) {
+            console.error(`Error fetching user ${userId}:`, fetchError);
+            continue;
+          }
+
+          const currentTeamIds = userData.team_ids || [];
+          if (!currentTeamIds.includes(teamId)) {
+            const updatedTeamIds = [...currentTeamIds, teamId];
+            
+            const { error: updateError } = await supabase
+              .from('users')
+              .update({ team_ids: updatedTeamIds })
+              .eq('id', userId);
+
+            if (updateError) {
+              console.error(`Error updating user ${userId}:`, updateError);
+            }
           }
         }
       }
 
-      const addedUsers = users?.filter(user => newPlayerIds.includes(user.id));
-      const addedNames = addedUsers?.map(user => user.name || user.email).join(', ');
+      // Send invites to non-registered emails
+      const inviteResults = await Promise.all(
+        emailsToInvite.map(async (emailObj) => {
+          const success = await sendInviteEmail(emailObj.email);
+          return { email: emailObj.email, success };
+        })
+      );
 
-      showToast(`Successfully added ${newPlayerIds.length} player(s): ${addedNames}`, 'success');
-      setEmails(['']);
+      // Update email statuses based on invite results
+      const updatedEmails = playerEmails.map(pe => {
+        if (pe.status === 'not-found') {
+          const inviteResult = inviteResults.find(ir => ir.email === pe.email);
+          return {
+            ...pe,
+            status: inviteResult?.success ? 'invited' as const : 'error' as const,
+            errorMessage: inviteResult?.success ? undefined : 'Failed to send invite'
+          };
+        }
+        return pe;
+      });
+      setPlayerEmails(updatedEmails);
+
+      // Create success message
+      let message = '';
+      if (newPlayerIds.length > 0) {
+        const addedUsers = foundUsers.filter(fu => newPlayerIds.includes(fu.userDetails!.id));
+        const addedNames = addedUsers.map(fu => fu.userDetails!.name || fu.userDetails!.email).join(', ');
+        message += `Added ${newPlayerIds.length} player(s): ${addedNames}`;
+      }
+
+      const successfulInvites = inviteResults.filter(ir => ir.success).length;
+      if (successfulInvites > 0) {
+        if (message) message += '. ';
+        message += `Sent ${successfulInvites} invite(s)`;
+      }
+
+      const skippedUsers = foundUserIds.filter(userId => currentRoster.includes(userId));
+      if (skippedUsers.length > 0) {
+        if (message) message += '. ';
+        message += `${skippedUsers.length} user(s) already on team`;
+      }
+
+      if (message) {
+        showToast(message, 'success');
+      }
+
       onPlayersAdded();
-      closeModal();
+      
+      // Only close modal if all operations were successful
+      const hasErrors = updatedEmails.some(pe => pe.status === 'error');
+      if (!hasErrors) {
+        setPlayerEmails([{ email: '', status: 'pending' }]);
+        closeModal();
+      }
 
     } catch (error: any) {
       console.error('Error adding players:', error);
@@ -144,8 +293,38 @@ export function AddPlayersModal({
   };
 
   const handleClose = () => {
-    setEmails(['']);
+    setPlayerEmails([{ email: '', status: 'pending' }]);
     closeModal();
+  };
+
+  const getStatusIcon = (status: PlayerEmail['status']) => {
+    switch (status) {
+      case 'found':
+        return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case 'not-found':
+        return <XCircle className="h-4 w-4 text-orange-500" />;
+      case 'invited':
+        return <Mail className="h-4 w-4 text-blue-500" />;
+      case 'error':
+        return <XCircle className="h-4 w-4 text-red-500" />;
+      default:
+        return null;
+    }
+  };
+
+  const getStatusText = (playerEmail: PlayerEmail) => {
+    switch (playerEmail.status) {
+      case 'found':
+        return `Found: ${playerEmail.userDetails?.name || 'User found'}`;
+      case 'not-found':
+        return 'Will send invite';
+      case 'invited':
+        return 'Invite sent';
+      case 'error':
+        return playerEmail.errorMessage || 'Error occurred';
+      default:
+        return '';
+    }
   };
 
   if (!showModal) return null;
@@ -179,51 +358,88 @@ export function AddPlayersModal({
                 Player Email Addresses
               </label>
               
-              {emails.map((email, index) => (
-                <div key={index} className="flex gap-2 mb-2">
-                  <Input
-                    type="email"
-                    value={email}
-                    onChange={(e) => updateEmail(index, e.target.value)}
-                    placeholder="player@example.com"
-                    className="flex-1"
-                  />
-                  {emails.length > 1 && (
-                    <Button
-                      type="button"
-                      onClick={() => removeEmailField(index)}
-                      className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+              {playerEmails.map((playerEmail, index) => (
+                <div key={index} className="mb-3">
+                  <div className="flex gap-2 mb-1">
+                    <Input
+                      type="email"
+                      value={playerEmail.email}
+                      onChange={(e) => updateEmail(index, e.target.value)}
+                      placeholder="player@example.com"
+                      className="flex-1"
+                    />
+                    {playerEmails.length > 1 && (
+                      <Button
+                        type="button"
+                        onClick={() => removeEmailField(index)}
+                        className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                  
+                  {/* Status display */}
+                  {playerEmail.email && playerEmail.status !== 'pending' && (
+                    <div className="flex items-center gap-2 text-sm">
+                      {getStatusIcon(playerEmail.status)}
+                      <span className={`
+                        ${playerEmail.status === 'found' ? 'text-green-600' : ''}
+                        ${playerEmail.status === 'not-found' ? 'text-orange-600' : ''}
+                        ${playerEmail.status === 'invited' ? 'text-blue-600' : ''}
+                        ${playerEmail.status === 'error' ? 'text-red-600' : ''}
+                      `}>
+                        {getStatusText(playerEmail)}
+                      </span>
+                    </div>
                   )}
                 </div>
               ))}
               
-              <Button
-                type="button"
-                onClick={addEmailField}
-                className="bg-gray-500 hover:bg-gray-600 text-white rounded-lg px-4 py-2 mt-2 flex items-center gap-2"
-              >
-                <Plus className="h-4 w-4" />
-                Add Another Email
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  onClick={addEmailField}
+                  className="bg-gray-500 hover:bg-gray-600 text-white rounded-lg px-4 py-2 flex items-center gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Another Email
+                </Button>
+                
+                <Button
+                  type="button"
+                  onClick={checkEmails}
+                  disabled={checking}
+                  className="bg-blue-500 hover:bg-blue-600 text-white rounded-lg px-4 py-2 flex items-center gap-2"
+                >
+                  {checking ? (
+                    <Clock className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <CheckCircle className="h-4 w-4" />
+                  )}
+                  {checking ? 'Checking...' : 'Check Emails'}
+                </Button>
+              </div>
             </div>
 
-            <div className="bg-yellow-50 p-4 rounded-lg">
-              <p className="text-sm text-yellow-800">
-                <strong>Note:</strong> Only users who have already registered accounts can be added to teams. 
-                Players not found will be skipped.
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <p className="text-sm text-blue-800">
+                <strong>How it works:</strong>
               </p>
+              <ul className="text-sm text-blue-800 mt-2 space-y-1">
+                <li>• <strong>Registered users</strong> will be added to your team immediately</li>
+                <li>• <strong>Non-registered emails</strong> will receive an invite to join OFSL and your team</li>
+                <li>• Click "Check Emails" first to see which users exist</li>
+              </ul>
             </div>
 
             <div className="flex gap-4">
               <Button
                 type="submit"
-                disabled={loading}
+                disabled={loading || checking}
                 className="flex-1 bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] px-6 py-2"
               >
-                {loading ? 'Adding Players...' : 'Add Players'}
+                {loading ? 'Processing...' : 'Add Players & Send Invites'}
               </Button>
               <Button
                 type="button"
