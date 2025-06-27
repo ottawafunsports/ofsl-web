@@ -110,8 +110,8 @@ export function TeamRegistrationModal({
       showToast(`Team "${teamName}" registered successfully!`, 'success');
       closeModal();
       
-      // Navigate to My Teams tab
-      navigate('/my-teams');
+      // Navigate to My Teams tab with proper routing
+      navigate('/my-account/teams');
 
     } catch (error: any) {
       console.error('Error registering team:', error);
@@ -193,7 +193,7 @@ export function TeamRegistrationModal({
             <div className="bg-blue-50 p-4 rounded-lg">
               <p className="text-sm text-blue-800">
                 <strong>Note:</strong> You will be automatically added as the team captain and first player. 
-                After registration, you can add more players to your team from the "My Teams\" page.
+                After registration, you can add more players to your team from the "My Teams" page.
               </p>
             </div>
 

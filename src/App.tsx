@@ -13,7 +13,14 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import { ScrollToTop } from "./components/ScrollToTop";
 import { LeagueDetailPage } from "./screens/LeagueDetailPage";
 import { ToastProvider } from "./components/ui/toast";
-import { DashboardPage } from "./screens/DashboardPage";
+import { 
+  AccountLayout,
+  ProfileTab,
+  TeamsTab,
+  LeaguesTab,
+  SchoolsTab 
+} from "./screens/MyAccount";
+import { Navigate } from "react-router-dom";
 
 export function App() {
   return (
@@ -32,24 +39,37 @@ export function App() {
             <Route path="/about-us" element={<AboutUsPage />} />
             <Route path="/standards-of-play" element={<StandardsOfPlayPage />} />
             
-            {/* Protected dashboard routes */}
-            <Route path="/my-teams" element={
+            {/* My Account routes with proper routing */}
+            <Route path="/my-account" element={
               <ProtectedRoute>
-                <DashboardPage />
+                <Navigate to="/my-account/profile" replace />
               </ProtectedRoute>
             } />
             <Route path="/my-account" element={
               <ProtectedRoute>
-                <DashboardPage />
+                <AccountLayout />
+              </ProtectedRoute>
+            }>
+              <Route path="profile" element={<ProfileTab />} />
+              <Route path="teams" element={<TeamsTab />} />
+              <Route path="leagues" element={
+                <ProtectedRoute requireAdmin>
+                  <LeaguesTab />
+                </ProtectedRoute>
+              } />
+              <Route path="schools" element={
+                <ProtectedRoute requireAdmin>
+                  <SchoolsTab />
+                </ProtectedRoute>
+              } />
+            </Route>
+
+            {/* Legacy redirects for backward compatibility */}
+            <Route path="/my-teams" element={
+              <ProtectedRoute>
+                <Navigate to="/my-account/teams" replace />
               </ProtectedRoute>
             } />
-            
-            {/* Example protected route - uncomment when needed */}
-            {/* <Route path="/profile" element={
-              <ProtectedRoute>
-                <ProfilePage />
-              </ProtectedRoute>
-            } /> */}
           </Route>
         </Routes>
       </AuthProvider>
