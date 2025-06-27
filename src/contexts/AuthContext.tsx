@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase';
 interface AuthContextType {
   session: Session | null;
   user: User | null;
+  userProfile: any | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>;
   signInWithGoogle: () => Promise<{ error: AuthError | null }>;
@@ -13,6 +14,8 @@ interface AuthContextType {
     error: AuthError | null; 
   }>;
   signOut: () => Promise<void>;
+  checkProfileCompletion: () => boolean;
+  refreshUserProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -20,7 +23,48 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [userProfile, setUserProfile] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Helper function to check if profile is complete
+  const checkProfileCompletion = () => {
+    if (!userProfile) return false;
+    
+    // Check if required fields are filled
+    const requiredFields = ['name', 'phone'];
+    return requiredFields.every(field => 
+      userProfile[field] && userProfile[field].toString().trim() !== ''
+    );
+  };
+
+  // Function to fetch user profile
+  const fetchUserProfile = async (authUser: User) => {
+    try {
+      const { data: profile, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('auth_id', authUser.id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching user profile:', error);
+        return null;
+      }
+
+      return profile;
+    } catch (error) {
+      console.error('Error in fetchUserProfile:', error);
+      return null;
+    }
+  };
+
+  // Function to refresh user profile
+  const refreshUserProfile = async () => {
+    if (user) {
+      const profile = await fetchUserProfile(user);
+      setUserProfile(profile);
+    }
+  };
 
   useEffect(() => {
     // Get initial session
@@ -36,7 +80,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         
         // Handle profile creation for existing session (page refresh scenarios)
         if (session?.user) {
-          await handleUserProfileCreation(session.user);
+          const profile = await handleUserProfileCreation(session.user);
+          setUserProfile(profile);
         }
       } catch (error) {
         console.error('Error in getInitialSession:', error);
@@ -59,18 +104,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       switch (event) {
         case 'SIGNED_IN':
           if (session?.user) {
-            await handleUserProfileCreation(session.user);
+            const profile = await handleUserProfileCreation(session.user);
+            setUserProfile(profile);
+            
+            // Check if this is a first-time sign in or incomplete profile
+            if (profile) {
+              const isProfileComplete = profile.name && profile.phone && 
+                profile.name.trim() !== '' && profile.phone.trim() !== '';
+              
+              if (!isProfileComplete) {
+                // Redirect to account page for profile completion
+                window.location.href = '/my-account?complete=true';
+              }
+            }
           }
           break;
         case 'SIGNED_OUT':
           // Ensure state is properly cleared
           setSession(null);
           setUser(null);
+          setUserProfile(null);
           break;
         case 'TOKEN_REFRESHED':
           // Session was refreshed, update state
           setSession(session);
           setUser(session?.user ?? null);
+          if (session?.user) {
+            const profile = await fetchUserProfile(session.user);
+            setUserProfile(profile);
+          }
           break;
       }
     });
@@ -86,38 +148,48 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Check if user profile already exists
       const { data: existingUser, error: fetchError } = await supabase
         .from('users')
-        .select('id')
+        .select('*')
         .eq('auth_id', user.id)
         .single();
 
       if (fetchError && fetchError.code !== 'PGRST116') {
         // Error other than "not found"
         console.error('Error checking existing user:', fetchError);
-        return;
+        return null;
       }
 
       if (!existingUser) {
         // User profile doesn't exist, create it
         const now = new Date().toISOString();
-        const { error: insertError } = await supabase
+        const newProfile = {
+          id: user.id,
+          auth_id: user.id,
+          name: user.user_metadata?.full_name || user.user_metadata?.name || '',
+          phone: '', // Will be empty for Google sign-ups, user can update later
+          email: user.email || '',
+          date_created: now,
+          date_modified: now,
+          is_admin: false,
+        };
+
+        const { data: insertedUser, error: insertError } = await supabase
           .from('users')
-          .insert({
-            id: user.id,
-            auth_id: user.id,
-            name: user.user_metadata?.full_name || user.user_metadata?.name || '',
-            phone: '', // Will be empty for Google sign-ups, user can update later
-            email: user.email || '',
-            date_created: now,
-            date_modified: now,
-            is_admin: false,
-          });
+          .insert(newProfile)
+          .select()
+          .single();
 
         if (insertError) {
           console.error('Error creating user profile:', insertError);
+          return null;
         }
+
+        return insertedUser;
       }
+
+      return existingUser;
     } catch (error) {
       console.error('Error in handleUserProfileCreation:', error);
+      return null;
     }
   };
 
@@ -174,6 +246,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Ensure state is cleared
       setSession(null);
       setUser(null);
+      setUserProfile(null);
       
       console.log('User signed out successfully');
     } catch (error) {
@@ -181,13 +254,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Even if there's an error, clear the local state
       setSession(null);
       setUser(null);
+      setUserProfile(null);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <AuthContext.Provider value={{ session, user, loading, signIn, signInWithGoogle, signUp, signOut }}>
+    <AuthContext.Provider value={{ 
+      session, 
+      user, 
+      userProfile, 
+      loading, 
+      signIn, 
+      signInWithGoogle, 
+      signUp, 
+      signOut, 
+      checkProfileCompletion,
+      refreshUserProfile
+    }}>
       {children}
     </AuthContext.Provider>
   );
