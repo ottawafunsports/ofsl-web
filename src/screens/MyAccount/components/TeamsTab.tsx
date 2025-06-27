@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Button } from '../../../components/ui/button';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../components/ui/toast';
 import { supabase } from '../../../lib/supabase';
 import { Users, Calendar, CheckCircle } from 'lucide-react';
-import { AddPlayersModal } from '../../LeagueDetailPage/components/AddPlayersModal';
+import { TeamDetailsModal } from './TeamDetailsModal';
 
 interface Team {
   id: number;
@@ -37,7 +36,7 @@ export function TeamsTab() {
   
   const [teams, setTeams] = useState<Team[]>([]);
   const [teamsLoading, setTeamsLoading] = useState(false);
-  const [showAddPlayersModal, setShowAddPlayersModal] = useState(false);
+  const [showTeamDetailsModal, setShowTeamDetailsModal] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
 
   // Mock data for stats - in real app this would come from actual data
@@ -112,12 +111,12 @@ export function TeamsTab() {
     }
   };
 
-  const handleAddPlayers = (team: Team) => {
+  const handleManageTeam = (team: Team) => {
     setSelectedTeam(team);
-    setShowAddPlayersModal(true);
+    setShowTeamDetailsModal(true);
   };
 
-  const handlePlayersAdded = () => {
+  const handlePlayersUpdated = () => {
     loadUserTeams();
   };
 
@@ -215,14 +214,12 @@ export function TeamsTab() {
                     <span className="px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full">
                       Active
                     </span>
-                    {userProfile?.id === team.captain_id && (
-                      <Button
-                        onClick={() => handleAddPlayers(team)}
-                        className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-lg px-4 py-2 text-sm"
-                      >
-                        View Details
-                      </Button>
-                    )}
+                    <button
+                      onClick={() => handleManageTeam(team)}
+                      className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-lg px-4 py-2 text-sm transition-colors"
+                    >
+                      Manage Players
+                    </button>
                   </div>
                 </div>
               </div>
@@ -231,15 +228,14 @@ export function TeamsTab() {
         )}
       </div>
 
-      {/* Add Players Modal */}
+      {/* Team Details Modal */}
       {selectedTeam && (
-        <AddPlayersModal
-          showModal={showAddPlayersModal}
-          closeModal={() => setShowAddPlayersModal(false)}
-          teamId={selectedTeam.id}
-          teamName={selectedTeam.name}
-          currentRoster={selectedTeam.roster || []}
-          onPlayersAdded={handlePlayersAdded}
+        <TeamDetailsModal
+          showModal={showTeamDetailsModal}
+          closeModal={() => setShowTeamDetailsModal(false)}
+          team={selectedTeam}
+          currentUserId={userProfile?.id || ''}
+          onPlayersUpdated={handlePlayersUpdated}
         />
       )}
     </div>
