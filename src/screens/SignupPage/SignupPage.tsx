@@ -83,53 +83,43 @@ export function SignupPage() {
         return;
       }
 
-      // Step 2: Wait a moment for the auth state to be properly set
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      // Step 3: Get the current session to ensure we're authenticated
+      // Step 2: Check if the user was immediately signed in (no email confirmation required)
       const { data: sessionData } = await supabase.auth.getSession();
       
-      if (!sessionData.session) {
-        setError("Authentication failed. Please try logging in manually.");
-        return;
-      }
-      
-      // Step 4: Insert user data into the users table (now that we're authenticated)
-      const now = new Date().toISOString();
-      const { error: userError } = await supabase
-        .from('users')
-        .insert({
-          id: authData.user.id, // This should match the RLS policy requirement
-          auth_id: authData.user.id,
-          name,
-          phone, // Store the formatted phone number
-          email,
-          date_created: now,
-          date_modified: now,
-          is_admin: false,
-        });
-      
-      if (userError) {
-        console.error("Error inserting user data:", userError);
+      if (sessionData.session) {
+        // User is signed in immediately, create their profile
+        const now = new Date().toISOString();
+        const { error: userError } = await supabase
+          .from('users')
+          .insert({
+            id: authData.user.id,
+            auth_id: authData.user.id,
+            name,
+            phone, // Store the formatted phone number
+            email,
+            date_created: now,
+            date_modified: now,
+            is_admin: false,
+          });
         
-        // If we can't create the user profile, try to clean up the auth user
-        try {
-          await supabase.auth.signOut();
-        } catch (cleanupError) {
-          console.error("Error during cleanup:", cleanupError);
-        }
-        
-        // Provide more specific error message based on the error
-        if (userError.message.includes('row-level security')) {
-          setError("Account creation failed due to security restrictions. Please contact support.");
-        } else {
+        if (userError) {
+          console.error("Error inserting user data:", userError);
           setError(`Failed to create user profile: ${userError.message}`);
+          return;
         }
-        return;
+        
+        // User is signed in and profile created, redirect to home
+        navigate('/');
+      } else {
+        // User needs to confirm email first
+        // For now, we'll redirect to login with a message
+        // In a real app, you might want to show a "check your email" page
+        navigate('/login', { 
+          state: { 
+            message: "Account created successfully! Please check your email to confirm your account, then log in." 
+          } 
+        });
       }
-      
-      // Step 5: Navigate to success page (user is already signed in from the signup)
-      navigate('/');
       
     } catch (err) {
       console.error("Unexpected error during signup:", err);
