@@ -17,12 +17,40 @@ export function SignupPage() {
   const navigate = useNavigate();
   const { signIn } = useAuth();
 
+  // Phone number formatting function
+  const formatPhoneNumber = (value: string) => {
+    // Remove all non-digit characters
+    const phoneNumber = value.replace(/\D/g, '');
+    
+    // Format as ###-###-####
+    if (phoneNumber.length <= 3) {
+      return phoneNumber;
+    } else if (phoneNumber.length <= 6) {
+      return `${phoneNumber.slice(0, 3)}-${phoneNumber.slice(3)}`;
+    } else {
+      return `${phoneNumber.slice(0, 3)}-${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
+    }
+  };
+
+  // Handle phone number input change
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formattedPhone = formatPhoneNumber(e.target.value);
+    setPhone(formattedPhone);
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     
     // Basic validation
     if (!name || !email || !phone || !password) {
       setError("All fields are required");
+      return;
+    }
+    
+    // Validate phone number format
+    const phoneDigits = phone.replace(/\D/g, '');
+    if (phoneDigits.length !== 10) {
+      setError("Please enter a valid 10-digit phone number");
       return;
     }
     
@@ -65,7 +93,7 @@ export function SignupPage() {
           id: authData.user.id, // This should match the RLS policy requirement
           auth_id: authData.user.id,
           name,
-          phone,
+          phone, // Store the formatted phone number
           email,
           date_created: now,
           date_modified: now,
@@ -153,10 +181,11 @@ export function SignupPage() {
               <Input
                 id="phone"
                 type="tel"
-                placeholder="Enter your phone number"
+                placeholder="###-###-####"
                 className="w-full h-12 px-4 rounded-lg border border-[#D4D4D4] focus:border-[#B20000] focus:ring-[#B20000]"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={handlePhoneChange}
+                maxLength={12} // Limit to formatted length
                 required
               />
             </div>
