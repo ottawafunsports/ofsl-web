@@ -1,20 +1,6 @@
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { leagueData } from '../utils/leagueUtils';
 
 export type ActiveView = 'info' | 'schedule' | 'standings';
-
-export const useLeagueDetail = () => {
-  const { id } = useParams<{ id: string }>();
-  
-  // Find the league by ID
-  const league = leagueData.find(l => l.id === Number(id));
-  
-  return {
-    league,
-    leagueId: id
-  };
-};
 
 export const useActiveView = (initialView: ActiveView = 'info') => {
   const [activeView, setActiveView] = useState<ActiveView>(initialView);
@@ -46,4 +32,3 @@ export const useScoreSubmissionModal = () => {
     closeScoreSubmissionModal
   };
 };
-
