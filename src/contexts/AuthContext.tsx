@@ -23,29 +23,55 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get session from storage and set user if exists
-    const setData = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (error) {
-        console.error(error);
+    // Get initial session
+    const getInitialSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error('Error getting session:', error);
+        }
+        
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        // Handle profile creation for existing session (page refresh scenarios)
+        if (session?.user) {
+          await handleUserProfileCreation(session.user);
+        }
+      } catch (error) {
+        console.error('Error in getInitialSession:', error);
+      } finally {
+        setLoading(false);
       }
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
     };
 
-    // Set data initially
-    setData();
+    getInitialSession();
 
     // Subscribe to auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state change:', event, session?.user?.email);
+      
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
 
-      // Handle Google sign-in profile creation
-      if (session?.user && _event === 'SIGNED_IN') {
-        await handleUserProfileCreation(session.user);
+      // Handle different auth events
+      switch (event) {
+        case 'SIGNED_IN':
+          if (session?.user) {
+            await handleUserProfileCreation(session.user);
+          }
+          break;
+        case 'SIGNED_OUT':
+          // Ensure state is properly cleared
+          setSession(null);
+          setUser(null);
+          break;
+        case 'TOKEN_REFRESHED':
+          // Session was refreshed, update state
+          setSession(session);
+          setUser(session?.user ?? null);
+          break;
       }
     });
 
@@ -96,27 +122,68 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signIn = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    return { error };
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      return { error };
+    } catch (error) {
+      console.error('Error in signIn:', error);
+      return { error: error as AuthError };
+    }
   };
 
   const signInWithGoogle = async () => {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}`
-      }
-    });
-    return { error };
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}`
+        }
+      });
+      return { error };
+    } catch (error) {
+      console.error('Error in signInWithGoogle:', error);
+      return { error: error as AuthError };
+    }
   };
 
   const signUp = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signUp({ email, password });
-    return { user: data?.user || null, error };
+    try {
+      const { data, error } = await supabase.auth.signUp({ email, password });
+      return { user: data?.user || null, error };
+    } catch (error) {
+      console.error('Error in signUp:', error);
+      return { user: null, error: error as AuthError };
+    }
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      console.log('Signing out user...');
+      
+      // Clear local state immediately
+      setLoading(true);
+      
+      // Sign out from Supabase
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error('Error signing out:', error);
+        throw error;
+      }
+      
+      // Ensure state is cleared
+      setSession(null);
+      setUser(null);
+      
+      console.log('User signed out successfully');
+    } catch (error) {
+      console.error('Error in signOut:', error);
+      // Even if there's an error, clear the local state
+      setSession(null);
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
