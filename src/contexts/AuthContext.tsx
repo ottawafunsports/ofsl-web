@@ -107,6 +107,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             const profile = await handleUserProfileCreation(session.user);
             setUserProfile(profile);
             
+            // Check for redirect after login
+            const redirectPath = localStorage.getItem('redirectAfterLogin');
+            if (redirectPath) {
+              localStorage.removeItem('redirectAfterLogin');
+              window.location.href = redirectPath;
+              return;
+            }
+            
             // Check if this is a first-time sign in or incomplete profile
             if (profile) {
               const isProfileComplete = profile.name && profile.phone && 

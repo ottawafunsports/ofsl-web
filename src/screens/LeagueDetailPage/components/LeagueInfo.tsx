@@ -1,5 +1,9 @@
+import { useState } from "react";
 import { Button } from "../../../components/ui/button";
 import { MapPin, Calendar, Clock, DollarSign, Users } from "lucide-react";
+import { useAuth } from "../../../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { TeamRegistrationModal } from "./TeamRegistrationModal";
 
 // Function to get spots badge color
 const getSpotsBadgeColor = (spots: number) => {
@@ -21,80 +25,106 @@ interface LeagueInfoProps {
 }
 
 export function LeagueInfo({ league, sport }: LeagueInfoProps) {
+  const [showRegistrationModal, setShowRegistrationModal] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleRegisterClick = () => {
+    if (!user) {
+      // Store the current page URL for redirect after login
+      const currentPath = window.location.pathname;
+      localStorage.setItem('redirectAfterLogin', currentPath);
+      navigate('/login');
+      return;
+    }
+    
+    // User is logged in, show registration modal
+    setShowRegistrationModal(true);
+  };
+
   return (
-    <div className="bg-gray-100 rounded-lg p-6 mb-6">
-      {/* Skill Level Badge has been removed */}
-
-      {/* League Details */}
-      <div className="space-y-4 mb-6">
-        {/* Day & Time */}
-        <div className="flex items-start">
-          <Clock className="h-4 w-4 text-[#B20000] mr-2 mt-1 flex-shrink-0" />
-          <div>
-            <p className="font-medium text-[#6F6F6F]">{league.day}</p>
-            {league.playTimes.map((time: string, index: number) => (
-              <p key={index} className="text-sm text-[#6F6F6F]">
-                {time}
-              </p>
-            ))}
+    <>
+      <div className="bg-gray-100 rounded-lg p-6 mb-6">
+        {/* League Details */}
+        <div className="space-y-4 mb-6">
+          {/* Day & Time */}
+          <div className="flex items-start">
+            <Clock className="h-4 w-4 text-[#B20000] mr-2 mt-1 flex-shrink-0" />
+            <div>
+              <p className="font-medium text-[#6F6F6F]">{league.day}</p>
+              {league.playTimes.map((time: string, index: number) => (
+                <p key={index} className="text-sm text-[#6F6F6F]">
+                  {time}
+                </p>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* Location */}
-        <div className="flex items-start">
-          <MapPin className="h-4 w-4 text-[#B20000] mr-2 mt-1 flex-shrink-0" />
-          <div>
-            <p className="font-medium text-[#6F6F6F]">{league.location}</p>
-            {league.specificLocation && (
+          {/* Location */}
+          <div className="flex items-start">
+            <MapPin className="h-4 w-4 text-[#B20000] mr-2 mt-1 flex-shrink-0" />
+            <div>
+              <p className="font-medium text-[#6F6F6F]">{league.location}</p>
+              {league.specificLocation && (
+                <p className="text-sm text-[#6F6F6F]">
+                  {league.specificLocation}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Season Dates */}
+          <div className="flex items-start">
+            <Calendar className="h-4 w-4 text-[#B20000] mr-2 mt-1 flex-shrink-0" />
+            <div>
+              <p className="font-medium text-[#6F6F6F]">Season Dates</p>
+              <p className="text-sm text-[#6F6F6F]">{league.dates}</p>
+            </div>
+          </div>
+
+          {/* Price */}
+          <div className="flex items-start">
+            <DollarSign className="h-4 w-4 text-[#B20000] mr-2 mt-1 flex-shrink-0" />
+            <div>
+              <p className="font-medium text-[#6F6F6F]">Price</p>
               <p className="text-sm text-[#6F6F6F]">
-                {league.specificLocation}
+                ${league.price}{" "}
+                {sport === "Volleyball" ? "per team" : "per player"}
               </p>
-            )}
+            </div>
+          </div>
+
+          {/* Spots Remaining */}
+          <div className="flex items-start">
+            <Users className="h-4 w-4 text-[#B20000] mr-2 mt-1 flex-shrink-0" />
+            <div>
+              <p className="font-medium text-[#6F6F6F]">Availability</p>
+              <span
+                className={`text-xs font-medium py-1 px-3 rounded-full ${getSpotsBadgeColor(league.spotsRemaining)}`}
+              >
+                {getSpotsText(league.spotsRemaining)}
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* Season Dates */}
-        <div className="flex items-start">
-          <Calendar className="h-4 w-4 text-[#B20000] mr-2 mt-1 flex-shrink-0" />
-          <div>
-            <p className="font-medium text-[#6F6F6F]">Season Dates</p>
-            <p className="text-sm text-[#6F6F6F]">{league.dates}</p>
-          </div>
-        </div>
-
-        {/* Price */}
-        <div className="flex items-start">
-          <DollarSign className="h-4 w-4 text-[#B20000] mr-2 mt-1 flex-shrink-0" />
-          <div>
-            <p className="font-medium text-[#6F6F6F]">Price</p>
-            <p className="text-sm text-[#6F6F6F]">
-              ${league.price}{" "}
-              {sport === "Volleyball" ? "per team" : "per player"}
-            </p>
-          </div>
-        </div>
-
-        {/* Spots Remaining */}
-        <div className="flex items-start">
-          <Users className="h-4 w-4 text-[#B20000] mr-2 mt-1 flex-shrink-0" />
-          <div>
-            <p className="font-medium text-[#6F6F6F]">Availability</p>
-            <span
-              className={`text-xs font-medium py-1 px-3 rounded-full ${getSpotsBadgeColor(league.spotsRemaining)}`}
-            >
-              {getSpotsText(league.spotsRemaining)}
-            </span>
-          </div>
-        </div>
+        {/* Register Button */}
+        <Button
+          onClick={handleRegisterClick}
+          className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] w-full py-3"
+          disabled={league.spotsRemaining === 0}
+        >
+          {league.spotsRemaining === 0 ? "Join Waitlist" : "Register Now"}
+        </Button>
       </div>
 
-      {/* Register Button */}
-      <Button
-        className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] w-full py-3"
-        disabled={league.spotsRemaining === 0}
-      >
-        {league.spotsRemaining === 0 ? "Join Waitlist" : "Register Now"}
-      </Button>
-    </div>
+      {/* Registration Modal */}
+      <TeamRegistrationModal
+        showModal={showRegistrationModal}
+        closeModal={() => setShowRegistrationModal(false)}
+        leagueId={league.id}
+        leagueName={league.name}
+      />
+    </>
   );
 }
