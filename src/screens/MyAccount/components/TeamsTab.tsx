@@ -156,10 +156,10 @@ export function TeamsTab() {
     return gyms[0]?.gym || 'Location TBD';
   };
 
-  // Helper function to format cost
+  // Helper function to format cost with emoji
   const formatCost = (cost: number | null) => {
-    if (!cost) return 'Cost TBD';
-    return `$${cost}`;
+    if (!cost) return '💰 Cost TBD';
+    return `💰 $${cost}`;
   };
 
   if (teamsLoading) {

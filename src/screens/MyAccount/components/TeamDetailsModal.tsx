@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '../../../components/ui/button';
-import { X, Users, Plus, Mail, Phone, Crown, Trash2 } from 'lucide-react';
+import { X, Users, Plus, Mail, Crown } from 'lucide-react';
 import { AddPlayersModal } from '../../LeagueDetailPage/components/AddPlayersModal';
 
 interface TeamDetailsModalProps {
@@ -18,7 +18,11 @@ interface TeamDetailsModalProps {
       email: string;
     }>;
     league: {
+      id: number;
       name: string;
+      day_of_week: number | null;
+      cost: number | null;
+      gym_ids: number[] | null;
       sports: {
         name: string;
       } | null;
@@ -50,6 +54,11 @@ export function TeamDetailsModal({
   };
 
   const isCaptain = currentUserId === team.captain_id;
+
+  const formatCost = (cost: number | null) => {
+    if (!cost) return '💰 Cost TBD';
+    return `💰 $${cost}`;
+  };
 
   if (!showModal) return null;
 
@@ -85,6 +94,9 @@ export function TeamDetailsModal({
                   </div>
                 )}
                 <div>
+                  <span className="font-medium">Cost:</span> {formatCost(team.league?.cost)}
+                </div>
+                <div className="md:col-span-2">
                   <span className="font-medium">Total Players:</span> {team.roster_details.length}
                 </div>
               </div>
@@ -153,12 +165,12 @@ export function TeamDetailsModal({
                       {/* Actions */}
                       {isCaptain && player.id !== team.captain_id && (
                         <div className="flex items-center gap-2">
-                          <Button
-                            className="text-red-600 hover:text-red-800 hover:bg-red-50 p-1 rounded"
+                          <button
+                            className="text-lg hover:bg-red-50 p-2 rounded-lg transition-colors duration-200 hover:scale-110"
                             title="Remove from team"
                           >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                            🗑️
+                          </button>
                         </div>
                       )}
                     </div>
@@ -166,29 +178,6 @@ export function TeamDetailsModal({
                 )}
               </div>
             </div>
-
-            {/* Captain Actions */}
-            {isCaptain && (
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <h4 className="font-medium text-blue-800 mb-2">Captain Actions</h4>
-                <p className="text-sm text-blue-700 mb-3">
-                  As team captain, you can add new players and manage your team roster.
-                </p>
-                <div className="flex gap-2">
-                  <Button
-                    onClick={handleAddPlayersClick}
-                    className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-lg px-4 py-2 text-sm"
-                  >
-                    Add Players
-                  </Button>
-                  <Button
-                    className="bg-gray-500 hover:bg-gray-600 text-white rounded-lg px-4 py-2 text-sm"
-                  >
-                    Team Settings
-                  </Button>
-                </div>
-              </div>
-            )}
 
             {/* Close Button */}
             <div className="mt-6 flex justify-end">
