@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useParams } from 'react-router-dom';
 import { Button } from '../../components/ui/button';
 import { ChevronLeft } from 'lucide-react';
 import { 
@@ -7,7 +8,8 @@ import {
   getSportIcon, 
   getTeamNameFromPosition 
 } from './utils/leagueUtils';
-import { useLeagueDetail, useActiveView, useScoreSubmissionModal } from './hooks/useLeagueDetail';
+import { fetchLeagueById, getDayName, formatLeagueDates, getPrimaryLocation, type League } from '../../lib/leagues';
+import { useActiveView, useScoreSubmissionModal } from './hooks/useLeagueDetail';
 import { NavigationTabs } from './components/NavigationTabs';
 import { LeagueInfo } from './components/LeagueInfo';
 import { LeagueSchedule } from './components/LeagueSchedule';
@@ -17,7 +19,11 @@ import { AdditionalLeagueInfo } from './components/AdditionalLeagueInfo';
 import { ScoreSubmissionModal } from './components/ScoreSubmissionModal';
 
 export function LeagueDetailPage() {
-  const { league } = useLeagueDetail();
+  const { id } = useParams<{ id: string }>();
+  const [league, setLeague] = useState<League | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   const { activeView, setActiveView } = useActiveView();
   const { 
     showScoreSubmissionModal, 
@@ -26,12 +32,51 @@ export function LeagueDetailPage() {
     closeScoreSubmissionModal 
   } = useScoreSubmissionModal();
 
-  // If league not found
-  if (!league) {
+  useEffect(() => {
+    loadLeague();
+  }, [id]);
+
+  const loadLeague = async () => {
+    if (!id) {
+      setError('League ID is required');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const leagueData = await fetchLeagueById(parseInt(id));
+      
+      if (!leagueData) {
+        setError('League not found');
+      } else {
+        setLeague(leagueData);
+      }
+    } catch (err) {
+      console.error('Error loading league:', err);
+      setError('Failed to load league data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-white w-full">
+        <div className="max-w-[1280px] mx-auto px-4 py-12">
+          <div className="flex justify-center items-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#B20000]"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !league) {
     return (
       <div className="max-w-[1280px] mx-auto px-4 py-16 text-center">
         <h1 className="text-3xl font-bold text-[#6F6F6F] mb-6">League Not Found</h1>
-        <p className="text-lg text-[#6F6F6F] mb-8">The league you're looking for doesn't exist or has been removed.</p>
+        <p className="text-lg text-[#6F6F6F] mb-8">{error || 'The league you\'re looking for doesn\'t exist or has been removed.'}</p>
         <Link to="/leagues">
           <Button className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] px-6 py-3">
             Back to Leagues
@@ -40,6 +85,20 @@ export function LeagueDetailPage() {
       </div>
     );
   }
+
+  // Transform league data for the LeagueInfo component
+  const leagueForInfo = {
+    ...league,
+    day: getDayName(league.day_of_week),
+    playTimes: ["Times vary by tier"], // Could be enhanced with actual time data
+    location: getPrimaryLocation(league.gyms) || 'Location TBD',
+    specificLocation: league.gyms[0]?.address || undefined,
+    dates: formatLeagueDates(league.start_date, league.end_date),
+    skillLevel: league.skill_name || 'Not specified',
+    price: league.cost || 0,
+    spotsRemaining: league.max_teams ? Math.max(0, league.max_teams - 0) : 0, // TODO: Calculate from actual team count
+    season: `${new Date().getFullYear()} Season`
+  };
 
   return (
     <div className="bg-white w-full">
@@ -52,25 +111,25 @@ export function LeagueDetailPage() {
           </Link>
         </div>
 
-        {/* League title - Separated title and season into different divs */}
+        {/* League title */}
         <div className="mb-8">
           <div className="flex items-center mb-2">
             <img
-              src={getSportIcon(league.sport)}
-              alt={league.sport}
+              src={getSportIcon(league.sport_name)}
+              alt={league.sport_name || 'Sport'}
               className="w-10 h-10 mr-3 flex-shrink-0"
             />
             <h1 className="text-3xl md:text-4xl font-bold text-[#6F6F6F]">{league.name}</h1>
           </div>
-          <div className="ml-[52px]"> {/* 40px for icon width + 12px for margin */}
-            <p className="text-xl text-[#6F6F6F]">{league.season}</p>
+          <div className="ml-[52px]">
+            <p className="text-xl text-[#6F6F6F]">{leagueForInfo.season}</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Sidebar with grey background */}
+          {/* Sidebar */}
           <div className="md:col-span-1">
-            <LeagueInfo league={league} sport={league.sport} />
+            <LeagueInfo league={leagueForInfo} sport={league.sport_name || ''} />
           </div>
 
           {/* Main content area */}
@@ -79,7 +138,7 @@ export function LeagueDetailPage() {
             <NavigationTabs 
               activeView={activeView} 
               setActiveView={setActiveView} 
-              sport={league.sport} 
+              sport={league.sport_name || ''} 
             />
 
             {/* League Info View */}
@@ -87,10 +146,18 @@ export function LeagueDetailPage() {
               <div className="space-y-8">
                 <div>
                   <h2 className="text-2xl font-bold text-[#6F6F6F] mb-4">League Description</h2>
-                  <p className="text-[#6F6F6F]">{league.description}</p>
+                  <p className="text-[#6F6F6F]">{league.description || 'No description available.'}</p>
+                  {league.additional_info && (
+                    <div className="mt-4">
+                      <h3 className="text-lg font-bold text-[#6F6F6F] mb-2">Additional Information</h3>
+                      <p className="text-[#6F6F6F]">{league.additional_info}</p>
+                    </div>
+                  )}
                 </div>
                 
-                <SkillLevelRequirements skillLevel={league.skillLevel} />
+                {league.skill_name && (
+                  <SkillLevelRequirements skillLevel={league.skill_name} />
+                )}
                 <AdditionalLeagueInfo />
               </div>
             )}
