@@ -35,7 +35,7 @@ export function AddPlayersModal({
 }: AddPlayersModalProps) {
   const [playerEmails, setPlayerEmails] = useState<PlayerEmail[]>([{ email: '', status: 'pending' }]);
   const [loading, setLoading] = useState(false);
-  const [checking, setChecking] = useState(false);
+  const [checking, setChecking] = useState<Record<number, boolean>>({});
   const { showToast } = useToast();
 
   const addEmailField = () => {
@@ -54,65 +54,67 @@ export function AddPlayersModal({
     setPlayerEmails(newEmails);
   };
 
-  const checkEmails = async () => {
-    const validEmails = playerEmails.filter(pe => pe.email.trim() && pe.email.includes('@'));
+  // Auto-verify email when user blurs from input
+  const handleEmailBlur = async (index: number) => {
+    const email = playerEmails[index].email.trim();
     
-    if (validEmails.length === 0) {
-      showToast('Please enter at least one valid email address', 'error');
+    // Only check if email is valid and not already checked
+    if (!email || !email.includes('@') || playerEmails[index].status !== 'pending') {
       return;
     }
 
-    setChecking(true);
+    // Set checking state for this specific input
+    setChecking(prev => ({ ...prev, [index]: true }));
 
     try {
-      // Check which emails exist in the database
-      const emails = validEmails.map(pe => pe.email.trim());
-      const { data: users, error: usersError } = await supabase
+      // Check if email exists in database
+      const { data: users, error } = await supabase
         .from('users')
         .select('id, email, name')
-        .in('email', emails);
+        .eq('email', email)
+        .limit(1);
 
-      if (usersError) throw usersError;
+      if (error) throw error;
 
-      const foundEmails = users?.map(user => user.email) || [];
+      const newEmails = [...playerEmails];
       
-      // Update the status of each email
-      const updatedEmails = playerEmails.map(pe => {
-        if (!pe.email.trim() || !pe.email.includes('@')) {
-          return pe;
-        }
-
-        const user = users?.find(u => u.email === pe.email.trim());
-        if (user) {
-          return {
-            ...pe,
-            status: 'found' as const,
-            userDetails: user
+      if (users && users.length > 0) {
+        const user = users[0];
+        
+        // Check if user is already on the team
+        if (currentRoster.includes(user.id)) {
+          newEmails[index] = {
+            ...newEmails[index],
+            status: 'error',
+            errorMessage: 'User is already on this team'
           };
         } else {
-          return {
-            ...pe,
-            status: 'not-found' as const
+          newEmails[index] = {
+            ...newEmails[index],
+            status: 'found',
+            userDetails: user
           };
         }
-      });
-
-      setPlayerEmails(updatedEmails);
-      
-      const foundCount = updatedEmails.filter(pe => pe.status === 'found').length;
-      const notFoundCount = updatedEmails.filter(pe => pe.status === 'not-found').length;
-      
-      if (foundCount > 0) {
-        showToast(`Found ${foundCount} registered user(s)${notFoundCount > 0 ? `, ${notFoundCount} will need invites` : ''}`, 'success');
-      } else if (notFoundCount > 0) {
-        showToast(`${notFoundCount} email(s) not found - invites will be sent`, 'warning');
+      } else {
+        newEmails[index] = {
+          ...newEmails[index],
+          status: 'not-found'
+        };
       }
 
+      setPlayerEmails(newEmails);
+
     } catch (error: any) {
-      console.error('Error checking emails:', error);
-      showToast(error.message || 'Failed to check emails', 'error');
+      console.error('Error checking email:', error);
+      const newEmails = [...playerEmails];
+      newEmails[index] = {
+        ...newEmails[index],
+        status: 'error',
+        errorMessage: 'Error checking email'
+      };
+      setPlayerEmails(newEmails);
     } finally {
-      setChecking(false);
+      setChecking(prev => ({ ...prev, [index]: false }));
     }
   };
 
@@ -169,10 +171,10 @@ export function AddPlayersModal({
       return;
     }
 
-    // Check if emails have been validated
+    // Check if any emails still need verification
     const hasUncheckedEmails = validEmails.some(pe => pe.status === 'pending');
     if (hasUncheckedEmails) {
-      showToast('Please check emails first to see which users exist', 'warning');
+      showToast('Please wait for email verification to complete', 'warning');
       return;
     }
 
@@ -186,12 +188,9 @@ export function AddPlayersModal({
       // Get emails that need invites
       const emailsToInvite = playerEmails.filter(pe => pe.status === 'not-found');
 
-      // Filter out users already on the team
-      const newPlayerIds = foundUserIds.filter(userId => !currentRoster.includes(userId));
-
       // Add found users to the team
-      if (newPlayerIds.length > 0) {
-        const updatedRoster = [...currentRoster, ...newPlayerIds];
+      if (foundUserIds.length > 0) {
+        const updatedRoster = [...currentRoster, ...foundUserIds];
         
         const { error: teamError } = await supabase
           .from('teams')
@@ -201,7 +200,7 @@ export function AddPlayersModal({
         if (teamError) throw teamError;
 
         // Update each user's team_ids array
-        for (const userId of newPlayerIds) {
+        for (const userId of foundUserIds) {
           const { data: userData, error: fetchError } = await supabase
             .from('users')
             .select('team_ids')
@@ -253,22 +252,15 @@ export function AddPlayersModal({
 
       // Create success message
       let message = '';
-      if (newPlayerIds.length > 0) {
-        const addedUsers = foundUsers.filter(fu => newPlayerIds.includes(fu.userDetails!.id));
-        const addedNames = addedUsers.map(fu => fu.userDetails!.name || fu.userDetails!.email).join(', ');
-        message += `Added ${newPlayerIds.length} player(s): ${addedNames}`;
+      if (foundUserIds.length > 0) {
+        const addedNames = foundUsers.map(fu => fu.userDetails!.name || fu.userDetails!.email).join(', ');
+        message += `Added ${foundUserIds.length} player(s): ${addedNames}`;
       }
 
       const successfulInvites = inviteResults.filter(ir => ir.success).length;
       if (successfulInvites > 0) {
         if (message) message += '. ';
         message += `Sent ${successfulInvites} invite(s)`;
-      }
-
-      const skippedUsers = foundUserIds.filter(userId => currentRoster.includes(userId));
-      if (skippedUsers.length > 0) {
-        if (message) message += '. ';
-        message += `${skippedUsers.length} user(s) already on team`;
       }
 
       if (message) {
@@ -278,7 +270,7 @@ export function AddPlayersModal({
       onPlayersAdded();
       
       // Only close modal if all operations were successful
-      const hasErrors = updatedEmails.some(pe => pe.status === 'error');
+      const hasErrors = updatedEmails.some(pe => pe.status === 'error' && pe.errorMessage !== 'User is already on this team');
       if (!hasErrors) {
         setPlayerEmails([{ email: '', status: 'pending' }]);
         closeModal();
@@ -294,10 +286,15 @@ export function AddPlayersModal({
 
   const handleClose = () => {
     setPlayerEmails([{ email: '', status: 'pending' }]);
+    setChecking({});
     closeModal();
   };
 
-  const getStatusIcon = (status: PlayerEmail['status']) => {
+  const getStatusIcon = (status: PlayerEmail['status'], isChecking: boolean = false) => {
+    if (isChecking) {
+      return <Clock className="h-4 w-4 text-blue-500 animate-spin" />;
+    }
+    
     switch (status) {
       case 'found':
         return <CheckCircle className="h-4 w-4 text-green-500" />;
@@ -312,7 +309,11 @@ export function AddPlayersModal({
     }
   };
 
-  const getStatusText = (playerEmail: PlayerEmail) => {
+  const getStatusText = (playerEmail: PlayerEmail, isChecking: boolean = false) => {
+    if (isChecking) {
+      return 'Checking...';
+    }
+    
     switch (playerEmail.status) {
       case 'found':
         return `Found: ${playerEmail.userDetails?.name || 'User found'}`;
@@ -365,14 +366,17 @@ export function AddPlayersModal({
                       type="email"
                       value={playerEmail.email}
                       onChange={(e) => updateEmail(index, e.target.value)}
+                      onBlur={() => handleEmailBlur(index)}
                       placeholder="player@example.com"
                       className="flex-1"
+                      disabled={checking[index]}
                     />
                     {playerEmails.length > 1 && (
                       <Button
                         type="button"
                         onClick={() => removeEmailField(index)}
                         className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg"
+                        disabled={checking[index]}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -380,46 +384,31 @@ export function AddPlayersModal({
                   </div>
                   
                   {/* Status display */}
-                  {playerEmail.email && playerEmail.status !== 'pending' && (
+                  {playerEmail.email && (playerEmail.status !== 'pending' || checking[index]) && (
                     <div className="flex items-center gap-2 text-sm">
-                      {getStatusIcon(playerEmail.status)}
+                      {getStatusIcon(playerEmail.status, checking[index])}
                       <span className={`
                         ${playerEmail.status === 'found' ? 'text-green-600' : ''}
                         ${playerEmail.status === 'not-found' ? 'text-orange-600' : ''}
                         ${playerEmail.status === 'invited' ? 'text-blue-600' : ''}
                         ${playerEmail.status === 'error' ? 'text-red-600' : ''}
+                        ${checking[index] ? 'text-blue-600' : ''}
                       `}>
-                        {getStatusText(playerEmail)}
+                        {getStatusText(playerEmail, checking[index])}
                       </span>
                     </div>
                   )}
                 </div>
               ))}
               
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  onClick={addEmailField}
-                  className="bg-gray-500 hover:bg-gray-600 text-white rounded-lg px-4 py-2 flex items-center gap-2"
-                >
-                  <Plus className="h-4 w-4" />
-                  Add Another Email
-                </Button>
-                
-                <Button
-                  type="button"
-                  onClick={checkEmails}
-                  disabled={checking}
-                  className="bg-blue-500 hover:bg-blue-600 text-white rounded-lg px-4 py-2 flex items-center gap-2"
-                >
-                  {checking ? (
-                    <Clock className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <CheckCircle className="h-4 w-4" />
-                  )}
-                  {checking ? 'Checking...' : 'Check Emails'}
-                </Button>
-              </div>
+              <Button
+                type="button"
+                onClick={addEmailField}
+                className="bg-gray-500 hover:bg-gray-600 text-white rounded-lg px-4 py-2 flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                Add Another Email
+              </Button>
             </div>
 
             <div className="bg-blue-50 p-4 rounded-lg">
@@ -429,14 +418,14 @@ export function AddPlayersModal({
               <ul className="text-sm text-blue-800 mt-2 space-y-1">
                 <li>• <strong>Registered users</strong> will be added to your team immediately</li>
                 <li>• <strong>Non-registered emails</strong> will receive an invite to join OFSL and your team</li>
-                <li>• Click "Check Emails" first to see which users exist</li>
+                <li>• <strong>Auto-verification</strong> happens when you finish typing an email</li>
               </ul>
             </div>
 
             <div className="flex gap-4">
               <Button
                 type="submit"
-                disabled={loading || checking}
+                disabled={loading || Object.values(checking).some(Boolean)}
                 className="flex-1 bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] px-6 py-2"
               >
                 {loading ? 'Processing...' : 'Add Players & Send Invites'}
