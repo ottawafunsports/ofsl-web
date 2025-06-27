@@ -11,8 +11,14 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
   const { user, userProfile, loading } = useAuth();
   const location = useLocation();
 
+  useEffect(() => {
+    // Store the attempted location for redirect after login
+    if (!user && !loading) {
+      localStorage.setItem('redirectAfterLogin', location.pathname + location.search);
+    }
+  }, [user, loading, location]);
+
   if (loading) {
-    // You could show a loading spinner here
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#B20000]"></div>
