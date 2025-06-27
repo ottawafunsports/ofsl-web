@@ -25,6 +25,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [userProfile, setUserProfile] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  const [initializing, setInitializing] = useState(true);
 
   // Helper function to check if profile is complete
   const checkProfileCompletion = () => {
@@ -65,90 +66,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUserProfile(profile);
     }
   };
-
-  useEffect(() => {
-    // Get initial session
-    const getInitialSession = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) {
-          console.error('Error getting session:', error);
-        }
-        
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        // Handle profile creation for existing session (page refresh scenarios)
-        if (session?.user) {
-          const profile = await handleUserProfileCreation(session.user);
-          setUserProfile(profile);
-        }
-      } catch (error) {
-        console.error('Error in getInitialSession:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    getInitialSession();
-
-    // Subscribe to auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state change:', event, session?.user?.email);
-      
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-
-      // Handle different auth events
-      switch (event) {
-        case 'SIGNED_IN':
-          if (session?.user) {
-            const profile = await handleUserProfileCreation(session.user);
-            setUserProfile(profile);
-            
-            // Check for redirect after login
-            const redirectPath = localStorage.getItem('redirectAfterLogin');
-            if (redirectPath) {
-              localStorage.removeItem('redirectAfterLogin');
-              window.location.href = redirectPath;
-              return;
-            }
-            
-            // Check if this is a first-time sign in or incomplete profile
-            if (profile) {
-              const isProfileComplete = profile.name && profile.phone && 
-                profile.name.trim() !== '' && profile.phone.trim() !== '';
-              
-              if (!isProfileComplete) {
-                // Redirect to account page for profile completion
-                window.location.href = '/my-account?complete=true';
-              }
-            }
-          }
-          break;
-        case 'SIGNED_OUT':
-          // Ensure state is properly cleared
-          setSession(null);
-          setUser(null);
-          setUserProfile(null);
-          break;
-        case 'TOKEN_REFRESHED':
-          // Session was refreshed, update state
-          setSession(session);
-          setUser(session?.user ?? null);
-          if (session?.user) {
-            const profile = await fetchUserProfile(session.user);
-            setUserProfile(profile);
-          }
-          break;
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
 
   // Helper function to create user profile if it doesn't exist
   const handleUserProfileCreation = async (user: User) => {
@@ -201,38 +118,179 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  // Handle auth state changes
+  const handleAuthStateChange = async (event: string, session: Session | null) => {
+    console.log('Auth state change:', event, session?.user?.email);
+    
+    setSession(session);
+    setUser(session?.user ?? null);
+
+    // Only set loading to false after initial setup is complete
+    if (initializing) {
+      setInitializing(false);
+    }
+    setLoading(false);
+
+    // Handle different auth events
+    switch (event) {
+      case 'INITIAL_SESSION':
+      case 'SIGNED_IN':
+        if (session?.user) {
+          const profile = await handleUserProfileCreation(session.user);
+          setUserProfile(profile);
+          
+          // Handle redirect after login only for SIGNED_IN events (not INITIAL_SESSION)
+          if (event === 'SIGNED_IN') {
+            // Check for redirect after login
+            const redirectPath = localStorage.getItem('redirectAfterLogin');
+            if (redirectPath) {
+              localStorage.removeItem('redirectAfterLogin');
+              // Use setTimeout to ensure state updates are complete
+              setTimeout(() => {
+                window.location.href = redirectPath;
+              }, 100);
+              return;
+            }
+            
+            // Check if this is a first-time sign in or incomplete profile
+            if (profile) {
+              const isProfileComplete = profile.name && profile.phone && 
+                profile.name.trim() !== '' && profile.phone.trim() !== '';
+              
+              if (!isProfileComplete) {
+                // Redirect to account page for profile completion
+                setTimeout(() => {
+                  window.location.href = '/my-account/profile?complete=true';
+                }, 100);
+              }
+            }
+          }
+        }
+        break;
+        
+      case 'SIGNED_OUT':
+        // Clear all auth state
+        setSession(null);
+        setUser(null);
+        setUserProfile(null);
+        // Clear any stored redirect paths
+        localStorage.removeItem('redirectAfterLogin');
+        break;
+        
+      case 'TOKEN_REFRESHED':
+        // Session was refreshed, update state
+        setSession(session);
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          const profile = await fetchUserProfile(session.user);
+          setUserProfile(profile);
+        }
+        break;
+        
+      case 'PASSWORD_RECOVERY':
+        // Handle password recovery if needed
+        break;
+        
+      default:
+        console.log('Unhandled auth event:', event);
+    }
+  };
+
+  useEffect(() => {
+    let mounted = true;
+
+    // Get initial session
+    const getInitialSession = async () => {
+      try {
+        setLoading(true);
+        
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error('Error getting session:', error);
+          if (mounted) {
+            setLoading(false);
+            setInitializing(false);
+          }
+          return;
+        }
+        
+        if (mounted) {
+          await handleAuthStateChange('INITIAL_SESSION', session);
+        }
+      } catch (error) {
+        console.error('Error in getInitialSession:', error);
+        if (mounted) {
+          setLoading(false);
+          setInitializing(false);
+        }
+      }
+    };
+
+    getInitialSession();
+
+    // Subscribe to auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (mounted && !initializing) {
+        await handleAuthStateChange(event, session);
+      }
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
   const signIn = async (email: string, password: string) => {
     try {
+      setLoading(true);
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       return { error };
     } catch (error) {
       console.error('Error in signIn:', error);
       return { error: error as AuthError };
+    } finally {
+      setLoading(false);
     }
   };
 
   const signInWithGoogle = async () => {
     try {
+      setLoading(true);
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}`
+          redirectTo: `${window.location.origin}`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          }
         }
       });
       return { error };
     } catch (error) {
       console.error('Error in signInWithGoogle:', error);
+      setLoading(false);
       return { error: error as AuthError };
     }
   };
 
   const signUp = async (email: string, password: string) => {
     try {
-      const { data, error } = await supabase.auth.signUp({ email, password });
+      setLoading(true);
+      const { data, error } = await supabase.auth.signUp({ 
+        email, 
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}`
+        }
+      });
       return { user: data?.user || null, error };
     } catch (error) {
       console.error('Error in signUp:', error);
       return { user: null, error: error as AuthError };
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -240,7 +298,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       console.log('Signing out user...');
       
-      // Clear local state immediately
+      // Set loading state
       setLoading(true);
       
       // Sign out from Supabase
@@ -251,10 +309,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         throw error;
       }
       
-      // Ensure state is cleared
-      setSession(null);
-      setUser(null);
-      setUserProfile(null);
+      // Clear local storage items
+      localStorage.removeItem('redirectAfterLogin');
       
       console.log('User signed out successfully');
     } catch (error) {
@@ -267,6 +323,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false);
     }
   };
+
+  // Don't render children until we've checked for an initial session
+  if (initializing) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#B20000]"></div>
+      </div>
+    );
+  }
 
   return (
     <AuthContext.Provider value={{ 
