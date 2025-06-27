@@ -42,7 +42,7 @@ export function App() {
             {/* My Account routes with proper routing */}
             <Route path="/my-account" element={
               <ProtectedRoute>
-                <Navigate to="/my-account/profile" replace />
+                <Navigate to="/my-account/teams" replace />
               </ProtectedRoute>
             } />
             <Route path="/my-account" element={
@@ -50,8 +50,8 @@ export function App() {
                 <AccountLayout />
               </ProtectedRoute>
             }>
-              <Route path="profile" element={<ProfileTab />} />
               <Route path="teams" element={<TeamsTab />} />
+              <Route path="profile" element={<ProfileTab />} />
               <Route path="leagues" element={
                 <ProtectedRoute requireAdmin>
                   <LeaguesTab />

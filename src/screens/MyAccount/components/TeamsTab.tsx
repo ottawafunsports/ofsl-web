@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Button } from '../../../components/ui/button';
-import { Card, CardContent } from '../../../components/ui/card';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../components/ui/toast';
 import { supabase } from '../../../lib/supabase';
-import { Users } from 'lucide-react';
+import { Users, Calendar, CheckCircle } from 'lucide-react';
 import { AddPlayersModal } from '../../LeagueDetailPage/components/AddPlayersModal';
 
 interface Team {
@@ -40,6 +39,11 @@ export function TeamsTab() {
   const [teamsLoading, setTeamsLoading] = useState(false);
   const [showAddPlayersModal, setShowAddPlayersModal] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
+
+  // Mock data for stats - in real app this would come from actual data
+  const activeTeams = teams.filter(team => team.active).length;
+  const nextGameDate = "Jan 15";
+  const totalWins = 13;
 
   useEffect(() => {
     loadUserTeams();
@@ -117,71 +121,115 @@ export function TeamsTab() {
     loadUserTeams();
   };
 
+  if (teamsLoading) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#B20000]"></div>
+      </div>
+    );
+  }
+
   return (
     <div>
-      <h2 className="text-2xl font-bold text-[#6F6F6F] mb-6">My Teams</h2>
-      
-      {teamsLoading ? (
-        <div className="flex justify-center items-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#B20000]"></div>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        {/* Active Teams */}
+        <div className="bg-red-50 rounded-lg p-6 flex items-center justify-between">
+          <div>
+            <div className="text-2xl font-bold text-[#B20000] mb-1">{activeTeams}</div>
+            <div className="text-[#6F6F6F]">Active Teams</div>
+          </div>
+          <Users className="h-8 w-8 text-[#B20000]" />
         </div>
-      ) : teams.length === 0 ? (
-        <Card>
-          <CardContent className="p-8 text-center">
+
+        {/* Next Game */}
+        <div className="bg-blue-50 rounded-lg p-6 flex items-center justify-between">
+          <div>
+            <div className="text-2xl font-bold text-blue-600 mb-1">{nextGameDate}</div>
+            <div className="text-[#6F6F6F]">Next Game</div>
+          </div>
+          <Calendar className="h-8 w-8 text-blue-600" />
+        </div>
+
+        {/* Total Wins */}
+        <div className="bg-green-50 rounded-lg p-6 flex items-center justify-between">
+          <div>
+            <div className="text-2xl font-bold text-green-600 mb-1">{totalWins}</div>
+            <div className="text-[#6F6F6F]">Total Wins</div>
+          </div>
+          <CheckCircle className="h-8 w-8 text-green-600" />
+        </div>
+      </div>
+
+      {/* Your Teams Section */}
+      <div className="mb-6">
+        <h2 className="text-xl font-bold text-[#6F6F6F] mb-6">Your Teams</h2>
+        
+        {teams.length === 0 ? (
+          <div className="text-center py-12">
             <p className="text-[#6F6F6F] text-lg mb-4">You haven't joined any teams yet.</p>
             <p className="text-[#6F6F6F]">Browse our leagues and register a team to get started!</p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {teams.map(team => (
-            <Card key={team.id}>
-              <CardContent className="p-6">
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {teams.map(team => (
+              <div key={team.id} className="bg-white border border-gray-200 rounded-lg p-6">
                 <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="text-xl font-bold text-[#6F6F6F] mb-2">{team.name}</h3>
-                    <div className="text-sm text-[#6F6F6F] space-y-1">
-                      <p><span className="font-medium">League:</span> {team.league?.name || 'Unknown'}</p>
-                      <p><span className="font-medium">Sport:</span> {team.league?.sports?.name || 'Unknown'}</p>
-                      {team.skill && (
-                        <p><span className="font-medium">Skill Level:</span> {team.skill.name}</p>
-                      )}
-                      <p><span className="font-medium">Players:</span> {team.roster?.length || 0}</p>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold text-[#6F6F6F] mb-2">
+                      {team.league?.name || 'Unknown League'} - Winter 2025
+                    </h3>
+                    
+                    <div className="flex flex-wrap items-center gap-4 text-sm text-[#6F6F6F] mb-2">
+                      <div className="flex items-center gap-1">
+                        <Calendar className="h-4 w-4" />
+                        <span>Monday</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M12,2C8.13,2 5,5.13 5,9c0,5.25 7,13 7,13s7,-7.75 7,-13C19,5.13 15.87,2 12,2zM7,9c0,-2.76 2.24,-5 5,-5s5,2.24 5,5c0,2.88 -2.88,7.19 -5,9.88C9.92,16.21 7,11.85 7,9z"/>
+                          <circle cx="12" cy="9" r="2.5"/>
+                        </svg>
+                        <span>Carleton University</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span>$</span>
+                        <span>$250</span>
+                      </div>
+                      <div>
+                        <span>Record: 8-2</span>
+                      </div>
+                    </div>
+                    
+                    <div className="text-sm text-[#6F6F6F]">
+                      <span className="font-medium">Next Game:</span> Jan 15, 2025 - 7:00 PM
                     </div>
                   </div>
-                  <div className="flex flex-col gap-2">
+
+                  <div className="flex items-center gap-2 ml-4">
+                    {userProfile?.id === team.captain_id && (
+                      <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
+                        Captain
+                      </span>
+                    )}
+                    <span className="px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full">
+                      Active
+                    </span>
                     {userProfile?.id === team.captain_id && (
                       <Button
                         onClick={() => handleAddPlayers(team)}
-                        className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[8px] px-3 py-1 text-sm flex items-center gap-2"
+                        className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-lg px-4 py-2 text-sm"
                       >
-                        <Users className="h-4 w-4" />
-                        Add Players
+                        View Details
                       </Button>
                     )}
                   </div>
                 </div>
-
-                <div>
-                  <h4 className="font-medium text-[#6F6F6F] mb-2">Team Roster</h4>
-                  <div className="space-y-1">
-                    {team.roster_details.map(player => (
-                      <div key={player.id} className="flex items-center justify-between text-sm">
-                        <span className="text-[#6F6F6F]">
-                          {player.name || player.email}
-                          {userProfile?.id === team.captain_id && player.id === team.captain_id && (
-                            <span className="text-[#B20000] font-medium ml-2">(Captain)</span>
-                          )}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Add Players Modal */}
       {selectedTeam && (
