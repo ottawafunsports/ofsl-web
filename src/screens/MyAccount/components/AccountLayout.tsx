@@ -101,6 +101,23 @@ export function AccountLayout() {
                   <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#B20000]"></div>
                 )}
               </Link>
+
+              <Link
+                to="/my-account/users"
+                className={`flex items-center gap-2 px-6 py-3 text-center cursor-pointer relative transition-all ${
+                  isActive('/my-account/users') 
+                    ? 'text-[#B20000] font-medium' 
+                    : 'text-[#6F6F6F] hover:text-[#B20000]'
+                }`}
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M16 4c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2zm4 18v-6h2.5l-2.54-7.63A1.5 1.5 0 0 0 18.54 8H17c-.8 0-1.54.37-2.01.99l-2.98 3.67a.5.5 0 0 0 .39.84H15v6h5zm-11.5-6.5c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5S7 13.17 7 14s.67 1.5 1.5 1.5zm2.5 6v-6h2.5l-2.54-7.63A1.5 1.5 0 0 0 10.54 8H9c-.8 0-1.54.37-2.01.99L4.01 12.66a.5.5 0 0 0 .39.84H7v6h5z"/>
+                </svg>
+                Manage Users
+                {isActive('/my-account/users') && (
+                  <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#B20000]"></div>
+                )}
+              </Link>
             </>
           )}
         </div>

@@ -20,7 +20,8 @@ import {
   ProfileTab,
   TeamsTab,
   LeaguesTab,
-  SchoolsTab 
+  SchoolsTab,
+  UsersTab
 } from "./screens/MyAccount";
 import { Navigate } from "react-router-dom";
 
@@ -64,6 +65,11 @@ export function App() {
               <Route path="schools" element={
                 <ProtectedRoute requireAdmin>
                   <SchoolsTab />
+                </ProtectedRoute>
+              } />
+              <Route path="users" element={
+                <ProtectedRoute requireAdmin>
+                  <UsersTab />
                 </ProtectedRoute>
               } />
             </Route>
