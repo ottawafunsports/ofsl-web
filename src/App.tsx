@@ -7,6 +7,8 @@ import { LoginPage } from "./screens/LoginPage";
 import { SignupPage } from "./screens/SignupPage";
 import { AboutUsPage } from "./screens/AboutUsPage";
 import { StandardsOfPlayPage } from "./screens/StandardsOfPlayPage";
+import { SuccessPage } from "./screens/SuccessPage";
+import { CancelPage } from "./screens/CancelPage";
 import { Layout } from "./components/Layout";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -38,11 +40,13 @@ export function App() {
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/about-us" element={<AboutUsPage />} />
             <Route path="/standards-of-play" element={<StandardsOfPlayPage />} />
+            <Route path="/success" element={<SuccessPage />} />
+            <Route path="/cancel" element={<CancelPage />} />
             
             {/* My Account routes with proper routing */}
             <Route path="/my-account" element={
               <ProtectedRoute>
-                <Navigate to="/my-account/profile" replace />
+                <Navigate to="/my-account/teams" replace />
               </ProtectedRoute>
             } />
             <Route path="/my-account" element={
@@ -50,8 +54,8 @@ export function App() {
                 <AccountLayout />
               </ProtectedRoute>
             }>
-              <Route path="profile" element={<ProfileTab />} />
               <Route path="teams" element={<TeamsTab />} />
+              <Route path="profile" element={<ProfileTab />} />
               <Route path="leagues" element={
                 <ProtectedRoute requireAdmin>
                   <LeaguesTab />

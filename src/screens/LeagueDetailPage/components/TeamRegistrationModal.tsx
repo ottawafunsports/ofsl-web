@@ -6,6 +6,7 @@ import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../components/ui/toast';
 import { useNavigate } from 'react-router-dom';
+import { createLeaguePayment } from '../../../lib/payments';
 
 interface Skill {
   id: number;
@@ -80,6 +81,15 @@ export function TeamRegistrationModal({
     setLoading(true);
 
     try {
+      // Get league information for payment calculation
+      const { data: leagueData, error: leagueError } = await supabase
+        .from('leagues')
+        .select('cost')
+        .eq('id', leagueId)
+        .single();
+
+      if (leagueError) throw leagueError;
+
       // Create the team
       const { data: teamData, error: teamError } = await supabase
         .from('teams')
@@ -107,7 +117,27 @@ export function TeamRegistrationModal({
 
       if (userError) throw userError;
 
-      showToast(`Team "${teamName}" registered successfully!`, 'success');
+      // Create league payment record if there's a cost
+      if (leagueData?.cost && leagueData.cost > 0) {
+        try {
+          await createLeaguePayment({
+            user_id: userProfile.id,
+            team_id: teamData.id,
+            league_id: leagueId,
+            amount_due: leagueData.cost,
+            due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
+            notes: `Payment for ${teamName} registration`
+          });
+
+          showToast(`Team "${teamName}" registered successfully! Payment of $${leagueData.cost} is due in 30 days.`, 'success');
+        } catch (paymentError) {
+          console.error('Error creating payment record:', paymentError);
+          showToast(`Team "${teamName}" registered successfully, but there was an issue creating the payment record. Please contact support.`, 'warning');
+        }
+      } else {
+        showToast(`Team "${teamName}" registered successfully!`, 'success');
+      }
+
       closeModal();
       
       // Navigate to My Teams tab with proper routing
@@ -194,6 +224,7 @@ export function TeamRegistrationModal({
               <p className="text-sm text-blue-800">
                 <strong>Note:</strong> You will be automatically added as the team captain and first player. 
                 After registration, you can add more players to your team from the "My Teams\" page.
+                Registration fees will be tracked and due within 30 days.
               </p>
             </div>
 

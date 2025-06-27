@@ -4,6 +4,8 @@ import { MapPin, Calendar, Clock, DollarSign, Users } from "lucide-react";
 import { useAuth } from "../../../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { TeamRegistrationModal } from "./TeamRegistrationModal";
+import { PaymentButton } from "../../../components/PaymentButton";
+import { products } from "../../../stripe-config";
 
 // Function to get spots badge color
 const getSpotsBadgeColor = (spots: number) => {
@@ -41,6 +43,12 @@ export function LeagueInfo({ league, sport }: LeagueInfoProps) {
     // User is logged in, show registration modal
     setShowRegistrationModal(true);
   };
+
+  // Find matching product for this league
+  const matchingProduct = products.find(product => 
+    product.name.toLowerCase().includes(league.name.toLowerCase()) ||
+    league.name.toLowerCase().includes(product.name.toLowerCase())
+  );
 
   return (
     <>
@@ -108,14 +116,25 @@ export function LeagueInfo({ league, sport }: LeagueInfoProps) {
           </div>
         </div>
 
-        {/* Register Button */}
-        <Button
-          onClick={handleRegisterClick}
-          className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] w-full py-3"
-          disabled={league.spotsRemaining === 0}
-        >
-          {league.spotsRemaining === 0 ? "Join Waitlist" : "Register Now"}
-        </Button>
+        {/* Register Button or Payment Button */}
+        {matchingProduct ? (
+          <PaymentButton
+            priceId={matchingProduct.priceId}
+            productName={matchingProduct.name}
+            mode={matchingProduct.mode}
+            className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] w-full py-3"
+          >
+            {league.spotsRemaining === 0 ? "Join Waitlist" : "Register & Pay Now"}
+          </PaymentButton>
+        ) : (
+          <Button
+            onClick={handleRegisterClick}
+            className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] w-full py-3"
+            disabled={league.spotsRemaining === 0}
+          >
+            {league.spotsRemaining === 0 ? "Join Waitlist" : "Register Now"}
+          </Button>
+        )}
       </div>
 
       {/* Registration Modal */}
