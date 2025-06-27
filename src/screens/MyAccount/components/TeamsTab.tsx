@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../components/ui/toast';
 import { supabase } from '../../../lib/supabase';
-import { Users, Calendar, CheckCircle, DollarSign } from 'lucide-react';
+import { Users, Calendar, CheckCircle, CreditCard, AlertCircle } from 'lucide-react';
 import { TeamDetailsModal } from './TeamDetailsModal';
 import { getDayName } from '../../../lib/leagues';
 
@@ -48,9 +48,12 @@ export function TeamsTab() {
   const [teamsLoading, setTeamsLoading] = useState(false);
   const [showTeamDetailsModal, setShowTeamDetailsModal] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
+  const [userBalance, setUserBalance] = useState<number>(0);
+  const [outstandingBalance, setOutstandingBalance] = useState<number>(0);
 
   // Stats calculations from actual data
   const activeTeams = teams.filter(team => team.active).length;
+  const captainTeams = teams.filter(team => team.captain_id === userProfile?.id);
   
   // For now, using placeholder data for stats that require additional tables
   // In a real implementation, these would come from schedule/games tables
@@ -59,7 +62,46 @@ export function TeamsTab() {
 
   useEffect(() => {
     loadUserTeams();
+    loadUserBalance();
   }, [userProfile]);
+
+  const loadUserBalance = async () => {
+    if (!userProfile) return;
+
+    try {
+      // Load current balance from balances table
+      const { data: balanceData, error: balanceError } = await supabase
+        .from('balances')
+        .select('paid, bonus')
+        .eq('player', userProfile.id);
+
+      if (balanceError) {
+        console.error('Error loading balance:', balanceError);
+        return;
+      }
+
+      // Calculate current balance
+      const totalPaid = balanceData?.reduce((sum, record) => sum + (record.paid || 0), 0) || 0;
+      const totalBonus = balanceData?.reduce((sum, record) => sum + (record.bonus || 0), 0) || 0;
+      setUserBalance(totalPaid + totalBonus);
+
+      // Calculate outstanding balance for teams where user is captain
+      let totalOwing = 0;
+      captainTeams.forEach(team => {
+        if (team.league?.cost) {
+          totalOwing += team.league.cost;
+        }
+      });
+
+      // Outstanding balance = what they owe minus what they've paid
+      // Note: This is a simplified calculation. In a real system, you'd want to track
+      // which payments are for which leagues/teams specifically
+      setOutstandingBalance(Math.max(0, totalOwing - totalPaid));
+      
+    } catch (error) {
+      console.error('Error calculating balance:', error);
+    }
+  };
 
   const loadUserTeams = async () => {
     if (!userProfile) return;
@@ -173,7 +215,7 @@ export function TeamsTab() {
   return (
     <div>
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {/* Active Teams */}
         <div className="bg-red-50 rounded-lg p-6 flex items-center justify-between">
           <div>
@@ -200,7 +242,38 @@ export function TeamsTab() {
           </div>
           <CheckCircle className="h-8 w-8 text-green-600" />
         </div>
+
+        {/* Amount Owing - Only show if user is a captain */}
+        {captainTeams.length > 0 && (
+          <div className={`${outstandingBalance > 0 ? 'bg-orange-50' : 'bg-gray-50'} rounded-lg p-6 flex items-center justify-between`}>
+            <div>
+              <div className={`text-2xl font-bold mb-1 ${outstandingBalance > 0 ? 'text-orange-600' : 'text-gray-600'}`}>
+                ${outstandingBalance.toFixed(2)}
+              </div>
+              <div className="text-[#6F6F6F]">Amount Owing</div>
+            </div>
+            {outstandingBalance > 0 ? (
+              <AlertCircle className="h-8 w-8 text-orange-600" />
+            ) : (
+              <CheckCircle className="h-8 w-8 text-gray-600" />
+            )}
+          </div>
+        )}
       </div>
+
+      {/* Outstanding Balance Notice - Only show if there's an outstanding balance */}
+      {outstandingBalance > 0 && captainTeams.length > 0 && (
+        <div className="bg-orange-100 border border-orange-300 rounded-lg p-4 mb-6">
+          <div className="flex items-center gap-2 mb-2">
+            <AlertCircle className="h-5 w-5 text-orange-600" />
+            <span className="font-medium text-orange-800">Payment Required</span>
+          </div>
+          <p className="text-orange-700 text-sm">
+            You have an outstanding balance of <span className="font-medium">${outstandingBalance.toFixed(2)}</span> for team registration fees. 
+            Please contact us at <a href="mailto:info@ofsl.ca" className="underline">info@ofsl.ca</a> to arrange payment.
+          </p>
+        </div>
+      )}
 
       {/* Your Teams Section */}
       <div className="mb-6">
@@ -234,7 +307,7 @@ export function TeamsTab() {
                         <span>{getPrimaryLocation(team.gyms)}</span>
                       </div>
                       <div className="flex items-center gap-1">
-                        <DollarSign className="h-4 w-4" />
+                        <CreditCard className="h-4 w-4" />
                         <span>{formatCostWithIcon(team.league?.cost)}</span>
                       </div>
                       <div>
