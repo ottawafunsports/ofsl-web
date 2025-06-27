@@ -234,7 +234,6 @@ export function TeamsTab() {
                         <span>{getPrimaryLocation(team.gyms)}</span>
                       </div>
                       <div className="flex items-center gap-1">
-                        <span>$</span>
                         <span>{formatCost(team.league?.cost)}</span>
                       </div>
                       <div>
