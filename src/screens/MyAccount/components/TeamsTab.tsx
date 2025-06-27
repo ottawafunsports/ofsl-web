@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../components/ui/toast';
 import { supabase } from '../../../lib/supabase';
-import { Users, Calendar, CheckCircle, CreditCard, AlertCircle } from 'lucide-react';
+import { getUserSubscription } from '../../../lib/stripe';
+import { Users, Calendar, CheckCircle, CreditCard, AlertCircle, Crown } from 'lucide-react';
 import { TeamDetailsModal } from './TeamDetailsModal';
 import { getDayName } from '../../../lib/leagues';
+import { getProductByPriceId } from '../../../stripe-config';
 
 interface Team {
   id: number;
@@ -50,6 +52,7 @@ export function TeamsTab() {
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const [userBalance, setUserBalance] = useState<number>(0);
   const [outstandingBalance, setOutstandingBalance] = useState<number>(0);
+  const [subscription, setSubscription] = useState<any>(null);
 
   // Stats calculations from actual data
   const activeTeams = teams.filter(team => team.active).length;
@@ -63,7 +66,17 @@ export function TeamsTab() {
   useEffect(() => {
     loadUserTeams();
     loadUserBalance();
+    loadSubscription();
   }, [userProfile]);
+
+  const loadSubscription = async () => {
+    try {
+      const subscriptionData = await getUserSubscription();
+      setSubscription(subscriptionData);
+    } catch (error) {
+      console.error('Error loading subscription:', error);
+    }
+  };
 
   const loadUserBalance = async () => {
     if (!userProfile) return;
@@ -204,6 +217,21 @@ export function TeamsTab() {
     return `$${cost}`;
   };
 
+  // Get subscription status display
+  const getSubscriptionStatus = () => {
+    if (!subscription) return null;
+    
+    const product = getProductByPriceId(subscription.price_id);
+    
+    return {
+      status: subscription.subscription_status,
+      productName: product?.name || 'Unknown Product',
+      isActive: subscription.subscription_status === 'active'
+    };
+  };
+
+  const subscriptionStatus = getSubscriptionStatus();
+
   if (teamsLoading) {
     return (
       <div className="flex justify-center items-center py-12">
@@ -214,6 +242,35 @@ export function TeamsTab() {
 
   return (
     <div>
+      {/* Subscription Status Banner */}
+      {subscriptionStatus && (
+        <div className={`rounded-lg p-4 mb-6 ${
+          subscriptionStatus.isActive 
+            ? 'bg-green-50 border border-green-200' 
+            : 'bg-orange-50 border border-orange-200'
+        }`}>
+          <div className="flex items-center gap-2">
+            {subscriptionStatus.isActive ? (
+              <CheckCircle className="h-5 w-5 text-green-600" />
+            ) : (
+              <AlertCircle className="h-5 w-5 text-orange-600" />
+            )}
+            <div>
+              <p className={`font-medium ${
+                subscriptionStatus.isActive ? 'text-green-800' : 'text-orange-800'
+              }`}>
+                {subscriptionStatus.isActive ? 'Active Subscription' : 'Subscription Status'}
+              </p>
+              <p className={`text-sm ${
+                subscriptionStatus.isActive ? 'text-green-700' : 'text-orange-700'
+              }`}>
+                {subscriptionStatus.productName} - {subscriptionStatus.status}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {/* Active Teams */}
@@ -322,7 +379,8 @@ export function TeamsTab() {
 
                   <div className="flex items-center gap-2 ml-4">
                     {userProfile?.id === team.captain_id && (
-                      <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
+                      <span className="flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
+                        <Crown className="h-3 w-3" />
                         Captain
                       </span>
                     )}
