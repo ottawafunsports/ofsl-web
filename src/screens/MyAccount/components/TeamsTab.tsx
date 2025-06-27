@@ -3,7 +3,8 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../components/ui/toast';
 import { supabase } from '../../../lib/supabase';
 import { getUserSubscription } from '../../../lib/stripe';
-import { Users, Calendar, CheckCircle, CreditCard, AlertCircle, Crown } from 'lucide-react';
+import { getUserPaymentSummary, getUserLeaguePayments, type LeaguePayment } from '../../../lib/payments';
+import { Users, Calendar, CheckCircle, CreditCard, AlertCircle, Crown, DollarSign, Clock } from 'lucide-react';
 import { TeamDetailsModal } from './TeamDetailsModal';
 import { getDayName } from '../../../lib/leagues';
 import { getProductByPriceId } from '../../../stripe-config';
@@ -50,9 +51,13 @@ export function TeamsTab() {
   const [teamsLoading, setTeamsLoading] = useState(false);
   const [showTeamDetailsModal, setShowTeamDetailsModal] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
-  const [userBalance, setUserBalance] = useState<number>(0);
-  const [outstandingBalance, setOutstandingBalance] = useState<number>(0);
   const [subscription, setSubscription] = useState<any>(null);
+  
+  // Payment-related state
+  const [outstandingBalance, setOutstandingBalance] = useState<number>(0);
+  const [paymentSummary, setPaymentSummary] = useState<any>(null);
+  const [leaguePayments, setLeaguePayments] = useState<LeaguePayment[]>([]);
+  const [paymentsLoading, setPaymentsLoading] = useState(false);
 
   // Stats calculations from actual data
   const activeTeams = teams.filter(team => team.active).length;
@@ -65,8 +70,8 @@ export function TeamsTab() {
 
   useEffect(() => {
     loadUserTeams();
-    loadUserBalance();
     loadSubscription();
+    loadPaymentData();
   }, [userProfile]);
 
   const loadSubscription = async () => {
@@ -78,41 +83,25 @@ export function TeamsTab() {
     }
   };
 
-  const loadUserBalance = async () => {
+  const loadPaymentData = async () => {
     if (!userProfile) return;
 
     try {
-      // Load current balance from balances table
-      const { data: balanceData, error: balanceError } = await supabase
-        .from('balances')
-        .select('paid, bonus')
-        .eq('player', userProfile.id);
+      setPaymentsLoading(true);
+      
+      const [summary, payments] = await Promise.all([
+        getUserPaymentSummary(),
+        getUserLeaguePayments()
+      ]);
 
-      if (balanceError) {
-        console.error('Error loading balance:', balanceError);
-        return;
-      }
-
-      // Calculate current balance
-      const totalPaid = balanceData?.reduce((sum, record) => sum + (record.paid || 0), 0) || 0;
-      const totalBonus = balanceData?.reduce((sum, record) => sum + (record.bonus || 0), 0) || 0;
-      setUserBalance(totalPaid + totalBonus);
-
-      // Calculate outstanding balance for teams where user is captain
-      let totalOwing = 0;
-      captainTeams.forEach(team => {
-        if (team.league?.cost) {
-          totalOwing += team.league.cost;
-        }
-      });
-
-      // Outstanding balance = what they owe minus what they've paid
-      // Note: This is a simplified calculation. In a real system, you'd want to track
-      // which payments are for which leagues/teams specifically
-      setOutstandingBalance(Math.max(0, totalOwing - totalPaid));
+      setPaymentSummary(summary);
+      setLeaguePayments(payments);
+      setOutstandingBalance(summary.total_outstanding);
       
     } catch (error) {
-      console.error('Error calculating balance:', error);
+      console.error('Error loading payment data:', error);
+    } finally {
+      setPaymentsLoading(false);
     }
   };
 
@@ -300,35 +289,101 @@ export function TeamsTab() {
           <CheckCircle className="h-8 w-8 text-green-600" />
         </div>
 
-        {/* Amount Owing - Only show if user is a captain */}
-        {captainTeams.length > 0 && (
-          <div className={`${outstandingBalance > 0 ? 'bg-orange-50' : 'bg-gray-50'} rounded-lg p-6 flex items-center justify-between`}>
-            <div>
-              <div className={`text-2xl font-bold mb-1 ${outstandingBalance > 0 ? 'text-orange-600' : 'text-gray-600'}`}>
-                ${outstandingBalance.toFixed(2)}
-              </div>
-              <div className="text-[#6F6F6F]">Amount Owing</div>
+        {/* Amount Owing - Updated with payment summary data */}
+        <div className={`${outstandingBalance > 0 ? 'bg-orange-50' : 'bg-gray-50'} rounded-lg p-6 flex items-center justify-between`}>
+          <div>
+            <div className={`text-2xl font-bold mb-1 ${outstandingBalance > 0 ? 'text-orange-600' : 'text-gray-600'}`}>
+              ${outstandingBalance.toFixed(2)}
             </div>
-            {outstandingBalance > 0 ? (
-              <AlertCircle className="h-8 w-8 text-orange-600" />
-            ) : (
-              <CheckCircle className="h-8 w-8 text-gray-600" />
-            )}
+            <div className="text-[#6F6F6F]">Amount Owing</div>
           </div>
-        )}
+          {outstandingBalance > 0 ? (
+            <AlertCircle className="h-8 w-8 text-orange-600" />
+          ) : (
+            <CheckCircle className="h-8 w-8 text-gray-600" />
+          )}
+        </div>
       </div>
 
-      {/* Outstanding Balance Notice - Only show if there's an outstanding balance */}
-      {outstandingBalance > 0 && captainTeams.length > 0 && (
+      {/* Outstanding Balance Notice - Enhanced with payment details */}
+      {outstandingBalance > 0 && (
         <div className="bg-orange-100 border border-orange-300 rounded-lg p-4 mb-6">
           <div className="flex items-center gap-2 mb-2">
             <AlertCircle className="h-5 w-5 text-orange-600" />
             <span className="font-medium text-orange-800">Payment Required</span>
           </div>
-          <p className="text-orange-700 text-sm">
-            You have an outstanding balance of <span className="font-medium">${outstandingBalance.toFixed(2)}</span> for team registration fees. 
+          <p className="text-orange-700 text-sm mb-3">
+            You have an outstanding balance of <span className="font-medium">${outstandingBalance.toFixed(2)}</span> for league registration fees.
+          </p>
+          
+          {/* Payment breakdown */}
+          {paymentSummary && (
+            <div className="text-orange-700 text-sm">
+              <div className="flex gap-4">
+                {paymentSummary.pending_payments > 0 && (
+                  <span>{paymentSummary.pending_payments} pending payment{paymentSummary.pending_payments !== 1 ? 's' : ''}</span>
+                )}
+                {paymentSummary.overdue_payments > 0 && (
+                  <span className="font-medium">{paymentSummary.overdue_payments} overdue payment{paymentSummary.overdue_payments !== 1 ? 's' : ''}</span>
+                )}
+              </div>
+            </div>
+          )}
+          
+          <p className="text-orange-700 text-sm mt-2">
             Please contact us at <a href="mailto:info@ofsl.ca" className="underline">info@ofsl.ca</a> to arrange payment.
           </p>
+        </div>
+      )}
+
+      {/* League Payments Section - New */}
+      {leaguePayments.length > 0 && (
+        <div className="mb-8">
+          <h3 className="text-lg font-bold text-[#6F6F6F] mb-4 flex items-center gap-2">
+            <DollarSign className="h-5 w-5" />
+            League Payments
+          </h3>
+          
+          <div className="space-y-3">
+            {leaguePayments.map(payment => (
+              <div key={payment.id} className="bg-white border border-gray-200 rounded-lg p-4">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <h4 className="font-medium text-[#6F6F6F]">{payment.league_name}</h4>
+                    {payment.team_name && (
+                      <p className="text-sm text-[#6F6F6F]">Team: {payment.team_name}</p>
+                    )}
+                    <div className="flex items-center gap-4 mt-2 text-sm text-[#6F6F6F]">
+                      <span>Due: ${payment.amount_due.toFixed(2)}</span>
+                      <span>Paid: ${payment.amount_paid.toFixed(2)}</span>
+                      {payment.amount_outstanding > 0 && (
+                        <span className="text-orange-600 font-medium">
+                          Outstanding: ${payment.amount_outstanding.toFixed(2)}
+                        </span>
+                      )}
+                    </div>
+                    {payment.due_date && (
+                      <div className="flex items-center gap-1 mt-1 text-sm text-[#6F6F6F]">
+                        <Clock className="h-3 w-3" />
+                        <span>Due: {new Date(payment.due_date).toLocaleDateString()}</span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <span className={`px-2 py-1 text-xs rounded-full ${
+                      payment.status === 'paid' ? 'bg-green-100 text-green-800' :
+                      payment.status === 'partial' ? 'bg-yellow-100 text-yellow-800' :
+                      payment.status === 'overdue' ? 'bg-red-100 text-red-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
@@ -364,7 +419,7 @@ export function TeamsTab() {
                         <span>{getPrimaryLocation(team.gyms)}</span>
                       </div>
                       <div className="flex items-center gap-1">
-                        <CreditCard className="h-4 w-4" />
+                        <DollarSign className="h-4 w-4" />
                         <span>{formatCostWithIcon(team.league?.cost)}</span>
                       </div>
                       <div>

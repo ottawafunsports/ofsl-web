@@ -101,7 +101,7 @@ async function handleEvent(event: Stripe.Event) {
         } = stripeData as Stripe.Checkout.Session;
 
         // Insert the order into the stripe_orders table
-        const { error: orderError } = await supabase.from('stripe_orders').insert({
+        const { data: orderData, error: orderError } = await supabase.from('stripe_orders').insert({
           checkout_session_id,
           payment_intent_id: payment_intent,
           customer_id: customerId,
@@ -109,18 +109,101 @@ async function handleEvent(event: Stripe.Event) {
           amount_total,
           currency,
           payment_status,
-          status: 'completed', // assuming we want to mark it as completed since payment is successful
-        });
+          status: 'completed',
+        }).select().single();
 
         if (orderError) {
           console.error('Error inserting order:', orderError);
           return;
         }
+
         console.info(`Successfully processed one-time payment for session: ${checkout_session_id}`);
+
+        // Now process league payments
+        await processLeaguePayments(customerId, orderData, amount_total);
+
       } catch (error) {
         console.error('Error processing one-time payment:', error);
       }
     }
+  }
+}
+
+async function processLeaguePayments(customerId: string, orderData: any, amountTotal: number) {
+  try {
+    // Get the user ID from the customer
+    const { data: customerData, error: customerError } = await supabase
+      .from('stripe_customers')
+      .select('user_id')
+      .eq('customer_id', customerId)
+      .single();
+
+    if (customerError || !customerData) {
+      console.error('Error finding user for customer:', customerError);
+      return;
+    }
+
+    const userId = customerData.user_id;
+
+    // Get pending league payments for this user
+    const { data: pendingPayments, error: paymentsError } = await supabase
+      .from('league_payments')
+      .select('*')
+      .eq('user_id', userId)
+      .in('status', ['pending', 'partial'])
+      .order('due_date', { ascending: true });
+
+    if (paymentsError) {
+      console.error('Error fetching pending payments:', paymentsError);
+      return;
+    }
+
+    if (!pendingPayments || pendingPayments.length === 0) {
+      console.info('No pending payments found for user');
+      return;
+    }
+
+    // Convert cents to dollars
+    const paymentAmount = amountTotal / 100;
+    let remainingAmount = paymentAmount;
+
+    // Apply payment to pending league payments (FIFO - first in, first out)
+    for (const payment of pendingPayments) {
+      if (remainingAmount <= 0) break;
+
+      const outstandingAmount = payment.amount_due - payment.amount_paid;
+      const paymentToApply = Math.min(remainingAmount, outstandingAmount);
+
+      if (paymentToApply > 0) {
+        const newAmountPaid = payment.amount_paid + paymentToApply;
+
+        // Update the league payment record
+        const { error: updateError } = await supabase
+          .from('league_payments')
+          .update({
+            amount_paid: newAmountPaid,
+            payment_method: 'stripe',
+            stripe_order_id: orderData.id
+          })
+          .eq('id', payment.id);
+
+        if (updateError) {
+          console.error('Error updating league payment:', updateError);
+        } else {
+          console.info(`Applied $${paymentToApply} to league payment ${payment.id}`);
+          remainingAmount -= paymentToApply;
+        }
+      }
+    }
+
+    // If there's still remaining amount, create a credit/prepayment record
+    if (remainingAmount > 0) {
+      console.info(`Creating credit record for remaining amount: $${remainingAmount}`);
+      // You could create a credit record here if needed
+    }
+
+  } catch (error) {
+    console.error('Error processing league payments:', error);
   }
 }
 
@@ -141,7 +224,7 @@ async function syncCustomerFromStripe(customerId: string) {
       const { error: noSubError } = await supabase.from('stripe_subscriptions').upsert(
         {
           customer_id: customerId,
-          subscription_status: 'not_started',
+          status: 'not_started',
         },
         {
           onConflict: 'customer_id',
