@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../components/ui/toast';
 import { supabase } from '../../../lib/supabase';
-import { Users, Calendar, CheckCircle } from 'lucide-react';
+import { Users, Calendar, CheckCircle, DollarSign } from 'lucide-react';
 import { TeamDetailsModal } from './TeamDetailsModal';
 import { getDayName } from '../../../lib/leagues';
 
@@ -156,10 +156,10 @@ export function TeamsTab() {
     return gyms[0]?.gym || 'Location TBD';
   };
 
-  // Helper function to format cost with emoji
-  const formatCost = (cost: number | null) => {
-    if (!cost) return '💰 Cost TBD';
-    return `💰 $${cost}`;
+  // Helper function to format cost with icon
+  const formatCostWithIcon = (cost: number | null) => {
+    if (!cost) return 'Cost TBD';
+    return `$${cost}`;
   };
 
   if (teamsLoading) {
@@ -234,7 +234,8 @@ export function TeamsTab() {
                         <span>{getPrimaryLocation(team.gyms)}</span>
                       </div>
                       <div className="flex items-center gap-1">
-                        <span>{formatCost(team.league?.cost)}</span>
+                        <DollarSign className="h-4 w-4" />
+                        <span>{formatCostWithIcon(team.league?.cost)}</span>
                       </div>
                       <div>
                         <span>Record: TBD</span>

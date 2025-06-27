@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '../../../components/ui/button';
-import { X, Users, Plus, Mail, Crown } from 'lucide-react';
+import { X, Users, Plus, Mail, Crown, DollarSign, Trash2 } from 'lucide-react';
 import { AddPlayersModal } from '../../LeagueDetailPage/components/AddPlayersModal';
 
 interface TeamDetailsModalProps {
@@ -56,8 +56,8 @@ export function TeamDetailsModal({
   const isCaptain = currentUserId === team.captain_id;
 
   const formatCost = (cost: number | null) => {
-    if (!cost) return '💰 Cost TBD';
-    return `💰 $${cost}`;
+    if (!cost) return 'Cost TBD';
+    return `$${cost}`;
   };
 
   if (!showModal) return null;
@@ -93,8 +93,10 @@ export function TeamDetailsModal({
                     <span className="font-medium">Skill Level:</span> {team.skill.name}
                   </div>
                 )}
-                <div>
-                  <span className="font-medium">Cost:</span> {formatCost(team.league?.cost)}
+                <div className="flex items-center gap-1">
+                  <span className="font-medium">Cost:</span>
+                  <DollarSign className="h-4 w-4" />
+                  <span>{formatCost(team.league?.cost)}</span>
                 </div>
                 <div className="md:col-span-2">
                   <span className="font-medium">Total Players:</span> {team.roster_details.length}
@@ -166,10 +168,10 @@ export function TeamDetailsModal({
                       {isCaptain && player.id !== team.captain_id && (
                         <div className="flex items-center gap-2">
                           <button
-                            className="text-lg hover:bg-red-50 p-2 rounded-lg transition-colors duration-200 hover:scale-110"
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-colors duration-200"
                             title="Remove from team"
                           >
-                            🗑️
+                            <Trash2 className="h-4 w-4" />
                           </button>
                         </div>
                       )}
