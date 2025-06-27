@@ -125,75 +125,55 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setSession(session);
     setUser(session?.user ?? null);
 
+    if (event === 'SIGNED_OUT') {
+      // Clear all auth state
+      setSession(null);
+      setUser(null);
+      setUserProfile(null);
+      // Clear any stored redirect paths
+      localStorage.removeItem('redirectAfterLogin');
+      setLoading(false);
+      return;
+    }
+
+    if (session?.user) {
+      // Handle user profile for any signed-in user
+      const profile = await handleUserProfileCreation(session.user);
+      setUserProfile(profile);
+
+      // Handle redirect only for explicit sign-in events (not initial session)
+      if (event === 'SIGNED_IN') {
+        // Check for redirect after login
+        const redirectPath = localStorage.getItem('redirectAfterLogin');
+        if (redirectPath) {
+          localStorage.removeItem('redirectAfterLogin');
+          // Use a shorter timeout and more reliable redirect
+          setTimeout(() => {
+            window.location.href = redirectPath;
+          }, 100);
+          return;
+        }
+        
+        // Check if this is a first-time sign in or incomplete profile
+        if (profile) {
+          const isProfileComplete = profile.name && profile.phone && 
+            profile.name.trim() !== '' && profile.phone.trim() !== '';
+          
+          if (!isProfileComplete) {
+            // Redirect to account page for profile completion
+            setTimeout(() => {
+              window.location.href = '/my-account/profile?complete=true';
+            }, 100);
+          }
+        }
+      }
+    }
+
     // Only set loading to false after initial setup is complete
     if (initializing) {
       setInitializing(false);
     }
     setLoading(false);
-
-    // Handle different auth events
-    switch (event) {
-      case 'INITIAL_SESSION':
-      case 'SIGNED_IN':
-        if (session?.user) {
-          const profile = await handleUserProfileCreation(session.user);
-          setUserProfile(profile);
-          
-          // Handle redirect after login only for SIGNED_IN events (not INITIAL_SESSION)
-          if (event === 'SIGNED_IN') {
-            // Check for redirect after login
-            const redirectPath = localStorage.getItem('redirectAfterLogin');
-            if (redirectPath) {
-              localStorage.removeItem('redirectAfterLogin');
-              // Use setTimeout to ensure state updates are complete
-              setTimeout(() => {
-                window.location.href = redirectPath;
-              }, 100);
-              return;
-            }
-            
-            // Check if this is a first-time sign in or incomplete profile
-            if (profile) {
-              const isProfileComplete = profile.name && profile.phone && 
-                profile.name.trim() !== '' && profile.phone.trim() !== '';
-              
-              if (!isProfileComplete) {
-                // Redirect to account page for profile completion
-                setTimeout(() => {
-                  window.location.href = '/my-account/profile?complete=true';
-                }, 100);
-              }
-            }
-          }
-        }
-        break;
-        
-      case 'SIGNED_OUT':
-        // Clear all auth state
-        setSession(null);
-        setUser(null);
-        setUserProfile(null);
-        // Clear any stored redirect paths
-        localStorage.removeItem('redirectAfterLogin');
-        break;
-        
-      case 'TOKEN_REFRESHED':
-        // Session was refreshed, update state
-        setSession(session);
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          const profile = await fetchUserProfile(session.user);
-          setUserProfile(profile);
-        }
-        break;
-        
-      case 'PASSWORD_RECOVERY':
-        // Handle password recovery if needed
-        break;
-        
-      default:
-        console.log('Unhandled auth event:', event);
-    }
   };
 
   useEffect(() => {
@@ -245,12 +225,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       setLoading(true);
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      return { error };
+      
+      if (error) {
+        setLoading(false);
+        return { error };
+      }
+      
+      // Don't set loading to false here - let the auth state change handler do it
+      return { error: null };
     } catch (error) {
       console.error('Error in signIn:', error);
-      return { error: error as AuthError };
-    } finally {
       setLoading(false);
+      return { error: error as AuthError };
     }
   };
 
