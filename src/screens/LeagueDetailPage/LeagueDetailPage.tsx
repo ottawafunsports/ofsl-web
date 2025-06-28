@@ -27,6 +27,7 @@ export function LeagueDetailPage() {
   const [league, setLeague] = useState<League | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [spotsRemaining, setSpotsRemaining] = useState(0);
 
   const { activeView, setActiveView } = useActiveView();
   const { 
@@ -103,6 +104,10 @@ export function LeagueDetailPage() {
     spotsRemaining: league.max_teams ? Math.max(0, league.max_teams - 0) : 0 // TODO: Calculate from actual team count
   };
 
+  const handleSpotsUpdate = (spots: number) => {
+    setSpotsRemaining(spots);
+  };
+
   return (
     <div className="bg-white w-full">
       <div className="max-w-[1280px] mx-auto px-4 py-12">
@@ -142,7 +147,11 @@ export function LeagueDetailPage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Sidebar */}
           <div className="md:col-span-1">
-            <LeagueInfo league={leagueForInfo} sport={league.sport_name || ''} />
+            <LeagueInfo 
+              league={leagueForInfo} 
+              sport={league.sport_name || ''} 
+              onSpotsUpdate={handleSpotsUpdate}
+            />
           </div>
 
           {/* Main content area */}
@@ -188,7 +197,10 @@ export function LeagueDetailPage() {
 
             {/* Admin Teams View */}
             {activeView === 'teams' && userProfile?.is_admin && (
-              <LeagueTeams leagueId={league.id} />
+              <LeagueTeams 
+                leagueId={league.id} 
+                onTeamsUpdate={() => handleSpotsUpdate(spotsRemaining)}
+              />
             )}
           </div>
         </div>

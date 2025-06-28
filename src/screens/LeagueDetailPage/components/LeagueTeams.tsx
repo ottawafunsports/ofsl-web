@@ -20,9 +20,10 @@ interface TeamData {
 
 interface LeagueTeamsProps {
   leagueId: number;
+  onTeamsUpdate?: () => void;
 }
 
-export function LeagueTeams({ leagueId }: LeagueTeamsProps) {
+export function LeagueTeams({ leagueId, onTeamsUpdate }: LeagueTeamsProps) {
   const [teams, setTeams] = useState<TeamData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -30,6 +31,13 @@ export function LeagueTeams({ leagueId }: LeagueTeamsProps) {
   useEffect(() => {
     loadTeams();
   }, [leagueId]);
+
+  useEffect(() => {
+    // Notify parent when teams data changes
+    if (onTeamsUpdate) {
+      onTeamsUpdate();
+    }
+  }, [teams, onTeamsUpdate]);
 
   const loadTeams = async () => {
     try {
