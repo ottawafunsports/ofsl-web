@@ -15,6 +15,7 @@ interface User {
   phone: string;
   preferred_position: string | null;
   is_admin: boolean | null;
+  is_facilitator: boolean | null;
   date_created: string;
   date_modified: string;
   team_ids: number[] | null;
@@ -72,7 +73,8 @@ export function UsersTab() {
       email: user.email,
       phone: user.phone,
       preferred_position: user.preferred_position,
-      is_admin: user.is_admin
+      is_admin: user.is_admin,
+      is_facilitator: user.is_facilitator
     });
   };
 
@@ -88,6 +90,7 @@ export function UsersTab() {
           phone: editForm.phone,
           preferred_position: editForm.preferred_position,
           is_admin: editForm.is_admin,
+          is_facilitator: editForm.is_facilitator,
           date_modified: new Date().toISOString()
         })
         .eq('id', editingUser);
@@ -349,6 +352,19 @@ export function UsersTab() {
                   />
                   <label htmlFor="is_admin" className="text-sm font-medium text-[#6F6F6F]">
                     Admin privileges
+                  </label>
+                </div>
+
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="is_facilitator"
+                    checked={editForm.is_facilitator || false}
+                    onChange={(e) => setEditForm({ ...editForm, is_facilitator: e.target.checked })}
+                    className="mr-2"
+                  />
+                  <label htmlFor="is_facilitator" className="text-sm font-medium text-[#6F6F6F]">
+                    Facilitator
                   </label>
                 </div>
               </div>
