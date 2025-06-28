@@ -670,14 +670,12 @@ export function UsersTab() {
                         {userRegistrations.map((league) => (
                           <div key={league.id}>
                             <div className="flex items-center gap-2">
-                              <a 
-                                href={`/leagues/${league.id}`}
+                              <Link 
+                                to={`/leagues/${league.id}`}
                                 className="text-[#B20000] hover:text-[#8A0000] hover:underline"
-                                target="_blank"
-                                rel="noopener noreferrer"
                               >
                                 {league.name}
-                              </a>
+                              </Link>
                               {league.sport_name === 'Volleyball' && (
                                 <span className={`px-2 py-1 text-xs rounded-full ${
                                   league.role === 'captain' 
