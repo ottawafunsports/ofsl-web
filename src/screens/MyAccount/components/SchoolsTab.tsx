@@ -520,6 +520,34 @@ export function SchoolsTab() {
                   }`}>
                     {gym.active ? 'Active' : 'Inactive'}
                   </span>
+                  
+                  {/* Available Days Tags */}
+                  {gym.active && editGym.availableDays && editGym.availableDays.length > 0 && (
+                    <div className="inline-flex flex-wrap gap-1 ml-2">
+                      {editGym.availableDays.map(dayId => {
+                        const day = daysOfWeek.find(d => d.id === dayId);
+                        return day ? (
+                          <span key={dayId} className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
+                            {day.name}
+                          </span>
+                        ) : null;
+                      })}
+                    </div>
+                  )}
+                  
+                  {/* Available Sports Tags */}
+                  {gym.active && editGym.availableSports && editGym.availableSports.length > 0 && (
+                    <div className="inline-flex flex-wrap gap-1 ml-2">
+                      {editGym.availableSports.map(sportId => {
+                        const sport = sports.find(s => s.id === sportId);
+                        return sport ? (
+                          <span key={sportId} className="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-800">
+                            {sport.name}
+                          </span>
+                        ) : null;
+                      })}
+                    </div>
+                  )}
                 </div>
                 
                 {gym.instructions && (
