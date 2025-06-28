@@ -267,7 +267,8 @@ export function UsersTab() {
   }
 
   return (
-    <div className="space-y-6">
+    <>
+      <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-2">
           <Users className="h-6 w-6 text-[#6F6F6F]" />
@@ -630,6 +631,7 @@ export function UsersTab() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }
