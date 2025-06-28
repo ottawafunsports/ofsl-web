@@ -6,6 +6,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../components/ui/toast';
 import { supabase } from '../../../lib/supabase';
 import { Users, Search, Edit2, Trash2, Crown, Mail, Phone, Calendar, ChevronUp, ChevronDown, Filter } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface User {
   id: string;
@@ -40,7 +41,7 @@ export function UsersTab() {
   const [loading, setLoading] = useState(true);
   const [editingUser, setEditingUser] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<User>>({});
-  const [userRegistrations, setUserRegistrations] = useState<string[]>([]);
+  const [userRegistrations, setUserRegistrations] = useState<Array<{id: number, name: string}>>([]);
   
   // Sorting state
   const [sortField, setSortField] = useState<SortField>('date_created');
@@ -168,17 +169,20 @@ export function UsersTab() {
       const { data: teams, error } = await supabase
         .from('teams')
         .select(`
-          leagues:league_id(name)
+          leagues:league_id(id, name)
         `)
         .in('id', teamIds);
 
       if (error) throw error;
 
-      const leagueNames = teams
-        ?.map(team => team.leagues?.name)
-        .filter(name => name !== null && name !== undefined) || [];
+      const leagues = teams
+        ?.map(team => team.leagues)
+        .filter(league => league !== null && league !== undefined)
+        .filter((league, index, self) => 
+          index === self.findIndex(l => l?.id === league?.id)
+        ) || []; // Remove duplicates
 
-      setUserRegistrations(leagueNames as string[]);
+      setUserRegistrations(leagues as Array<{id: number, name: string}>);
     } catch (error) {
       console.error('Error loading user registrations:', error);
       setUserRegistrations([]);
@@ -593,11 +597,24 @@ export function UsersTab() {
 
                 <div>
                   <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Registrations</label>
-                  <div className="text-sm text-[#6F6F6F]">
+                  <div className="text-sm">
                     {userRegistrations.length > 0 ? (
-                      userRegistrations.join(', ')
+                      <div className="space-y-1">
+                        {userRegistrations.map((league) => (
+                          <div key={league.id}>
+                            <Link 
+                              to={`/leagues/${league.id}`}
+                              className="text-[#B20000] hover:text-[#8A0000] hover:underline"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              {league.name}
+                            </Link>
+                          </div>
+                        ))}
+                      </div>
                     ) : (
-                      'No league registrations'
+                      <span className="text-[#6F6F6F]">No league registrations</span>
                     )}
                   </div>
                 </div>
