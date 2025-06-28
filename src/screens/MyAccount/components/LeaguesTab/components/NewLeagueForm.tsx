@@ -26,7 +26,6 @@ export function NewLeagueForm({
   const [newLeague, setNewLeague] = useState<NewLeague>({
     name: '',
     description: '',
-    additional_info: '',
     sport_id: null,
     skill_id: null,
     day_of_week: null,
@@ -42,7 +41,6 @@ export function NewLeagueForm({
     setNewLeague({
       name: '',
       description: '',
-      additional_info: '',
       sport_id: null,
       skill_id: null,
       day_of_week: null,
@@ -164,16 +162,6 @@ export function NewLeagueForm({
               className="w-full"
             />
           </div>
-        </div>
-
-        <div className="mt-6">
-          <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Description</label>
-          <RichTextEditor
-            value={newLeague.description}
-            onChange={(content) => setNewLeague({ ...newLeague, description: content })}
-            placeholder="Enter league description"
-            rows={3}
-          />
         </div>
 
         <div className="mt-6">
