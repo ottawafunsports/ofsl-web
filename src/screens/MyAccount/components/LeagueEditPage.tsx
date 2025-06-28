@@ -115,7 +115,7 @@ export function LeagueEditPage() {
         setLeague(leagueData);
         setEditLeague({
           name: leagueData.name,
-          description: leagueData.description || '',
+          description: leagueData.description || getDefaultDescription(leagueData),
           sport_id: leagueData.sport_id,
           skill_id: leagueData.skill_id,
           day_of_week: leagueData.day_of_week,
@@ -132,6 +132,41 @@ export function LeagueEditPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Function to get default description based on league details
+  const getDefaultDescription = (leagueData: any) => {
+    const sportName = leagueData.sports?.name || '';
+    const skillName = leagueData.skills?.name || '';
+    const leagueName = leagueData.name || '';
+    
+    if (sportName === 'Volleyball') {
+      if (leagueName.toLowerCase().includes('elite') && leagueName.toLowerCase().includes('women')) {
+        return "OFSL's elite women's volleyball league represents the highest level of competitive play for female athletes. This league is designed for current or former college/university players who demonstrate advanced offensive and defensive systems, consistent high-level execution, and specialized positional play.";
+      } else if (leagueName.toLowerCase().includes('coed') && leagueName.toLowerCase().includes('intermediate')) {
+        return "Our coed intermediate volleyball league provides a structured environment for players who are comfortable with basic volleyball skills and are developing consistency in their play. This league welcomes players who understand fundamental rules and strategies.";
+      } else if (leagueName.toLowerCase().includes('coed') && leagueName.toLowerCase().includes('advanced')) {
+        return "The coed advanced volleyball league is perfect for players with solid technique in all basic strokes and serves, good footwork and court movement, and the ability to maintain longer rallies with control.";
+      } else if (leagueName.toLowerCase().includes('coed') && leagueName.toLowerCase().includes('competitive')) {
+        return "Our coed competitive volleyball league features strong fundamental skills with developing advanced techniques. Players should demonstrate good court positioning and shot selection.";
+      } else if (leagueName.toLowerCase().includes('4s')) {
+        return "This 4-on-4 volleyball format provides a faster-paced, more dynamic game where every player is constantly involved. With fewer players on the court, each participant gets more touches and opportunities.";
+      } else {
+        return "OFSL volleyball leagues are organized to provide participants with a structured environment that encourages sportsmanship, physical activity and healthy competition.";
+      }
+    } else if (sportName === 'Badminton') {
+      if (leagueName.toLowerCase().includes('advanced') && leagueName.toLowerCase().includes('singles')) {
+        return "Advanced singles badminton for players with solid technique in all basic strokes and serves, excellent footwork and court movement, and the ability to maintain longer rallies with control and precision.";
+      } else if (leagueName.toLowerCase().includes('intermediate') && leagueName.toLowerCase().includes('doubles')) {
+        return "Intermediate doubles badminton welcomes players who are comfortable with basic strokes and serves, developing consistency in shot placement, and learning proper footwork and court positioning.";
+      } else if (leagueName.toLowerCase().includes('competitive')) {
+        return "Competitive badminton featuring strong fundamental skills with developing advanced techniques. Players should demonstrate good court positioning and shot selection.";
+      } else {
+        return "OFSL badminton leagues offer competitive play for all skill levels, from intermediate to advanced players. Experience fast-paced action and improve your game in a supportive community environment.";
+      }
+    }
+    
+    return "Join our league for competitive play in a structured, supportive environment. Perfect for players looking to improve their skills while enjoying organized competition and community.";
   };
 
   const handleUpdateLeague = async () => {
