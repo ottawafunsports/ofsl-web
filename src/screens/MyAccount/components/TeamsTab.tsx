@@ -519,9 +519,14 @@ export function TeamsTab() {
               <div key={team.id} className="bg-white border border-gray-200 rounded-lg p-6">
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex-1">
-                    <h3 className="text-lg font-bold text-[#6F6F6F] mb-2">
-                      {team.league?.name || 'Unknown League'} - Winter 2025
-                    </h3>
+                    <Link 
+                      to={`/leagues/${team.league_id}`}
+                      className="block"
+                    >
+                      <h3 className="text-lg font-bold text-[#6F6F6F] mb-2 hover:text-[#B20000] transition-colors cursor-pointer">
+                        {team.league?.name || 'Unknown League'} - Winter 2025
+                      </h3>
+                    </Link>
                     
                     <div className="flex flex-wrap items-center gap-4 text-sm text-[#6F6F6F] mb-2">
                       <div className="flex items-center gap-1">
