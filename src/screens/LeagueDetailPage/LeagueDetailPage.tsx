@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { Button } from '../../components/ui/button';
 import { ChevronLeft } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import '../../../src/styles/rich-text.css';
 import { 
   mockStandings, 
   mockSchedule, 
@@ -159,7 +160,7 @@ export function LeagueDetailPage() {
                 <div>
                   <h2 className="text-2xl font-bold text-[#6F6F6F] mb-4">League Description</h2>
                   <div 
-                    className="text-[#6F6F6F] league-description prose max-w-none" 
+                    className="text-[#6F6F6F] league-description prose prose-ul:pl-0 prose-li:pl-0 max-w-none" 
                     dangerouslySetInnerHTML={{ __html: league.description || 'No description available.' }}
                   >
                   </div>
@@ -169,7 +170,7 @@ export function LeagueDetailPage() {
                   <div>
                     <h2 className="text-2xl font-bold text-[#6F6F6F] mb-4">Additional Information</h2>
                     <div 
-                      className="text-[#6F6F6F] league-additional-info prose max-w-none" 
+                      className="text-[#6F6F6F] league-additional-info prose prose-ul:pl-0 prose-li:pl-0 max-w-none" 
                       dangerouslySetInnerHTML={{ __html: league.additional_info }}
                     >
                     </div>

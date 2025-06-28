@@ -10,6 +10,9 @@ import { fetchSports, fetchSkills, fetchLeagueById, type League } from '../../..
 import { ChevronLeft, Save, X } from 'lucide-react';
 import { RichTextEditor } from '../../../components/ui/rich-text-editor';
 
+// Add CSS for rich text editor content
+import '../../../styles/rich-text.css';
+
 export function LeagueEditPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -308,13 +311,23 @@ export function LeagueEditPage() {
               <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Description</label>
               <RichTextEditor
                 value={editLeague.description || ''}
-                onChange={(content) => setEditLeague(prev => ({ ...prev, description: content }))}
+                onChange={(content) => setEditLeague({ ...editLeague, description: content })}
                 placeholder="Enter league description"
                 rows={10}
               />
             </div>
 
-            <div className="mt-12">
+            <div className="mt-6">
+              <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Additional Information</label>
+              <RichTextEditor
+                value={editLeague.additional_info || ''}
+                onChange={(content) => setEditLeague({ ...editLeague, additional_info: content })}
+                placeholder="Enter additional information"
+                rows={6}
+              />
+            </div>
+
+            <div className="mt-6">
               <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Gyms/Schools</label>
               <div className="space-y-2 max-h-40 overflow-y-auto border border-gray-300 rounded-lg p-3">
                 {gyms.map(gym => (
