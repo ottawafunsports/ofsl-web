@@ -5,7 +5,7 @@ import { Input } from '../../../components/ui/input';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../components/ui/toast';
 import { supabase } from '../../../lib/supabase';
-import { Users, Search, Edit2, Trash2, Crown, Mail, Phone, Calendar, ChevronUp, ChevronDown, Filter } from 'lucide-react';
+import { Users, Search, Edit2, Trash2, Crown, Mail, Phone, Calendar, ChevronUp, ChevronDown, Filter, Key } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface User {
@@ -42,6 +42,7 @@ export function UsersTab() {
   const [editingUser, setEditingUser] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<User>>({});
   const [userRegistrations, setUserRegistrations] = useState<Array<{id: number, name: string}>>([]);
+  const [resettingPassword, setResettingPassword] = useState(false);
   
   // Sorting state
   const [sortField, setSortField] = useState<SortField>('date_created');
@@ -235,6 +236,42 @@ export function UsersTab() {
     } catch (error) {
       console.error('Error deleting user:', error);
       showToast('Failed to delete user', 'error');
+    }
+  };
+
+  const handleResetPassword = async () => {
+    if (!editingUser) return;
+
+    const confirmReset = confirm('Are you sure you want to reset this user\'s password? They will receive an email with instructions to set a new password.');
+    if (!confirmReset) return;
+
+    try {
+      setResettingPassword(true);
+      
+      // Get the user's email from the edit form
+      const userEmail = editForm.email;
+      if (!userEmail) {
+        showToast('User email is required to reset password', 'error');
+        return;
+      }
+
+      // Use Supabase Auth Admin API to reset password
+      const { error } = await supabase.auth.admin.generateLink({
+        type: 'recovery',
+        email: userEmail,
+        options: {
+          redirectTo: `${window.location.origin}/reset-password`
+        }
+      });
+
+      if (error) throw error;
+
+      showToast('Password reset email sent successfully!', 'success');
+    } catch (error: any) {
+      console.error('Error resetting password:', error);
+      showToast(error.message || 'Failed to reset password', 'error');
+    } finally {
+      setResettingPassword(false);
     }
   };
 
@@ -643,6 +680,24 @@ export function UsersTab() {
                     Facilitator
                   </label>
                 </div>
+
+                {/* Password Reset Section - Only for Admins */}
+                {userProfile?.is_admin && (
+                  <div className="border-t pt-4">
+                    <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Password Management</label>
+                    <Button
+                      onClick={handleResetPassword}
+                      disabled={resettingPassword || !editForm.email}
+                      className="w-full bg-orange-500 hover:bg-orange-600 text-white rounded-lg px-4 py-2 flex items-center justify-center gap-2"
+                    >
+                      <Key className="h-4 w-4" />
+                      {resettingPassword ? 'Sending Reset Email...' : 'Reset Password'}
+                    </Button>
+                    <p className="text-xs text-[#6F6F6F] mt-2">
+                      This will send a password reset email to the user's email address.
+                    </p>
+                  </div>
+                )}
               </div>
 
               <div className="flex gap-4 mt-6">
@@ -657,6 +712,7 @@ export function UsersTab() {
                     setEditingUser(null);
                     setEditForm({});
                     setUserRegistrations([]);
+                    setResettingPassword(false);
                   }}
                   className="flex-1 bg-gray-500 hover:bg-gray-600 text-white rounded-lg px-6 py-2"
                 >
