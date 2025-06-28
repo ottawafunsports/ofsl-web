@@ -279,7 +279,7 @@ export function UsersTab() {
       </div>
 
       {/* Search Bar */}
-      <div className="space-y-4">
+      <div className="flex items-center gap-6">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#6F6F6F]" />
           <Input
@@ -291,7 +291,7 @@ export function UsersTab() {
         </div>
         
         {/* Filters */}
-        <div className="flex flex-wrap gap-4 items-center">
+        <div className="flex gap-4 items-center">
           <div className="flex items-center">
             <input
               type="checkbox"
@@ -330,17 +330,20 @@ export function UsersTab() {
               Active Player
             </label>
           </div>
-          
-          {isAnyFilterActive() && (
-            <Button
-              onClick={clearFilters}
-              className="text-sm text-[#B20000] hover:text-[#8A0000] bg-transparent hover:bg-transparent p-0"
-            >
-              Clear all filters
-            </Button>
-          )}
         </div>
       </div>
+      
+      {/* Clear filters button */}
+      {isAnyFilterActive() && (
+        <div className="flex justify-start">
+          <Button
+            onClick={clearFilters}
+            className="text-sm text-[#B20000] hover:text-[#8A0000] bg-transparent hover:bg-transparent p-0"
+          >
+            Clear all filters
+          </Button>
+        </div>
+      )}
 
       {/* Users Table */}
       <Card>
