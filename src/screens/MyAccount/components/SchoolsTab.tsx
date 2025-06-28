@@ -353,6 +353,23 @@ export function SchoolsTab() {
                   </div>
                 </div>
               </>
+            )}
+
+            <div className="flex justify-end gap-4">
+              <Button
+                onClick={() => setShowNewGymForm(false)}
+                className="bg-gray-100 hover:bg-gray-200 text-gray-700"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleCreateGym}
+                className="bg-[#B20000] hover:bg-[#8A0000] text-white"
+                disabled={saving}
+              >
+                {saving ? 'Saving...' : 'Save School'}
+              </Button>
+            </div>
           </div>
         </div>
       )}
@@ -463,6 +480,23 @@ export function SchoolsTab() {
                       </div>
                     </div>
                   </>
+                )}
+
+                <div className="flex justify-end gap-4">
+                  <Button
+                    onClick={handleCancelEdit}
+                    className="bg-gray-100 hover:bg-gray-200 text-gray-700"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleUpdateGym}
+                    className="bg-[#B20000] hover:bg-[#8A0000] text-white"
+                    disabled={saving}
+                  >
+                    {saving ? 'Saving...' : 'Save Changes'}
+                  </Button>
+                </div>
               </div>
             ) : (
               // View Mode
