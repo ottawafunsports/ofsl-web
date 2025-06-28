@@ -233,27 +233,36 @@ export const LeaguesPage = (): JSX.Element => {
 
         {/* Filters Section */}
         <div className="mb-16">
+          {/* First row - Sport Filter Buttons */}
+          <div className="flex flex-wrap justify-center gap-3 mb-4">
+            {/* Order sports as: Volleyball, Badminton, Basketball, Pickleball */}
+            {['Volleyball', 'Badminton', 'Basketball', 'Pickleball'].map((sportName) => {
+              const sport = sports.find(s => s.name === sportName);
+              if (!sport) return null;
+              
+              return (
+                <Button
+                  key={sport.id}
+                  onClick={() => handleFilterChange('sport', sport.name)}
+                  className={`flex items-center gap-2 px-5 py-2.5 rounded-lg border ${
+                    filters.sport === sport.name 
+                      ? 'border-[#B20000] bg-[#ffeae5] text-[#B20000] hover:border-[#B20000] hover:bg-[#ffeae5] hover:text-[#B20000]' 
+                      : 'border-gray-300 bg-white text-[#6F6F6F] hover:border-[#B20000] hover:bg-[#ffeae5] hover:text-[#B20000]'
+                  }`}
+                >
+                  <img 
+                    src={getSportIcon(sport.name)} 
+                    alt={`${sport.name} icon`}
+                    className="w-6 h-6" 
+                  />
+                  <span className="font-medium">{sport.name}</span>
+                </Button>
+              );
+            })}
+          </div>
+          
+          {/* Second row - Dropdown Filters */}
           <div className="flex flex-wrap justify-center gap-3 mb-6">
-            {/* Sport Filter Buttons */}
-            {sports.map((sport) => (
-              <Button
-                key={sport.id}
-                onClick={() => handleFilterChange('sport', sport.name)}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-lg border ${
-                  filters.sport === sport.name 
-                    ? 'border-[#B20000] bg-[#ffeae5] text-[#B20000] hover:border-[#B20000] hover:bg-[#ffeae5] hover:text-[#B20000]' 
-                    : 'border-gray-300 bg-white text-[#6F6F6F] hover:border-[#B20000] hover:bg-[#ffeae5] hover:text-[#B20000]'
-                }`}
-              >
-                <img 
-                  src={getSportIcon(sport.name)} 
-                  alt={`${sport.name} icon`}
-                  className="w-6 h-6" 
-                />
-                <span className="font-medium">{sport.name}</span>
-              </Button>
-            ))}
-            
             {/* Location Filter */}
             <div className="relative" ref={el => dropdownRefs.current['location'] = el}>
               <button
