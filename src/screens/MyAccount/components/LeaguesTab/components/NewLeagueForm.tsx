@@ -107,24 +107,6 @@ export function NewLeagueForm({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Day of Week</label>
-            <select
-              value={newLeague.day_of_week || ''}
-              onChange={(e) => setNewLeague({ ...newLeague, day_of_week: e.target.value ? parseInt(e.target.value) : null })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
-            >
-              <option value="">Select day...</option>
-              <option value="0">Sunday</option>
-              <option value="1">Monday</option>
-              <option value="2">Tuesday</option>
-              <option value="3">Wednesday</option>
-              <option value="4">Thursday</option>
-              <option value="5">Friday</option>
-              <option value="6">Saturday</option>
-            </select>
-          </div>
-
-          <div>
             <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Year</label>
             <select
               value={newLeague.year}
@@ -142,6 +124,24 @@ export function NewLeagueForm({
               <option value="2029">2029</option>
               <option value="2029/30">2029/30</option>
               <option value="2030">2030</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Day of Week</label>
+            <select
+              value={newLeague.day_of_week || ''}
+              onChange={(e) => setNewLeague({ ...newLeague, day_of_week: e.target.value ? parseInt(e.target.value) : null })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
+            >
+              <option value="">Select day...</option>
+              <option value="0">Sunday</option>
+              <option value="1">Monday</option>
+              <option value="2">Tuesday</option>
+              <option value="3">Wednesday</option>
+              <option value="4">Thursday</option>
+              <option value="5">Friday</option>
+              <option value="6">Saturday</option>
             </select>
           </div>
 
