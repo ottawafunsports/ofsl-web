@@ -696,36 +696,43 @@ export function UsersTab() {
                     )}
                   </div>
                 </div>
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="is_admin"
-                    checked={editForm.is_admin || false}
-                    onChange={(e) => setEditForm({ ...editForm, is_admin: e.target.checked })}
-                    className="mr-2"
-                  />
-                  <label htmlFor="is_admin" className="text-sm font-medium text-[#6F6F6F]">
-                    Admin privileges
-                  </label>
-                </div>
 
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="is_facilitator"
-                    checked={editForm.is_facilitator || false}
-                    onChange={(e) => setEditForm({ ...editForm, is_facilitator: e.target.checked })}
-                    className="mr-2"
-                  />
-                  <label htmlFor="is_facilitator" className="text-sm font-medium text-[#6F6F6F]">
-                    Facilitator
-                  </label>
+                {/* User Role Section */}
+                <div className="border-t pt-4">
+                  <h4 className="text-sm font-medium text-[#6F6F6F] mb-3">User Role</h4>
+                  <div className="flex items-center gap-6">
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id="is_admin"
+                        checked={editForm.is_admin || false}
+                        onChange={(e) => setEditForm({ ...editForm, is_admin: e.target.checked })}
+                        className="mr-2"
+                      />
+                      <label htmlFor="is_admin" className="text-sm font-medium text-[#6F6F6F]">
+                        Admin privileges
+                      </label>
+                    </div>
+
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id="is_facilitator"
+                        checked={editForm.is_facilitator || false}
+                        onChange={(e) => setEditForm({ ...editForm, is_facilitator: e.target.checked })}
+                        className="mr-2"
+                      />
+                      <label htmlFor="is_facilitator" className="text-sm font-medium text-[#6F6F6F]">
+                        Facilitator
+                      </label>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Password Reset Section - Only for Admins */}
                 {userProfile?.is_admin && (
                   <div className="border-t pt-4">
-                    <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Password Management</label>
+                    <h4 className="text-sm font-medium text-[#6F6F6F] mb-3">Password Management</h4>
                     <Button
                       onClick={handleResetPassword}
                       disabled={resettingPassword || !editForm.email}
