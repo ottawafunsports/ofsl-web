@@ -30,7 +30,6 @@ interface Gym {
 interface EditLeague {
   name: string;
   description: string;
-  additional_info: string;
   sport_id: number | null;
   skill_id: number | null;
   day_of_week: number | null;
@@ -57,7 +56,6 @@ export function LeagueEditPage() {
   const [editLeague, setEditLeague] = useState<EditLeague>({
     name: '',
     description: '',
-    additional_info: '',
     sport_id: null,
     skill_id: null,
     day_of_week: null,
@@ -118,7 +116,6 @@ export function LeagueEditPage() {
         setEditLeague({
           name: leagueData.name,
           description: leagueData.description || '',
-          additional_info: leagueData.additional_info || '',
           sport_id: leagueData.sport_id,
           skill_id: leagueData.skill_id,
           day_of_week: leagueData.day_of_week,
@@ -148,7 +145,6 @@ export function LeagueEditPage() {
         .update({
           name: editLeague.name,
           description: editLeague.description,
-          additional_info: editLeague.additional_info,
           sport_id: editLeague.sport_id,
           skill_id: editLeague.skill_id,
           day_of_week: editLeague.day_of_week,
@@ -340,15 +336,6 @@ export function LeagueEditPage() {
               />
             </div>
 
-            <div className="mt-6">
-              <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Additional Information</label>
-              <RichTextEditor
-                value={editLeague.additional_info}
-                onChange={(value) => setEditLeague({ ...editLeague, additional_info: value })}
-                placeholder="Enter additional information"
-                rows={3}
-              />
-            </div>
 
             <div className="mt-6">
               <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Gyms/Schools</label>
