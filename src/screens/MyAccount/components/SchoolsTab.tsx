@@ -310,7 +310,7 @@ export function SchoolsTab() {
 
             {/* Conditional sections when active is checked */}
             {newGym.active && (
-              <>
+              <div>
                 {/* Days of the Week */}
                 <div>
                   <label className="block text-sm font-medium text-[#6F6F6F] mb-3">Available Days</label>
@@ -352,7 +352,7 @@ export function SchoolsTab() {
                     ))}
                   </div>
                 </div>
-              </>
+              </div>
             )}
 
             <div className="flex justify-end gap-4">
@@ -437,7 +437,7 @@ export function SchoolsTab() {
 
                 {/* Conditional sections when active is checked */}
                 {editGym.active && (
-                  <>
+                  <div>
                     {/* Days of the Week */}
                     <div>
                       <label className="block text-sm font-medium text-[#6F6F6F] mb-3">Available Days</label>
@@ -479,7 +479,7 @@ export function SchoolsTab() {
                         ))}
                       </div>
                     </div>
-                  </>
+                  </div>
                 )}
 
                 <div className="flex justify-end gap-4">
