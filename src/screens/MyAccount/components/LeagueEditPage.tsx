@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Button } from '../../../components/ui/button';
+import { Card, CardContent } from '../../../components/ui/card';
 import { Input } from '../../../components/ui/input';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../components/ui/toast';
 import { supabase } from '../../../lib/supabase';
 import { fetchSports, fetchSkills, type League } from '../../../lib/leagues';
-import { ChevronLeft, Save } from 'lucide-react';
+import { ChevronLeft, Save, X } from 'lucide-react';
 import { RichTextEditor } from '../../../components/ui/rich-text-editor';
 
 interface Sport {
@@ -66,8 +67,6 @@ export function LeagueEditPage() {
     max_teams: 20,
     gym_ids: []
   });
-  
-  const [seasonText, setSeasonText] = useState('2025 Season');
 
   useEffect(() => {
     if (!userProfile?.is_admin) {
@@ -215,231 +214,184 @@ export function LeagueEditPage() {
             <ChevronLeft className="h-5 w-5 mr-1" />
             Back to Manage Leagues
           </Link>
+          
+          <h2 className="text-2xl font-bold text-[#6F6F6F]">Edit League</h2>
         </div>
 
-        {/* League Name Header */}
-        <div className="mb-8">
-          <div className="flex items-center mb-2">
-            <img
-              src={getSportIcon(league.sports?.name)}
-              alt={league.sports?.name || 'Sport'}
-              className="w-10 h-10 mr-3 flex-shrink-0"
-            />
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-[#6F6F6F] mb-1">League Name</label>
-              <div className="relative group">
+        {/* Edit League Form - Using same Card structure as Add New League */}
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-[#6F6F6F]">Edit League Details</h3>
+              <Button
+                onClick={() => navigate('/my-account/leagues')}
+                className="text-gray-500 hover:text-gray-700 bg-transparent hover:bg-transparent border-none shadow-none p-2"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-[#6F6F6F] mb-2">League Name</label>
                 <Input
                   value={editLeague.name}
                   onChange={(e) => setEditLeague({ ...editLeague, name: e.target.value })}
                   placeholder="Enter league name"
-                  className="text-3xl md:text-4xl font-bold text-[#6F6F6F] border-2 border-dashed border-gray-300 hover:border-[#B20000] focus:border-[#B20000] focus:border-solid shadow-none p-2 h-auto bg-transparent focus:ring-0 rounded-lg transition-all duration-200"
+                  className="w-full"
                 />
               </div>
-            </div>
-          </div>
-          <div className="ml-[52px]">
-            <div className="relative group inline-block">
-              <div className="relative">
-                <Input
-                  value={seasonText}
-                  onChange={(e) => setSeasonText(e.target.value)}
-                  placeholder="Enter season"
-                  className="text-xl text-[#6F6F6F] border-2 border-dashed border-gray-300 hover:border-[#B20000] focus:border-[#B20000] focus:border-solid shadow-none p-2 h-auto bg-transparent focus:ring-0 rounded-lg transition-all duration-200 w-auto inline-block min-w-[150px]"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Sidebar - League Details */}
-          <div className="md:col-span-1">
-            <div className="bg-gray-100 rounded-lg p-6 mb-6">
-              <h3 className="text-lg font-bold text-[#6F6F6F] mb-4">League Details</h3>
-              
-              <div className="space-y-4">
-                {/* Sport */}
-                <div>
-                  <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Sport</label>
-                  <select
-                    value={editLeague.sport_id || ''}
-                    onChange={(e) => setEditLeague({ ...editLeague, sport_id: e.target.value ? parseInt(e.target.value) : null })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
-                  >
-                    <option value="">Select sport...</option>
-                    {sports.map(sport => (
-                      <option key={sport.id} value={sport.id}>{sport.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Day & Time */}
-                <div>
-                  <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Day of Week</label>
-                  <select
-                    value={editLeague.day_of_week || ''}
-                    onChange={(e) => setEditLeague({ ...editLeague, day_of_week: e.target.value ? parseInt(e.target.value) : null })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
-                  >
-                    <option value="">Select day...</option>
-                    <option value="0">Sunday</option>
-                    <option value="1">Monday</option>
-                    <option value="2">Tuesday</option>
-                    <option value="3">Wednesday</option>
-                    <option value="4">Thursday</option>
-                    <option value="5">Friday</option>
-                    <option value="6">Saturday</option>
-                  </select>
-                </div>
-
-                {/* Location/Gyms */}
-                <div>
-                  <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Gyms/Schools</label>
-                  <div className="space-y-2 max-h-32 overflow-y-auto border border-gray-300 rounded-lg p-3">
-                    {gyms.map(gym => (
-                      <label key={gym.id} className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={editLeague.gym_ids.includes(gym.id)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setEditLeague({ ...editLeague, gym_ids: [...editLeague.gym_ids, gym.id] });
-                            } else {
-                              setEditLeague({ ...editLeague, gym_ids: editLeague.gym_ids.filter(id => id !== gym.id) });
-                            }
-                          }}
-                          className="mr-2"
-                        />
-                        <span className="text-sm">{gym.gym}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Season Dates */}
-                <div>
-                  <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Start Date</label>
-                  <Input
-                    type="date"
-                    value={editLeague.start_date}
-                    onChange={(e) => setEditLeague({ ...editLeague, start_date: e.target.value })}
-                    className="w-full"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-[#6F6F6F] mb-2">End Date</label>
-                  <Input
-                    type="date"
-                    value={editLeague.end_date}
-                    onChange={(e) => setEditLeague({ ...editLeague, end_date: e.target.value })}
-                    className="w-full"
-                  />
-                </div>
-
-                {/* Price */}
-                <div>
-                  <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Cost ($)</label>
-                  <Input
-                    type="number"
-                    value={editLeague.cost || ''}
-                    onChange={(e) => setEditLeague({ ...editLeague, cost: e.target.value ? parseFloat(e.target.value) : null })}
-                    placeholder="0.00"
-                    className="w-full"
-                  />
-                </div>
-
-                {/* Max Teams */}
-                <div>
-                  <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Max Teams</label>
-                  <Input
-                    type="number"
-                    value={editLeague.max_teams}
-                    onChange={(e) => setEditLeague({ ...editLeague, max_teams: parseInt(e.target.value) || 20 })}
-                    className="w-full"
-                  />
-                </div>
-
-                {/* Skill Level */}
-                <div>
-                  <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Skill Level</label>
-                  <select
-                    value={editLeague.skill_id || ''}
-                    onChange={(e) => setEditLeague({ ...editLeague, skill_id: e.target.value ? parseInt(e.target.value) : null })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
-                  >
-                    <option value="">Select skill level...</option>
-                    {skills.map(skill => (
-                      <option key={skill.id} value={skill.id}>{skill.name}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Main content area - League Description and Details */}
-          <div className="md:col-span-3">
-            <div className="space-y-8">
-              {/* League Description */}
               <div>
-                <h2 className="text-2xl font-bold text-[#6F6F6F] mb-4">League Description</h2>
-                <RichTextEditor
-                  value={editLeague.description}
-                  onChange={(value) => setEditLeague({ ...editLeague, description: value })}
-                  placeholder="Enter league description"
-                  rows={4}
-                />
-              </div>
-
-              {/* Additional Information */}
-              <div>
-                <h2 className="text-2xl font-bold text-[#6F6F6F] mb-4">Additional Information</h2>
-                <RichTextEditor
-                  value={editLeague.additional_info}
-                  onChange={(value) => setEditLeague({ ...editLeague, additional_info: value })}
-                  placeholder="Enter additional information"
-                  rows={4}
-                />
-              </div>
-
-              {/* Save/Cancel Actions */}
-              <div className="flex gap-4 pt-6 border-t border-gray-200">
-                <Button
-                  onClick={handleUpdateLeague}
-                  disabled={saving || !editLeague.name || !editLeague.sport_id}
-                  className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] px-6 py-2 flex items-center gap-2"
+                <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Sport</label>
+                <select
+                  value={editLeague.sport_id || ''}
+                  onChange={(e) => setEditLeague({ ...editLeague, sport_id: e.target.value ? parseInt(e.target.value) : null })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
                 >
-                  <Save className="h-4 w-4" />
-                  {saving ? 'Saving...' : 'Save Changes'}
-                </Button>
-                <Link to="/my-account/leagues">
-                  <Button className="bg-gray-500 hover:bg-gray-600 text-white rounded-[10px] px-6 py-2">
-                    Cancel
-                  </Button>
-                </Link>
+                  <option value="">Select sport...</option>
+                  {sports.map(sport => (
+                    <option key={sport.id} value={sport.id}>{sport.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Skill Level</label>
+                <select
+                  value={editLeague.skill_id || ''}
+                  onChange={(e) => setEditLeague({ ...editLeague, skill_id: e.target.value ? parseInt(e.target.value) : null })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
+                >
+                  <option value="">Select skill level...</option>
+                  {skills.map(skill => (
+                    <option key={skill.id} value={skill.id}>{skill.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Day of Week</label>
+                <select
+                  value={editLeague.day_of_week || ''}
+                  onChange={(e) => setEditLeague({ ...editLeague, day_of_week: e.target.value ? parseInt(e.target.value) : null })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
+                >
+                  <option value="">Select day...</option>
+                  <option value="0">Sunday</option>
+                  <option value="1">Monday</option>
+                  <option value="2">Tuesday</option>
+                  <option value="3">Wednesday</option>
+                  <option value="4">Thursday</option>
+                  <option value="5">Friday</option>
+                  <option value="6">Saturday</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Start Date</label>
+                <Input
+                  type="date"
+                  value={editLeague.start_date}
+                  onChange={(e) => setEditLeague({ ...editLeague, start_date: e.target.value })}
+                  className="w-full"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-[#6F6F6F] mb-2">End Date</label>
+                <Input
+                  type="date"
+                  value={editLeague.end_date}
+                  onChange={(e) => setEditLeague({ ...editLeague, end_date: e.target.value })}
+                  className="w-full"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Cost ($)</label>
+                <Input
+                  type="number"
+                  value={editLeague.cost || ''}
+                  onChange={(e) => setEditLeague({ ...editLeague, cost: e.target.value ? parseFloat(e.target.value) : null })}
+                  placeholder="0.00"
+                  className="w-full"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Max Teams</label>
+                <Input
+                  type="number"
+                  value={editLeague.max_teams}
+                  onChange={(e) => setEditLeague({ ...editLeague, max_teams: parseInt(e.target.value) || 20 })}
+                  className="w-full"
+                />
               </div>
             </div>
-          </div>
-        </div>
+
+            <div className="mt-6">
+              <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Description</label>
+              <RichTextEditor
+                value={editLeague.description}
+                onChange={(value) => setEditLeague({ ...editLeague, description: value })}
+                placeholder="Enter league description"
+                rows={3}
+              />
+            </div>
+
+            <div className="mt-6">
+              <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Additional Information</label>
+              <RichTextEditor
+                value={editLeague.additional_info}
+                onChange={(value) => setEditLeague({ ...editLeague, additional_info: value })}
+                placeholder="Enter additional information"
+                rows={3}
+              />
+            </div>
+
+            <div className="mt-6">
+              <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Gyms/Schools</label>
+              <div className="space-y-2 max-h-40 overflow-y-auto border border-gray-300 rounded-lg p-3">
+                {gyms.map(gym => (
+                  <label key={gym.id} className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={editLeague.gym_ids.includes(gym.id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setEditLeague({ ...editLeague, gym_ids: [...editLeague.gym_ids, gym.id] });
+                        } else {
+                          setEditLeague({ ...editLeague, gym_ids: editLeague.gym_ids.filter(id => id !== gym.id) });
+                        }
+                      }}
+                      className="mr-2"
+                    />
+                    <span className="text-sm">{gym.gym}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-6 flex gap-4">
+              <Button
+                onClick={handleUpdateLeague}
+                disabled={saving || !editLeague.name || !editLeague.sport_id}
+                className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] px-6 py-2 flex items-center gap-2"
+              >
+                <Save className="h-4 w-4" />
+                {saving ? 'Saving...' : 'Save Changes'}
+              </Button>
+              <Button
+                onClick={() => navigate('/my-account/leagues')}
+                className="bg-gray-500 hover:bg-gray-600 text-white rounded-[10px] px-6 py-2"
+              >
+                Cancel
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
 }
-
-// Helper function to get sport icon based on sport type
-const getSportIcon = (sport: string | null) => {
-  if (!sport) return "";
-  switch (sport) {
-    case 'Volleyball':
-      return "/Volleyball.png";
-    case 'Badminton':
-      return "/Badminton.png";
-    case 'Basketball':
-      return "/Basketball.png";
-    case 'Pickleball':
-      return "/Pickleball.png";
-    default:
-      return "";
-  }
-};
