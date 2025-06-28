@@ -535,7 +535,7 @@ export function LeagueEditPage() {
               <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Description</label>
               <RichTextEditor
                 value={editLeague.description}
-                onChange={(value) => setEditLeague({ ...editLeague, description: value })}
+                onChange={(content) => setEditLeague(prev => ({ ...prev, description: content }))}
                 placeholder="Enter league description"
                 rows={3}
               />
