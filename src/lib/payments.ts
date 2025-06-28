@@ -30,12 +30,48 @@ export interface PaymentSummary {
 export const getUserLeaguePayments = async (): Promise<LeaguePayment[]> => {
   try {
     const { data, error } = await supabase
-      .from('user_payment_summary')
-      .select('*');
+      .from('league_payments')
+      .select(`
+        id,
+        user_id,
+        team_id,
+        league_id,
+        amount_due,
+        amount_paid,
+        status,
+        due_date,
+        payment_method,
+        stripe_order_id,
+        notes,
+        created_at,
+        updated_at,
+        leagues!inner(name),
+        teams(name)
+      `);
 
     if (error) throw error;
 
-    return data || [];
+    // Transform the data to match the LeaguePayment interface
+    const transformedData = (data || []).map(payment => ({
+      id: payment.id,
+      user_id: payment.user_id,
+      team_id: payment.team_id,
+      league_id: payment.league_id,
+      amount_due: payment.amount_due,
+      amount_paid: payment.amount_paid,
+      amount_outstanding: payment.amount_due - payment.amount_paid,
+      status: payment.status,
+      due_date: payment.due_date,
+      payment_method: payment.payment_method,
+      stripe_order_id: payment.stripe_order_id,
+      notes: payment.notes,
+      created_at: payment.created_at,
+      updated_at: payment.updated_at,
+      league_name: payment.leagues?.name || '',
+      team_name: payment.teams?.name || null
+    }));
+
+    return transformedData;
   } catch (error) {
     console.error('Error fetching user league payments:', error);
     return [];
