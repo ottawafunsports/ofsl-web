@@ -113,9 +113,13 @@ export function LeagueEditPage() {
       
       if (leagueData) {
         setLeague(leagueData);
+        
+        // Get the description from the database or generate default if empty
+        const description = leagueData.description || getDefaultDescription(leagueData);
+        
         setEditLeague({
           name: leagueData.name,
-          description: leagueData.description || getDefaultDescription(leagueData),
+          description: description,
           sport_id: leagueData.sport_id,
           skill_id: leagueData.skill_id,
           day_of_week: leagueData.day_of_week,

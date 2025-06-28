@@ -9,55 +9,47 @@ interface RichTextEditorProps {
   rows?: number;
 }
 
-export function RichTextEditor({ 
-  value, 
-  onChange, 
-  placeholder = 'Enter text here...', 
-  rows = 5 
-}: RichTextEditorProps) {
-  const [editorValue, setEditorValue] = useState(value || '');
-  
-  // Update internal state when prop value changes
+export function RichTextEditor({ value, onChange, placeholder, rows = 4 }: RichTextEditorProps) {
+  const [content, setContent] = useState(value || '');
+
+  // Update internal state when value prop changes
   useEffect(() => {
-    setEditorValue(value || '');
+    setContent(value || '');
   }, [value]);
 
-  // Handle editor content change
-  const handleChange = (content: string) => {
-    setEditorValue(content);
-    onChange(content);
+  const handleChange = (newContent: string) => {
+    setContent(newContent);
+    onChange(newContent);
   };
-
-  // Calculate editor height based on rows
-  const editorHeight = `${Math.max(150, rows * 24)}px`;
 
   const modules = {
     toolbar: [
       [{ 'header': [1, 2, 3, false] }],
-      ['bold', 'italic', 'underline', 'strike'],
-      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+      ['bold', 'italic', 'underline'],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
       ['link'],
       ['clean']
     ],
   };
 
   const formats = [
-    'header',
-    'bold', 'italic', 'underline', 'strike',
-    'list', 'bullet',
-    'link'
+    'header', 'bold', 'italic', 'underline',
+    'list', 'bullet', 'link'
   ];
 
   return (
     <div className="rich-text-editor">
       <ReactQuill
         theme="snow"
-        value={editorValue}
+        value={content}
         onChange={handleChange}
-        placeholder={placeholder}
         modules={modules}
         formats={formats}
-        style={{ height: editorHeight, marginBottom: '40px' }}
+        placeholder={placeholder}
+        style={{
+          height: `${rows * 40}px`,
+          marginBottom: '42px' // Account for toolbar height
+        }}
       />
     </div>
   );
