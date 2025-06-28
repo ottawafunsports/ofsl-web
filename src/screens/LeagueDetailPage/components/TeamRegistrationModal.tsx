@@ -120,23 +120,9 @@ export function TeamRegistrationModal({
 
       if (userError) throw userError;
 
-      // Create league payment record if there's a cost
+      // Payment record will be automatically created by database trigger
       if (leagueData?.cost && leagueData.cost > 0) {
-        try {
-          await createLeaguePayment({
-            user_id: userProfile.id,
-            team_id: teamData.id,
-            league_id: leagueId,
-            amount_due: leagueData.cost,
-            due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
-            notes: `Payment for ${teamName} registration`
-          });
-
-          showToast(`Team "${teamName}" registered successfully! Payment of $${leagueData.cost} is due in 30 days.`, 'success');
-        } catch (paymentError) {
-          console.error('Error creating payment record:', paymentError);
-          showToast(`Team "${teamName}" registered successfully, but there was an issue creating the payment record. Please contact support.`, 'warning');
-        }
+        showToast(`Team "${teamName}" registered successfully! Payment of $${leagueData.cost} is due in 30 days.`, 'success');
       } else {
         showToast(`Team "${teamName}" registered successfully!`, 'success');
       }
