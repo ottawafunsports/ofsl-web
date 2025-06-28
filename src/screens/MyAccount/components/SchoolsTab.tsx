@@ -48,7 +48,6 @@ export function SchoolsTab() {
     availableDays: [] as number[],
     availableSports: [] as number[]
   });
-  useEffect(() => {
   const daysOfWeek = [
     { id: 0, name: 'Sunday' },
     { id: 1, name: 'Monday' },
@@ -59,6 +58,7 @@ export function SchoolsTab() {
     { id: 6, name: 'Saturday' }
   ];
 
+  useEffect(() => {
     loadData();
   }, []);
 
