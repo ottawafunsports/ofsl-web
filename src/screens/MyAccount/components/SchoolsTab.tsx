@@ -310,11 +310,11 @@ export function SchoolsTab() {
 
             {/* Conditional sections when active is checked */}
             {newGym.active && (
-              <div>
-                {/* Days of the Week */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Available Days Column */}
                 <div>
                   <label className="block text-sm font-medium text-[#6F6F6F] mb-3">Available Days</label>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div className="space-y-2">
                     {daysOfWeek.map((day) => (
                       <div key={day.id} className="flex items-center">
                         <input
@@ -332,10 +332,10 @@ export function SchoolsTab() {
                   </div>
                 </div>
 
-                {/* Sports */}
+                {/* Available Sports Column */}
                 <div>
                   <label className="block text-sm font-medium text-[#6F6F6F] mb-3">Available Sports</label>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  <div className="space-y-2">
                     {sports.map((sport) => (
                       <div key={sport.id} className="flex items-center">
                         <input
@@ -437,11 +437,11 @@ export function SchoolsTab() {
 
                 {/* Conditional sections when active is checked */}
                 {editGym.active && (
-                  <div>
-                    {/* Days of the Week */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Available Days Column */}
                     <div>
                       <label className="block text-sm font-medium text-[#6F6F6F] mb-3">Available Days</label>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      <div className="space-y-2">
                         {daysOfWeek.map((day) => (
                           <div key={day.id} className="flex items-center">
                             <input
@@ -459,10 +459,10 @@ export function SchoolsTab() {
                       </div>
                     </div>
 
-                    {/* Sports */}
+                    {/* Available Sports Column */}
                     <div>
                       <label className="block text-sm font-medium text-[#6F6F6F] mb-3">Available Sports</label>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                      <div className="space-y-2">
                         {sports.map((sport) => (
                           <div key={sport.id} className="flex items-center">
                             <input
