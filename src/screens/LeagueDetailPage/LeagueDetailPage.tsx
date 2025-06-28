@@ -156,6 +156,16 @@ export function LeagueDetailPage() {
             {/* League Info View */}
             {activeView === 'info' && (
               <div className="space-y-8">
+                <div>
+                  <h2 className="text-2xl font-bold text-[#6F6F6F] mb-4">League Description</h2>
+                  <p className="text-[#6F6F6F]">{league.description || 'No description available.'}</p>
+                  {league.additional_info && (
+                    <div className="mt-4">
+                      <h3 className="text-lg font-bold text-[#6F6F6F] mb-2">Additional Information</h3>
+                      <p className="text-[#6F6F6F]">{league.additional_info}</p>
+                    </div>
+                  )}
+                </div>
                 
                 {league.skill_name && (
                   <SkillLevelRequirements skillLevel={league.skill_name} />
