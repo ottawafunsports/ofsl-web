@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Button } from '../../components/ui/button';
 import { ChevronLeft } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 import { 
   mockStandings, 
   mockSchedule, 
@@ -20,6 +21,7 @@ import { ScoreSubmissionModal } from './components/ScoreSubmissionModal';
 
 export function LeagueDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const { userProfile } = useAuth();
   const [league, setLeague] = useState<League | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -104,11 +106,21 @@ export function LeagueDetailPage() {
     <div className="bg-white w-full">
       <div className="max-w-[1280px] mx-auto px-4 py-12">
         {/* Back button */}
-        <div className="mb-8">
+        <div className="mb-8 flex justify-between items-center">
           <Link to="/leagues" className="flex items-center text-[#B20000] hover:underline">
             <ChevronLeft className="h-5 w-5 mr-1" />
             Back to Leagues
           </Link>
+          
+          {/* Admin Edit Link */}
+          {userProfile?.is_admin && (
+            <Link 
+              to="/my-account/leagues" 
+              className="text-[#B20000] hover:underline text-sm"
+            >
+              Edit league details
+            </Link>
+          )}
         </div>
 
         {/* League title */}
