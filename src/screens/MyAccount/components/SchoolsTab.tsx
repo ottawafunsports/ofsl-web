@@ -307,7 +307,7 @@ export function SchoolsTab() {
                 Active
               </label>
             </div>
-            <div className="flex gap-4">
+
             {/* Conditional sections when active is checked */}
             {newGym.active && (
               <>
@@ -353,22 +353,6 @@ export function SchoolsTab() {
                   </div>
                 </div>
               </>
-            )}
-
-              <Button
-                onClick={handleCreateGym}
-                disabled={saving || !newGym.gym}
-                className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-lg px-6 py-2"
-              >
-                {saving ? 'Adding...' : 'Add School/Gym'}
-              </Button>
-              <Button
-                onClick={() => setShowNewGymForm(false)}
-                className="bg-gray-500 hover:bg-gray-600 text-white rounded-lg px-6 py-2"
-              >
-                Cancel
-              </Button>
-            </div>
           </div>
         </div>
       )}
@@ -433,7 +417,7 @@ export function SchoolsTab() {
                     Active
                   </label>
                 </div>
-                <div className="flex gap-4">
+
                 {/* Conditional sections when active is checked */}
                 {editGym.active && (
                   <>
@@ -479,23 +463,6 @@ export function SchoolsTab() {
                       </div>
                     </div>
                   </>
-                )}
-
-                  <Button
-                    onClick={handleUpdateGym}
-                    disabled={saving || !editGym.gym}
-                    className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-lg px-6 py-2 flex items-center gap-2"
-                  >
-                    <Save className="h-4 w-4" />
-                    {saving ? 'Saving...' : 'Save Changes'}
-                  </Button>
-                  <Button
-                    onClick={handleCancelEdit}
-                    className="bg-gray-500 hover:bg-gray-600 text-white rounded-lg px-6 py-2"
-                  >
-                    Cancel
-                  </Button>
-                </div>
               </div>
             ) : (
               // View Mode
