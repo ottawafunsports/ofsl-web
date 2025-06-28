@@ -7,7 +7,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../components/ui/toast';
 import { supabase } from '../../../lib/supabase';
 import { fetchSkills } from '../../../lib/leagues';
-import { ChevronLeft, Save, X, Users, Crown, Mail, Trash2 } from 'lucide-react';
+import { ChevronLeft, Save, X, Users, Crown, Mail, Trash2, DollarSign, AlertCircle } from 'lucide-react';
 
 interface Skill {
   id: number;
@@ -21,6 +21,15 @@ interface TeamMember {
   email: string | null;
 }
 
+interface PaymentInfo {
+  id: number;
+  amount_due: number;
+  amount_paid: number;
+  status: 'pending' | 'partial' | 'paid' | 'overdue';
+  due_date: string | null;
+  payment_method: 'stripe' | 'cash' | 'e_transfer' | 'waived' | null;
+  notes: string | null;
+}
 export function TeamEditPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -30,6 +39,11 @@ export function TeamEditPage() {
   const [team, setTeam] = useState<any>(null);
   const [skills, setSkills] = useState<Skill[]>([]);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [paymentInfo, setPaymentInfo] = useState<PaymentInfo | null>(null);
+  const [depositAmount, setDepositAmount] = useState<string>('');
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'e_transfer' | 'waived'>('cash');
+  const [paymentNotes, setPaymentNotes] = useState<string>('');
+  const [processingPayment, setProcessingPayment] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   
@@ -100,6 +114,19 @@ export function TeamEditPage() {
           }
         }
       }
+        // Load payment information
+        const { data: paymentData, error: paymentError } = await supabase
+          .from('league_payments')
+          .select('*')
+          .eq('team_id', teamData.id)
+          .eq('league_id', teamData.league_id)
+          .maybeSingle();
+
+        if (paymentError) {
+          console.error('Error loading payment information:', paymentError);
+        } else if (paymentData) {
+          setPaymentInfo(paymentData);
+        }
     } catch (error) {
       console.error('Error loading data:', error);
       showToast('Failed to load team data', 'error');
@@ -141,6 +168,51 @@ export function TeamEditPage() {
     }
   };
 
+  const handleProcessPayment = async () => {
+    if (!paymentInfo || !depositAmount || parseFloat(depositAmount) <= 0) {
+      showToast('Please enter a valid deposit amount', 'error');
+      return;
+    }
+
+    const depositValue = parseFloat(depositAmount);
+    const newAmountPaid = paymentInfo.amount_paid + depositValue;
+
+    if (newAmountPaid > paymentInfo.amount_due) {
+      showToast('Deposit amount cannot exceed the amount owing', 'error');
+      return;
+    }
+
+    try {
+      setProcessingPayment(true);
+
+      const { error } = await supabase
+        .from('league_payments')
+        .update({
+          amount_paid: newAmountPaid,
+          payment_method: paymentMethod,
+          notes: paymentNotes || null
+        })
+        .eq('id', paymentInfo.id);
+
+      if (error) throw error;
+
+      showToast(`Payment of $${depositValue.toFixed(2)} processed successfully!`, 'success');
+      
+      // Reload payment data
+      await loadData();
+      
+      // Reset form
+      setDepositAmount('');
+      setPaymentNotes('');
+      setPaymentMethod('cash');
+
+    } catch (error) {
+      console.error('Error processing payment:', error);
+      showToast('Failed to process payment', 'error');
+    } finally {
+      setProcessingPayment(false);
+    }
+  };
   const handleRemoveMember = async (memberId: string) => {
     if (!team || !confirm('Are you sure you want to remove this member from the team?')) {
       return;
@@ -195,6 +267,20 @@ export function TeamEditPage() {
     }
   };
 
+  const getPaymentStatusColor = (status: string) => {
+    switch (status) {
+      case 'paid':
+        return 'bg-green-100 text-green-800';
+      case 'partial':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'overdue':
+        return 'bg-red-100 text-red-800';
+      case 'pending':
+        return 'bg-gray-100 text-gray-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
   if (!userProfile?.is_admin) {
     return null;
   }
@@ -300,6 +386,146 @@ export function TeamEditPage() {
           </CardContent>
         </Card>
 
+        {/* Payment Information */}
+        {paymentInfo && (
+          <Card className="mb-6">
+            <CardContent className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-bold text-[#6F6F6F] flex items-center gap-2">
+                  <DollarSign className="h-5 w-5" />
+                  Payment Information
+                </h3>
+                <span className={`px-3 py-1 text-sm rounded-full ${getPaymentStatusColor(paymentInfo.status)}`}>
+                  {paymentInfo.status.charAt(0).toUpperCase() + paymentInfo.status.slice(1)}
+                </span>
+              </div>
+
+              {/* Payment Summary */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="text-sm text-[#6F6F6F] mb-1">Amount Due</div>
+                  <div className="text-2xl font-bold text-[#6F6F6F]">
+                    ${paymentInfo.amount_due.toFixed(2)}
+                  </div>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="text-sm text-[#6F6F6F] mb-1">Amount Paid</div>
+                  <div className="text-2xl font-bold text-green-600">
+                    ${paymentInfo.amount_paid.toFixed(2)}
+                  </div>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="text-sm text-[#6F6F6F] mb-1">Amount Owing</div>
+                  <div className={`text-2xl font-bold ${
+                    (paymentInfo.amount_due - paymentInfo.amount_paid) > 0 ? 'text-orange-600' : 'text-green-600'
+                  }`}>
+                    ${(paymentInfo.amount_due - paymentInfo.amount_paid).toFixed(2)}
+                  </div>
+                </div>
+              </div>
+
+              {/* Payment Details */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 text-sm text-[#6F6F6F]">
+                {paymentInfo.due_date && (
+                  <div>
+                    <span className="font-medium">Due Date:</span> {new Date(paymentInfo.due_date).toLocaleDateString()}
+                  </div>
+                )}
+                {paymentInfo.payment_method && (
+                  <div>
+                    <span className="font-medium">Payment Method:</span> {paymentInfo.payment_method.replace('_', ' ').toUpperCase()}
+                  </div>
+                )}
+              </div>
+
+              {paymentInfo.notes && (
+                <div className="mb-6">
+                  <div className="text-sm font-medium text-[#6F6F6F] mb-2">Notes</div>
+                  <div className="bg-gray-50 p-3 rounded-lg text-sm text-[#6F6F6F]">
+                    {paymentInfo.notes}
+                  </div>
+                </div>
+              )}
+
+              {/* Process Payment Section */}
+              {(paymentInfo.amount_due - paymentInfo.amount_paid) > 0 && (
+                <div className="border-t pt-6">
+                  <h4 className="text-lg font-bold text-[#6F6F6F] mb-4">Process Payment</h4>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-[#6F6F6F] mb-2">
+                        Deposit Amount ($)
+                      </label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        max={paymentInfo.amount_due - paymentInfo.amount_paid}
+                        value={depositAmount}
+                        onChange={(e) => setDepositAmount(e.target.value)}
+                        placeholder="0.00"
+                        className="w-full"
+                      />
+                      <div className="text-xs text-[#6F6F6F] mt-1">
+                        Maximum: ${(paymentInfo.amount_due - paymentInfo.amount_paid).toFixed(2)}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-[#6F6F6F] mb-2">
+                        Payment Method
+                      </label>
+                      <select
+                        value={paymentMethod}
+                        onChange={(e) => setPaymentMethod(e.target.value as 'cash' | 'e_transfer' | 'waived')}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
+                      >
+                        <option value="cash">Cash</option>
+                        <option value="e_transfer">E-Transfer</option>
+                        <option value="waived">Waived</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-[#6F6F6F] mb-2">
+                      Payment Notes (Optional)
+                    </label>
+                    <textarea
+                      value={paymentNotes}
+                      onChange={(e) => setPaymentNotes(e.target.value)}
+                      placeholder="Add any notes about this payment..."
+                      rows={3}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
+                    />
+                  </div>
+
+                  <div className="mt-6 flex gap-4">
+                    <Button
+                      onClick={handleProcessPayment}
+                      disabled={processingPayment || !depositAmount || parseFloat(depositAmount) <= 0}
+                      className="bg-green-600 hover:bg-green-700 text-white rounded-[10px] px-6 py-2 flex items-center gap-2"
+                    >
+                      <DollarSign className="h-4 w-4" />
+                      {processingPayment ? 'Processing...' : 'Process Payment'}
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Fully Paid Message */}
+              {(paymentInfo.amount_due - paymentInfo.amount_paid) === 0 && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-2">
+                  <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                    <span className="text-white text-xs">✓</span>
+                  </div>
+                  <span className="text-green-800 font-medium">Payment completed in full</span>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
         {/* Team Members */}
         <Card>
           <CardContent className="p-6">
