@@ -1,55 +1,36 @@
-import React, { useState, useEffect } from 'react';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
+import React, { useState } from 'react';
 
 interface RichTextEditorProps {
-  value: string;
-  onChange: (content: string) => void;
+  value?: string;
+  onChange?: (content: string) => void;
   placeholder?: string;
   rows?: number;
 }
 
-export function RichTextEditor({ value, onChange, placeholder, rows = 4 }: RichTextEditorProps) {
-  const [content, setContent] = useState(value || '');
+export function RichTextEditor({ 
+  value = '', 
+  onChange, 
+  placeholder = "Enter text...", 
+  rows = 6 
+}: RichTextEditorProps) {
+  const [content, setContent] = useState(value);
 
-  // Update internal state when value prop changes
-  useEffect(() => {
-    setContent(value || '');
-  }, [value]);
-
-  const handleChange = (newContent: string) => {
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newContent = e.target.value;
     setContent(newContent);
-    onChange(newContent);
+    if (onChange) {
+      onChange(newContent);
+    }
   };
-
-  const modules = {
-    toolbar: [
-      [{ 'header': [1, 2, 3, false] }],
-      ['bold', 'italic', 'underline'],
-      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-      ['link'],
-      ['clean']
-    ],
-  };
-
-  const formats = [
-    'header', 'bold', 'italic', 'underline',
-    'list', 'bullet', 'link'
-  ];
 
   return (
-    <div className="rich-text-editor">
-      <ReactQuill
-        theme="snow"
+    <div className="w-full">
+      <textarea
         value={content}
         onChange={handleChange}
-        modules={modules}
-        formats={formats}
         placeholder={placeholder}
-        style={{
-          height: `${rows * 40}px`,
-          marginBottom: '42px' // Account for toolbar height
-        }}
+        rows={rows}
+        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000] focus:outline-none resize-vertical"
       />
     </div>
   );
