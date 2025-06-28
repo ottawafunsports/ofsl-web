@@ -10,9 +10,6 @@ import { fetchSports, fetchSkills, fetchLeagueById, type League } from '../../..
 import { ChevronLeft, Save, X } from 'lucide-react';
 import { RichTextEditor } from '../../../components/ui/rich-text-editor';
 
-// Add CSS for rich text editor content
-import '../../../styles/rich-text.css';
-
 export function LeagueEditPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
