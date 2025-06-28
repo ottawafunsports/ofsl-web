@@ -5,3 +5,4 @@ export { LeaguesTab } from './components/LeaguesTab';
 export { SchoolsTab } from './components/SchoolsTab';
 export { UsersTab } from './components/UsersTab';
 export { LeagueEditPage } from './components/LeagueEditPage';
+export { TeamEditPage } from './components/TeamEditPage';

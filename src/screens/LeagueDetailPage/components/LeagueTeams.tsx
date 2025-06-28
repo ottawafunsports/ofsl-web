@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent } from '../../../components/ui/card';
 import { supabase } from '../../../lib/supabase';
 import { Crown, Users, Calendar, DollarSign } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface TeamData {
   id: number;
@@ -225,6 +226,14 @@ export function LeagueTeams({ leagueId }: LeagueTeamsProps) {
                       {team.payment_status.charAt(0).toUpperCase() + team.payment_status.slice(1)}
                     </span>
                   )}
+
+                  {/* Edit Registration Link */}
+                  <Link 
+                    to={`/my-account/teams/edit/${team.id}`}
+                    className="text-[#B20000] hover:text-[#8A0000] text-sm hover:underline"
+                  >
+                    Edit registration
+                  </Link>
                 </div>
               </div>
             </CardContent>
