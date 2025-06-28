@@ -40,6 +40,7 @@ export function UsersTab() {
   const [loading, setLoading] = useState(true);
   const [editingUser, setEditingUser] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<User>>({});
+  const [userRegistrations, setUserRegistrations] = useState<string[]>([]);
   
   // Sorting state
   const [sortField, setSortField] = useState<SortField>('date_created');
@@ -142,7 +143,7 @@ export function UsersTab() {
     }
   };
 
-  const handleEditUser = (user: User) => {
+  const handleEditUser = async (user: User) => {
     setEditingUser(user.id);
     setEditForm({
       name: user.name,
@@ -152,8 +153,37 @@ export function UsersTab() {
       is_admin: user.is_admin,
       is_facilitator: user.is_facilitator
     });
+    
+    // Fetch user's league registrations
+    await loadUserRegistrations(user.team_ids || []);
   };
 
+  const loadUserRegistrations = async (teamIds: number[]) => {
+    if (teamIds.length === 0) {
+      setUserRegistrations([]);
+      return;
+    }
+
+    try {
+      const { data: teams, error } = await supabase
+        .from('teams')
+        .select(`
+          leagues:league_id(name)
+        `)
+        .in('id', teamIds);
+
+      if (error) throw error;
+
+      const leagueNames = teams
+        ?.map(team => team.leagues?.name)
+        .filter(name => name !== null && name !== undefined) || [];
+
+      setUserRegistrations(leagueNames as string[]);
+    } catch (error) {
+      console.error('Error loading user registrations:', error);
+      setUserRegistrations([]);
+    }
+  };
   const handleSaveUser = async () => {
     if (!editingUser) return;
 
@@ -561,6 +591,16 @@ export function UsersTab() {
                   </select>
                 </div>
 
+                <div>
+                  <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Registrations</label>
+                  <div className="text-sm text-[#6F6F6F]">
+                    {userRegistrations.length > 0 ? (
+                      userRegistrations.join(', ')
+                    ) : (
+                      'No league registrations'
+                    )}
+                  </div>
+                </div>
                 <div className="flex items-center">
                   <input
                     type="checkbox"
@@ -599,6 +639,7 @@ export function UsersTab() {
                   onClick={() => {
                     setEditingUser(null);
                     setEditForm({});
+                    setUserRegistrations([]);
                   }}
                   className="flex-1 bg-gray-500 hover:bg-gray-600 text-white rounded-lg px-6 py-2"
                 >
