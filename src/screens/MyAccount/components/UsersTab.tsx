@@ -364,7 +364,7 @@ export function UsersTab() {
             </div>
           </CardContent>
         </Card>
-      </div>
+      )}
 
       {/* Users Table */}
       <Card>
