@@ -118,7 +118,7 @@ export function LeagueDetailPage() {
               to={`/my-account/leagues/edit/${league.id}`}
               className="text-[#B20000] hover:underline text-sm"
             >
-              Edit league details
+              Edit league
             </Link>
           )}
         </div>
