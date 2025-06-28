@@ -8,6 +8,7 @@ import { supabase } from '../../../lib/supabase';
 import { fetchSports, fetchSkills, type League } from '../../../lib/leagues';
 import { Plus, Edit2, Trash2, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { RichTextEditor } from '../../../components/ui/rich-text-editor';
 
 interface Sport {
   id: number;
@@ -338,23 +339,21 @@ export function LeaguesTab() {
 
             <div className="mt-6">
               <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Description</label>
-              <textarea
+              <RichTextEditor
                 value={newLeague.description}
                 onChange={(e) => setNewLeague({ ...newLeague, description: e.target.value })}
                 placeholder="Enter league description"
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
               />
             </div>
 
             <div className="mt-6">
               <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Additional Information</label>
-              <textarea
+              <RichTextEditor
                 value={newLeague.additional_info}
                 onChange={(e) => setNewLeague({ ...newLeague, additional_info: e.target.value })}
                 placeholder="Enter additional information"
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
               />
             </div>
 

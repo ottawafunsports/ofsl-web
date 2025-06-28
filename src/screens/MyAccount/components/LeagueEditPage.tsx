@@ -7,6 +7,7 @@ import { useToast } from '../../../components/ui/toast';
 import { supabase } from '../../../lib/supabase';
 import { fetchSports, fetchSkills, type League } from '../../../lib/leagues';
 import { ChevronLeft, Save } from 'lucide-react';
+import { RichTextEditor } from '../../../components/ui/rich-text-editor';
 
 interface Sport {
   id: number;
@@ -370,24 +371,22 @@ export function LeagueEditPage() {
               {/* League Description */}
               <div>
                 <h2 className="text-2xl font-bold text-[#6F6F6F] mb-4">League Description</h2>
-                <textarea
+                <RichTextEditor
                   value={editLeague.description}
                   onChange={(e) => setEditLeague({ ...editLeague, description: e.target.value })}
                   placeholder="Enter league description"
                   rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
                 />
               </div>
 
               {/* Additional Information */}
               <div>
                 <h2 className="text-2xl font-bold text-[#6F6F6F] mb-4">Additional Information</h2>
-                <textarea
+                <RichTextEditor
                   value={editLeague.additional_info}
                   onChange={(e) => setEditLeague({ ...editLeague, additional_info: e.target.value })}
                   placeholder="Enter additional information"
                   rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
                 />
               </div>
 
