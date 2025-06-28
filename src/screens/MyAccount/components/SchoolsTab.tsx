@@ -11,6 +11,7 @@ interface Gym {
   gym: string | null;
   address: string | null;
   instructions: string | null;
+  active: boolean | null;
 }
 
 export function SchoolsTab() {
@@ -26,13 +27,15 @@ export function SchoolsTab() {
   const [newGym, setNewGym] = useState({
     gym: '',
     address: '',
-    instructions: ''
+    instructions: '',
+    active: true
   });
 
   const [editGym, setEditGym] = useState({
     gym: '',
     address: '',
-    instructions: ''
+    instructions: '',
+    active: true
   });
   useEffect(() => {
     loadData();
@@ -68,14 +71,15 @@ export function SchoolsTab() {
         .insert({
           gym: newGym.gym,
           address: newGym.address,
-          instructions: newGym.instructions
+          instructions: newGym.instructions,
+          active: newGym.active
         });
 
       if (error) throw error;
 
       showToast('School/Gym added successfully!', 'success');
       setShowNewGymForm(false);
-      setNewGym({ gym: '', address: '', instructions: '' });
+      setNewGym({ gym: '', address: '', instructions: '', active: true });
       loadData();
     } catch (error) {
       console.error('Error creating gym:', error);
@@ -90,7 +94,8 @@ export function SchoolsTab() {
     setEditGym({
       gym: gym.gym || '',
       address: gym.address || '',
-      instructions: gym.instructions || ''
+      instructions: gym.instructions || '',
+      active: gym.active ?? true
     });
   };
 
@@ -105,7 +110,8 @@ export function SchoolsTab() {
         .update({
           gym: editGym.gym,
           address: editGym.address,
-          instructions: editGym.instructions
+          instructions: editGym.instructions,
+          active: editGym.active
         })
         .eq('id', editingGym);
 
@@ -113,7 +119,7 @@ export function SchoolsTab() {
 
       showToast('School/Gym updated successfully!', 'success');
       setEditingGym(null);
-      setEditGym({ gym: '', address: '', instructions: '' });
+      setEditGym({ gym: '', address: '', instructions: '', active: true });
       loadData();
     } catch (error) {
       console.error('Error updating gym:', error);
@@ -125,7 +131,7 @@ export function SchoolsTab() {
 
   const handleCancelEdit = () => {
     setEditingGym(null);
-    setEditGym({ gym: '', address: '', instructions: '' });
+    setEditGym({ gym: '', address: '', instructions: '', active: true });
   };
 
   if (!userProfile?.is_admin) {
@@ -205,6 +211,18 @@ export function SchoolsTab() {
               />
             </div>
 
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="new-gym-active"
+                checked={newGym.active}
+                onChange={(e) => setNewGym({ ...newGym, active: e.target.checked })}
+                className="mr-2"
+              />
+              <label htmlFor="new-gym-active" className="text-sm font-medium text-[#6F6F6F]">
+                Active
+              </label>
+            </div>
             <div className="flex gap-4">
               <Button
                 onClick={handleCreateGym}
@@ -272,6 +290,18 @@ export function SchoolsTab() {
                   />
                 </div>
 
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="edit-gym-active"
+                    checked={editGym.active}
+                    onChange={(e) => setEditGym({ ...editGym, active: e.target.checked })}
+                    className="mr-2"
+                  />
+                  <label htmlFor="edit-gym-active" className="text-sm font-medium text-[#6F6F6F]">
+                    Active
+                  </label>
+                </div>
                 <div className="flex gap-4">
                   <Button
                     onClick={handleUpdateGym}
@@ -293,14 +323,51 @@ export function SchoolsTab() {
               // View Mode
               <div>
                 <div className="flex justify-between items-start mb-4">
-                  <h3 className="text-xl font-bold text-[#6F6F6F]">{gym.gym}</h3>
-                  <Button
-                    onClick={() => handleEditGym(gym)}
-                    className="bg-blue-500 hover:bg-blue-600 text-white rounded-lg px-3 py-1 text-sm flex items-center gap-1"
-                  >
-                    <Edit2 className="h-3 w-3" />
-                    Edit
-                  </Button>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-[#6F6F6F]">{gym.gym}</h3>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id={`gym-active-${gym.id}`}
+                        checked={gym.active ?? true}
+                        onChange={async (e) => {
+                          try {
+                            const { error } = await supabase
+                              .from('gyms')
+                              .update({ active: e.target.checked })
+                              .eq('id', gym.id);
+                            
+                            if (error) throw error;
+                            
+                            // Update local state
+                            setGyms(prev => prev.map(g => 
+                              g.id === gym.id ? { ...g, active: e.target.checked } : g
+                            ));
+                            
+                            showToast(`School/Gym ${e.target.checked ? 'activated' : 'deactivated'} successfully!`, 'success');
+                          } catch (error) {
+                            console.error('Error updating gym status:', error);
+                            showToast('Failed to update gym status', 'error');
+                            // Reset checkbox on error
+                            e.target.checked = !e.target.checked;
+                          }
+                        }}
+                        className="mr-2"
+                      />
+                      <label htmlFor={`gym-active-${gym.id}`} className="text-sm font-medium text-[#6F6F6F]">
+                        Active
+                      </label>
+                    </div>
+                    <Button
+                      onClick={() => handleEditGym(gym)}
+                      className="bg-blue-500 hover:bg-blue-600 text-white rounded-lg px-3 py-1 text-sm flex items-center gap-1"
+                    >
+                      <Edit2 className="h-3 w-3" />
+                      Edit School/Gym
+                    </Button>
+                  </div>
                 </div>
                 
                 <div className="text-[#6F6F6F] mb-4">{gym.address}</div>
