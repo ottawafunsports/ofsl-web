@@ -4,6 +4,7 @@ import { Input } from '../../../components/ui/input';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../components/ui/toast';
 import { supabase } from '../../../lib/supabase';
+import { fetchSports } from '../../../lib/leagues';
 import { Plus, X, MapPin, Edit2, Save } from 'lucide-react';
 
 interface Gym {
@@ -14,11 +15,17 @@ interface Gym {
   active: boolean | null;
 }
 
+interface Sport {
+  id: number;
+  name: string;
+}
+
 export function SchoolsTab() {
   const { userProfile } = useAuth();
   const { showToast } = useToast();
   
   const [gyms, setGyms] = useState<Gym[]>([]);
+  const [sports, setSports] = useState<Sport[]>([]);
   const [showNewGymForm, setShowNewGymForm] = useState(false);
   const [editingGym, setEditingGym] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
@@ -28,22 +35,40 @@ export function SchoolsTab() {
     gym: '',
     address: '',
     instructions: '',
-    active: true
+    active: true,
+    availableDays: [] as number[],
+    availableSports: [] as number[]
   });
 
   const [editGym, setEditGym] = useState({
     gym: '',
     address: '',
     instructions: '',
-    active: true
+    active: true,
+    availableDays: [] as number[],
+    availableSports: [] as number[]
   });
   useEffect(() => {
+  const daysOfWeek = [
+    { id: 0, name: 'Sunday' },
+    { id: 1, name: 'Monday' },
+    { id: 2, name: 'Tuesday' },
+    { id: 3, name: 'Wednesday' },
+    { id: 4, name: 'Thursday' },
+    { id: 5, name: 'Friday' },
+    { id: 6, name: 'Saturday' }
+  ];
+
     loadData();
   }, []);
 
   const loadData = async () => {
     try {
       setLoading(true);
+      
+      // Load sports data
+      const sportsData = await fetchSports();
+      setSports(sportsData);
       
       if (userProfile?.is_admin) {
         const { data: gymsResponse, error } = await supabase
@@ -79,7 +104,14 @@ export function SchoolsTab() {
 
       showToast('School/Gym added successfully!', 'success');
       setShowNewGymForm(false);
-      setNewGym({ gym: '', address: '', instructions: '', active: true });
+      setNewGym({ 
+        gym: '', 
+        address: '', 
+        instructions: '', 
+        active: true,
+        availableDays: [],
+        availableSports: []
+      });
       loadData();
     } catch (error) {
       console.error('Error creating gym:', error);
@@ -95,7 +127,9 @@ export function SchoolsTab() {
       gym: gym.gym || '',
       address: gym.address || '',
       instructions: gym.instructions || '',
-      active: gym.active ?? true
+      active: gym.active ?? true,
+      availableDays: [], // TODO: Load from database when implemented
+      availableSports: [] // TODO: Load from database when implemented
     });
   };
 
@@ -119,7 +153,14 @@ export function SchoolsTab() {
 
       showToast('School/Gym updated successfully!', 'success');
       setEditingGym(null);
-      setEditGym({ gym: '', address: '', instructions: '', active: true });
+      setEditGym({ 
+        gym: '', 
+        address: '', 
+        instructions: '', 
+        active: true,
+        availableDays: [],
+        availableSports: []
+      });
       loadData();
     } catch (error) {
       console.error('Error updating gym:', error);
@@ -131,7 +172,50 @@ export function SchoolsTab() {
 
   const handleCancelEdit = () => {
     setEditingGym(null);
-    setEditGym({ gym: '', address: '', instructions: '', active: true });
+    setEditGym({ 
+      gym: '', 
+      address: '', 
+      instructions: '', 
+      active: true,
+      availableDays: [],
+      availableSports: []
+    });
+  };
+
+  const handleDayToggle = (dayId: number, isNewGym: boolean = false) => {
+    if (isNewGym) {
+      setNewGym(prev => ({
+        ...prev,
+        availableDays: prev.availableDays.includes(dayId)
+          ? prev.availableDays.filter(id => id !== dayId)
+          : [...prev.availableDays, dayId]
+      }));
+    } else {
+      setEditGym(prev => ({
+        ...prev,
+        availableDays: prev.availableDays.includes(dayId)
+          ? prev.availableDays.filter(id => id !== dayId)
+          : [...prev.availableDays, dayId]
+      }));
+    }
+  };
+
+  const handleSportToggle = (sportId: number, isNewGym: boolean = false) => {
+    if (isNewGym) {
+      setNewGym(prev => ({
+        ...prev,
+        availableSports: prev.availableSports.includes(sportId)
+          ? prev.availableSports.filter(id => id !== sportId)
+          : [...prev.availableSports, sportId]
+      }));
+    } else {
+      setEditGym(prev => ({
+        ...prev,
+        availableSports: prev.availableSports.includes(sportId)
+          ? prev.availableSports.filter(id => id !== sportId)
+          : [...prev.availableSports, sportId]
+      }));
+    }
   };
 
   if (!userProfile?.is_admin) {
@@ -224,6 +308,53 @@ export function SchoolsTab() {
               </label>
             </div>
             <div className="flex gap-4">
+            {/* Conditional sections when active is checked */}
+            {newGym.active && (
+              <>
+                {/* Days of the Week */}
+                <div>
+                  <label className="block text-sm font-medium text-[#6F6F6F] mb-3">Available Days</label>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {daysOfWeek.map((day) => (
+                      <div key={day.id} className="flex items-center">
+                        <input
+                          type="checkbox"
+                          id={`new-day-${day.id}`}
+                          checked={newGym.availableDays.includes(day.id)}
+                          onChange={() => handleDayToggle(day.id, true)}
+                          className="mr-2"
+                        />
+                        <label htmlFor={`new-day-${day.id}`} className="text-sm text-[#6F6F6F]">
+                          {day.name}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Sports */}
+                <div>
+                  <label className="block text-sm font-medium text-[#6F6F6F] mb-3">Available Sports</label>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {sports.map((sport) => (
+                      <div key={sport.id} className="flex items-center">
+                        <input
+                          type="checkbox"
+                          id={`new-sport-${sport.id}`}
+                          checked={newGym.availableSports.includes(sport.id)}
+                          onChange={() => handleSportToggle(sport.id, true)}
+                          className="mr-2"
+                        />
+                        <label htmlFor={`new-sport-${sport.id}`} className="text-sm text-[#6F6F6F]">
+                          {sport.name}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+
               <Button
                 onClick={handleCreateGym}
                 disabled={saving || !newGym.gym}
@@ -303,6 +434,53 @@ export function SchoolsTab() {
                   </label>
                 </div>
                 <div className="flex gap-4">
+                {/* Conditional sections when active is checked */}
+                {editGym.active && (
+                  <>
+                    {/* Days of the Week */}
+                    <div>
+                      <label className="block text-sm font-medium text-[#6F6F6F] mb-3">Available Days</label>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        {daysOfWeek.map((day) => (
+                          <div key={day.id} className="flex items-center">
+                            <input
+                              type="checkbox"
+                              id={`edit-day-${day.id}`}
+                              checked={editGym.availableDays.includes(day.id)}
+                              onChange={() => handleDayToggle(day.id, false)}
+                              className="mr-2"
+                            />
+                            <label htmlFor={`edit-day-${day.id}`} className="text-sm text-[#6F6F6F]">
+                              {day.name}
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Sports */}
+                    <div>
+                      <label className="block text-sm font-medium text-[#6F6F6F] mb-3">Available Sports</label>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        {sports.map((sport) => (
+                          <div key={sport.id} className="flex items-center">
+                            <input
+                              type="checkbox"
+                              id={`edit-sport-${sport.id}`}
+                              checked={editGym.availableSports.includes(sport.id)}
+                              onChange={() => handleSportToggle(sport.id, false)}
+                              className="mr-2"
+                            />
+                            <label htmlFor={`edit-sport-${sport.id}`} className="text-sm text-[#6F6F6F]">
+                              {sport.name}
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+
                   <Button
                     onClick={handleUpdateGym}
                     disabled={saving || !editGym.gym}
