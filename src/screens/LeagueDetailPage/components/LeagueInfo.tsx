@@ -6,6 +6,8 @@ import { useNavigate } from "react-router-dom";
 import { TeamRegistrationModal } from "./TeamRegistrationModal";
 import { PaymentButton } from "../../../components/PaymentButton";
 import { products } from "../../../stripe-config";
+import { supabase } from "../../../lib/supabase";
+import { useEffect } from "react";
 
 // Function to get spots badge color
 const getSpotsBadgeColor = (spots: number) => {
@@ -24,12 +26,43 @@ const getSpotsText = (spots: number) => {
 interface LeagueInfoProps {
   league: any;
   sport: string;
+  onSpotsUpdate?: (spots: number) => void;
 }
 
-export function LeagueInfo({ league, sport }: LeagueInfoProps) {
+export function LeagueInfo({ league, sport, onSpotsUpdate }: LeagueInfoProps) {
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
+  const [actualSpotsRemaining, setActualSpotsRemaining] = useState(league.spotsRemaining || 0);
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    loadActualTeamCount();
+  }, [league.id]);
+
+  const loadActualTeamCount = async () => {
+    try {
+      const { data: teams, error } = await supabase
+        .from('teams')
+        .select('id')
+        .eq('league_id', league.id)
+        .eq('active', true);
+
+      if (error) throw error;
+
+      const teamCount = teams?.length || 0;
+      const maxTeams = league.max_teams || 20;
+      const spotsRemaining = Math.max(0, maxTeams - teamCount);
+      
+      setActualSpotsRemaining(spotsRemaining);
+      
+      // Notify parent component of the update
+      if (onSpotsUpdate) {
+        onSpotsUpdate(spotsRemaining);
+      }
+    } catch (error) {
+      console.error('Error loading team count:', error);
+    }
+  };
 
   const handleRegisterClick = () => {
     if (!user) {
@@ -108,9 +141,9 @@ export function LeagueInfo({ league, sport }: LeagueInfoProps) {
             <div>
               <p className="font-medium text-[#6F6F6F]">Availability</p>
               <span
-                className={`text-xs font-medium py-1 px-3 rounded-full ${getSpotsBadgeColor(league.spotsRemaining)}`}
+                className={`text-xs font-medium py-1 px-3 rounded-full ${getSpotsBadgeColor(actualSpotsRemaining)}`}
               >
-                {getSpotsText(league.spotsRemaining)}
+                {getSpotsText(actualSpotsRemaining)}
               </span>
             </div>
           </div>
@@ -124,15 +157,15 @@ export function LeagueInfo({ league, sport }: LeagueInfoProps) {
             mode={matchingProduct.mode}
             className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] w-full py-3"
           >
-            {league.spotsRemaining === 0 ? "Join Waitlist" : "Register & Pay Now"}
+            {actualSpotsRemaining === 0 ? "Join Waitlist" : "Register & Pay Now"}
           </PaymentButton>
         ) : (
           <Button
             onClick={handleRegisterClick}
             className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] w-full py-3"
-            disabled={league.spotsRemaining === 0}
+            disabled={actualSpotsRemaining === 0}
           >
-            {league.spotsRemaining === 0 ? "Join Waitlist" : "Register Now"}
+            {actualSpotsRemaining === 0 ? "Join Waitlist" : "Register Now"}
           </Button>
         )}
       </div>
@@ -140,9 +173,14 @@ export function LeagueInfo({ league, sport }: LeagueInfoProps) {
       {/* Registration Modal */}
       <TeamRegistrationModal
         showModal={showRegistrationModal}
-        closeModal={() => setShowRegistrationModal(false)}
+        closeModal={() => {
+          setShowRegistrationModal(false);
+          // Reload team count after registration
+          loadActualTeamCount();
+        }}
         leagueId={league.id}
         leagueName={league.name}
+        league={league}
       />
     </>
   );

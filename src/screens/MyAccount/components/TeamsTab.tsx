@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../components/ui/toast';
 import { supabase } from '../../../lib/supabase';
 import { getUserSubscription } from '../../../lib/stripe';
 import { getUserPaymentSummary, getUserLeaguePayments, type LeaguePayment } from '../../../lib/payments';
-import { Users, Calendar, CheckCircle, CreditCard, AlertCircle, Crown, DollarSign, Clock } from 'lucide-react';
+import { Users, Calendar, CheckCircle, CreditCard, AlertCircle, Crown, DollarSign, Clock, X } from 'lucide-react';
 import { TeamDetailsModal } from './TeamDetailsModal';
 import { getDayName } from '../../../lib/leagues';
 import { getProductByPriceId } from '../../../stripe-config';
+import { Button } from '../../../components/ui/button';
 
 interface Team {
   id: number;
@@ -59,6 +61,9 @@ export function TeamsTab() {
   const [leaguePayments, setLeaguePayments] = useState<LeaguePayment[]>([]);
   const [paymentsLoading, setPaymentsLoading] = useState(false);
 
+  // Add state for unregistering
+  const [unregisteringPayment, setUnregisteringPayment] = useState<number | null>(null);
+
   // Stats calculations from actual data
   const activeTeams = teams.filter(team => team.active).length;
   const captainTeams = teams.filter(team => team.captain_id === userProfile?.id);
@@ -102,6 +107,104 @@ export function TeamsTab() {
       console.error('Error loading payment data:', error);
     } finally {
       setPaymentsLoading(false);
+    }
+  };
+
+  const handleUnregister = async (paymentId: number, leagueName: string) => {
+    const confirmUnregister = confirm(`Are you sure you want to unregister from ${leagueName}? This action cannot be undone and you may lose your spot in the league.`);
+    
+    if (!confirmUnregister) return;
+
+    try {
+      setUnregisteringPayment(paymentId);
+      
+      // Get the league payment details first to find associated team
+      const { data: paymentData, error: paymentError } = await supabase
+        .from('league_payments')
+        .select('team_id, league_id, user_id')
+        .eq('id', paymentId);
+
+      if (paymentError) throw paymentError;
+      
+      if (!paymentData || paymentData.length === 0) {
+        throw new Error('Payment record not found');
+      }
+
+      const payment = paymentData[0];
+
+      // If there's a team associated, remove user from team and update team roster
+      if (payment.team_id) {
+        // Get current team data
+        const { data: teamData, error: teamError } = await supabase
+          .from('teams')
+          .select('roster, captain_id')
+          .eq('id', payment.team_id)
+          .single();
+
+        if (teamError) throw teamError;
+
+        // Remove user from roster
+        const updatedRoster = (teamData.roster || []).filter((userId: string) => userId !== payment.user_id);
+        
+        // If user was the captain and there are other players, we need to handle captain transfer
+        // For now, we'll just remove them and let admin handle captain reassignment
+        const updates: any = { roster: updatedRoster };
+        
+        // If the user was the captain and no one else is left, deactivate the team
+        if (teamData.captain_id === payment.user_id) {
+          if (updatedRoster.length === 0) {
+            updates.active = false;
+            updates.captain_id = null;
+          } else {
+            // Set the first remaining player as captain
+            updates.captain_id = updatedRoster[0];
+          }
+        }
+
+        // Update team
+        const { error: updateTeamError } = await supabase
+          .from('teams')
+          .update(updates)
+          .eq('id', payment.team_id);
+
+        if (updateTeamError) throw updateTeamError;
+
+        // Update user's team_ids array
+        if (userProfile) {
+          const currentTeamIds = userProfile.team_ids || [];
+          const updatedTeamIds = currentTeamIds.filter((teamId: number) => teamId !== payment.team_id);
+          
+          const { error: userUpdateError } = await supabase
+            .from('users')
+            .update({ team_ids: updatedTeamIds })
+            .eq('id', userProfile.id);
+
+          if (userUpdateError) throw userUpdateError;
+        }
+      }
+
+      // Delete the league payment record
+      const { error: deleteError } = await supabase
+        .from('league_payments')
+        .delete()
+        .eq('id', paymentId);
+
+      if (deleteError) throw deleteError;
+
+      showToast('Successfully unregistered from league', 'success');
+      
+      // Reload all data to update the UI and amounts
+      await loadPaymentData();
+      await loadUserTeams();
+      
+      // Reload the page to stay on current tab and refresh all data
+      window.location.reload();
+      
+    } catch (error: any) {
+      console.error('Error unregistering from league:', error);
+      showToast(error.message || 'Failed to unregister from league', 'error');
+    } finally {
+      setUnregisteringPayment(null);
     }
   };
 
@@ -379,6 +482,21 @@ export function TeamsTab() {
                     }`}>
                       {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
                     </span>
+                    
+                    <Button
+                      onClick={() => handleUnregister(payment.id, payment.league_name)}
+                      disabled={unregisteringPayment === payment.id}
+                      className="bg-red-500 hover:bg-red-600 text-white rounded-lg px-3 py-1 text-xs flex items-center gap-1"
+                    >
+                      {unregisteringPayment === payment.id ? (
+                        'Unregistering...'
+                      ) : (
+                        <>
+                          <X className="h-3 w-3" />
+                          Unregister
+                        </>
+                      )}
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -402,9 +520,14 @@ export function TeamsTab() {
               <div key={team.id} className="bg-white border border-gray-200 rounded-lg p-6">
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex-1">
-                    <h3 className="text-lg font-bold text-[#6F6F6F] mb-2">
-                      {team.league?.name || 'Unknown League'} - Winter 2025
-                    </h3>
+                    <Link 
+                      to={`/leagues/${team.league_id}`}
+                      className="block"
+                    >
+                      <h3 className="text-lg font-bold text-[#6F6F6F] mb-2 hover:text-[#B20000] transition-colors cursor-pointer">
+                        {team.league?.name || 'Unknown League'} - Winter 2025
+                      </h3>
+                    </Link>
                     
                     <div className="flex flex-wrap items-center gap-4 text-sm text-[#6F6F6F] mb-2">
                       <div className="flex items-center gap-1">

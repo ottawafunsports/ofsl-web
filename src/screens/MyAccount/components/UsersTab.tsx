@@ -673,8 +673,6 @@ export function UsersTab() {
                               <Link 
                                 to={`/leagues/${league.id}`}
                                 className="text-[#B20000] hover:text-[#8A0000] hover:underline"
-                                target="_blank"
-                                rel="noopener noreferrer"
                               >
                                 {league.name}
                               </Link>

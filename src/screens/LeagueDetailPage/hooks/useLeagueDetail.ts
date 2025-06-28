@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export type ActiveView = 'info' | 'schedule' | 'standings';
+export type ActiveView = 'info' | 'schedule' | 'standings' | 'teams';
 
 export const useActiveView = (initialView: ActiveView = 'info') => {
   const [activeView, setActiveView] = useState<ActiveView>(initialView);

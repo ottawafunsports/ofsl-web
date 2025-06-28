@@ -23,6 +23,8 @@ import {
   SchoolsTab,
   UsersTab
 } from "./screens/MyAccount";
+import { LeagueEditPage } from "./screens/MyAccount/components/LeagueEditPage";
+import { TeamEditPage } from "./screens/MyAccount/components/TeamEditPage";
 import { Navigate } from "react-router-dom";
 
 export function App() {
@@ -73,6 +75,20 @@ export function App() {
                 </ProtectedRoute>
               } />
             </Route>
+
+            {/* League Edit Page - separate route */}
+            <Route path="/my-account/leagues/edit/:id" element={
+              <ProtectedRoute requireAdmin>
+                <LeagueEditPage />
+              </ProtectedRoute>
+            } />
+
+            {/* Team Edit Page - separate route */}
+            <Route path="/my-account/teams/edit/:id" element={
+              <ProtectedRoute requireAdmin>
+                <TeamEditPage />
+              </ProtectedRoute>
+            } />
 
             {/* Legacy redirects for backward compatibility */}
             <Route path="/my-teams" element={

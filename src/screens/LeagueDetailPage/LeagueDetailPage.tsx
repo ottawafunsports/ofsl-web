@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Button } from '../../components/ui/button';
 import { ChevronLeft } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+import '../../../src/styles/rich-text.css';
 import { 
   mockStandings, 
   mockSchedule, 
@@ -17,12 +19,15 @@ import { LeagueStandings } from './components/LeagueStandings';
 import { SkillLevelRequirements } from './components/SkillLevelRequirements';
 import { AdditionalLeagueInfo } from './components/AdditionalLeagueInfo';
 import { ScoreSubmissionModal } from './components/ScoreSubmissionModal';
+import { LeagueTeams } from './components/LeagueTeams';
 
 export function LeagueDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const { userProfile } = useAuth();
   const [league, setLeague] = useState<League | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [spotsRemaining, setSpotsRemaining] = useState(0);
 
   const { activeView, setActiveView } = useActiveView();
   const { 
@@ -96,19 +101,32 @@ export function LeagueDetailPage() {
     dates: formatLeagueDates(league.start_date, league.end_date),
     skillLevel: league.skill_name || 'Not specified',
     price: league.cost || 0,
-    spotsRemaining: league.max_teams ? Math.max(0, league.max_teams - 0) : 0, // TODO: Calculate from actual team count
-    season: `${new Date().getFullYear()} Season`
+    spotsRemaining: league.max_teams ? Math.max(0, league.max_teams - 0) : 0 // TODO: Calculate from actual team count
+  };
+
+  const handleSpotsUpdate = (spots: number) => {
+    setSpotsRemaining(spots);
   };
 
   return (
     <div className="bg-white w-full">
       <div className="max-w-[1280px] mx-auto px-4 py-12">
         {/* Back button */}
-        <div className="mb-8">
+        <div className="mb-8 flex justify-between items-center">
           <Link to="/leagues" className="flex items-center text-[#B20000] hover:underline">
             <ChevronLeft className="h-5 w-5 mr-1" />
             Back to Leagues
           </Link>
+          
+          {/* Admin Edit Link */}
+          {userProfile?.is_admin && (
+            <Link 
+              to={`/my-account/leagues/edit/${league.id}`}
+              className="text-[#B20000] hover:underline text-sm"
+            >
+              Edit league
+            </Link>
+          )}
         </div>
 
         {/* League title */}
@@ -122,14 +140,18 @@ export function LeagueDetailPage() {
             <h1 className="text-3xl md:text-4xl font-bold text-[#6F6F6F]">{league.name}</h1>
           </div>
           <div className="ml-[52px]">
-            <p className="text-xl text-[#6F6F6F]">{leagueForInfo.season}</p>
+            <p className="text-xl text-[#6F6F6F]">{league.year || '2025'} Season</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Sidebar */}
           <div className="md:col-span-1">
-            <LeagueInfo league={leagueForInfo} sport={league.sport_name || ''} />
+            <LeagueInfo 
+              league={leagueForInfo} 
+              sport={league.sport_name || ''} 
+              onSpotsUpdate={handleSpotsUpdate}
+            />
           </div>
 
           {/* Main content area */}
@@ -138,7 +160,8 @@ export function LeagueDetailPage() {
             <NavigationTabs 
               activeView={activeView} 
               setActiveView={setActiveView} 
-              sport={league.sport_name || ''} 
+              sport={league.sport_name || ''}
+              isAdmin={userProfile?.is_admin || false}
             />
 
             {/* League Info View */}
@@ -146,17 +169,14 @@ export function LeagueDetailPage() {
               <div className="space-y-8">
                 <div>
                   <h2 className="text-2xl font-bold text-[#6F6F6F] mb-4">League Description</h2>
-                  <p className="text-[#6F6F6F]">{league.description || 'No description available.'}</p>
-                  {league.additional_info && (
-                    <div className="mt-4">
-                      <h3 className="text-lg font-bold text-[#6F6F6F] mb-2">Additional Information</h3>
-                      <p className="text-[#6F6F6F]">{league.additional_info}</p>
-                    </div>
-                  )}
+                  <div 
+                    className="text-[#6F6F6F] league-description prose prose-ul:pl-0 prose-li:pl-0 max-w-none" 
+                    dangerouslySetInnerHTML={{ __html: league.description || 'No description available.' }}
+                  />
                 </div>
                 
                 {league.skill_name && (
-                  <SkillLevelRequirements skillLevel={league.skill_name} />
+                  <SkillLevelRequirements />
                 )}
                 <AdditionalLeagueInfo />
               </div>
@@ -173,6 +193,14 @@ export function LeagueDetailPage() {
             {/* Standings View */}
             {activeView === 'standings' && (
               <LeagueStandings mockStandings={mockStandings} />
+            )}
+
+            {/* Admin Teams View */}
+            {activeView === 'teams' && userProfile?.is_admin && (
+              <LeagueTeams 
+                leagueId={league.id} 
+                onTeamsUpdate={() => handleSpotsUpdate(spotsRemaining)}
+              />
             )}
           </div>
         </div>
