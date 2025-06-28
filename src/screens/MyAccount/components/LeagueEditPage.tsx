@@ -137,7 +137,7 @@ export function LeagueEditPage() {
       if (error) throw error;
 
       showToast('League updated successfully!', 'success');
-      navigate('/my-account/leagues');
+      navigate(`/leagues/${id}`);
     } catch (error) {
       console.error('Error updating league:', error);
       showToast('Failed to update league', 'error');
@@ -346,12 +346,13 @@ export function LeagueEditPage() {
                 <Save className="h-4 w-4" />
                 {saving ? 'Saving...' : 'Save Changes'}
               </Button>
-              <Button
-                onClick={() => navigate('/my-account/leagues')}
+              <Link to={`/leagues/${id}`}>
+                <Button
                 className="bg-gray-500 hover:bg-gray-600 text-white rounded-[10px] px-6 py-2"
               >
                 Cancel
-              </Button>
+                </Button>
+              </Link>
             </div>
           </CardContent>
         </Card>
