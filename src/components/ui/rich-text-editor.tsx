@@ -22,6 +22,13 @@ export function RichTextEditor({
   // Calculate height based on rows (approximate)
   const height = rows * 24 + 60; // 24px per row + toolbar height
 
+  // Handle change with comparison to prevent infinite loops
+  const handleChange = (content: string) => {
+    // Only trigger onChange if content has actually changed
+    if (content !== value) {
+      onChange(content);
+    }
+  };
   const modules = {
     toolbar: [
       [{ 'header': [1, 2, 3, false] }],
@@ -127,7 +134,7 @@ export function RichTextEditor({
         ref={quillRef}
         theme="snow"
         value={value}
-        onChange={onChange}
+        onChange={handleChange}
         modules={modules}
         formats={formats}
         placeholder={placeholder}
