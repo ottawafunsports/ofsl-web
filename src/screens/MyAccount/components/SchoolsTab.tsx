@@ -5,7 +5,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../components/ui/toast';
 import { supabase } from '../../../lib/supabase';
 import { fetchSports } from '../../../lib/leagues';
-import { Plus, X, MapPin, Edit2, Save } from 'lucide-react';
+import { Plus, X, MapPin, Edit2, Save, Search, Filter } from 'lucide-react';
 
 interface Gym {
   id: number;
@@ -22,16 +22,31 @@ interface Sport {
   name: string;
 }
 
+interface SchoolFilters {
+  status: 'all' | 'active' | 'inactive';
+  days: number[];
+  sports: number[];
+}
+
 export function SchoolsTab() {
   const { userProfile } = useAuth();
   const { showToast } = useToast();
   
   const [gyms, setGyms] = useState<Gym[]>([]);
+  const [filteredGyms, setFilteredGyms] = useState<Gym[]>([]);
   const [sports, setSports] = useState<Sport[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [showNewGymForm, setShowNewGymForm] = useState(false);
   const [editingGym, setEditingGym] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
+  
+  // Filter state
+  const [filters, setFilters] = useState<SchoolFilters>({
+    status: 'all',
+    days: [],
+    sports: []
+  });
   
   const [newGym, setNewGym] = useState({
     gym: '',
@@ -63,6 +78,39 @@ export function SchoolsTab() {
   useEffect(() => {
     loadData();
   }, []);
+
+  useEffect(() => {
+    // Filter gyms based on search term and filters
+    let filtered = gyms.filter(gym => 
+      (gym.gym?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (gym.address?.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+    
+    // Apply status filter
+    if (filters.status === 'active') {
+      filtered = filtered.filter(gym => gym.active === true);
+    } else if (filters.status === 'inactive') {
+      filtered = filtered.filter(gym => gym.active === false);
+    }
+    
+    // Apply days filter
+    if (filters.days.length > 0) {
+      filtered = filtered.filter(gym => 
+        gym.available_days && 
+        filters.days.some(dayId => gym.available_days!.includes(dayId))
+      );
+    }
+    
+    // Apply sports filter
+    if (filters.sports.length > 0) {
+      filtered = filtered.filter(gym => 
+        gym.available_sports && 
+        filters.sports.some(sportId => gym.available_sports!.includes(sportId))
+      );
+    }
+    
+    setFilteredGyms(filtered);
+  }, [gyms, searchTerm, filters]);
 
   const loadData = async () => {
     try {
@@ -224,6 +272,47 @@ export function SchoolsTab() {
     }
   };
 
+  const handleFilterChange = (filterType: keyof SchoolFilters, value: any) => {
+    setFilters(prev => ({
+      ...prev,
+      [filterType]: value
+    }));
+  };
+
+  const handleDayFilterToggle = (dayId: number) => {
+    setFilters(prev => ({
+      ...prev,
+      days: prev.days.includes(dayId)
+        ? prev.days.filter(id => id !== dayId)
+        : [...prev.days, dayId]
+    }));
+  };
+
+  const handleSportFilterToggle = (sportId: number) => {
+    setFilters(prev => ({
+      ...prev,
+      sports: prev.sports.includes(sportId)
+        ? prev.sports.filter(id => id !== sportId)
+        : [...prev.sports, sportId]
+    }));
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      status: 'all',
+      days: [],
+      sports: []
+    });
+    setSearchTerm('');
+  };
+
+  const isAnyFilterActive = () => {
+    return filters.status !== 'all' || 
+           filters.days.length > 0 || 
+           filters.sports.length > 0 ||
+           searchTerm.trim() !== '';
+  };
+
   if (!userProfile?.is_admin) {
     return (
       <div className="text-center py-12">
@@ -247,6 +336,7 @@ export function SchoolsTab() {
         <div className="flex items-center gap-2">
           <MapPin className="h-6 w-6 text-[#6F6F6F]" />
           <h2 className="text-2xl font-bold text-[#6F6F6F]">Schools</h2>
+          <span className="text-sm text-[#6F6F6F]">({filteredGyms.length} of {gyms.length})</span>
         </div>
         <Button
           onClick={() => setShowNewGymForm(true)}
@@ -254,6 +344,129 @@ export function SchoolsTab() {
         >
           Add School
         </Button>
+      </div>
+
+      {/* Search and Filters */}
+      <div className="bg-white border border-gray-200 rounded-lg p-6 mb-8">
+        <div className="flex items-center gap-2 mb-4">
+          <Filter className="h-5 w-5 text-[#6F6F6F]" />
+          <h3 className="text-lg font-medium text-[#6F6F6F]">Search & Filters</h3>
+        </div>
+        
+        {/* Search Bar */}
+        <div className="mb-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#6F6F6F]" />
+            <Input
+              placeholder="Search schools by name or address..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 w-full max-w-md"
+            />
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Status Filter */}
+          <div>
+            <label className="block text-sm font-medium text-[#6F6F6F] mb-3">Status</label>
+            <div className="space-y-2">
+              <div className="flex items-center">
+                <input
+                  type="radio"
+                  id="status-all"
+                  name="status"
+                  checked={filters.status === 'all'}
+                  onChange={() => handleFilterChange('status', 'all')}
+                  className="mr-2"
+                />
+                <label htmlFor="status-all" className="text-sm text-[#6F6F6F]">
+                  All Schools
+                </label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="radio"
+                  id="status-active"
+                  name="status"
+                  checked={filters.status === 'active'}
+                  onChange={() => handleFilterChange('status', 'active')}
+                  className="mr-2"
+                />
+                <label htmlFor="status-active" className="text-sm text-[#6F6F6F]">
+                  Active Only
+                </label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="radio"
+                  id="status-inactive"
+                  name="status"
+                  checked={filters.status === 'inactive'}
+                  onChange={() => handleFilterChange('status', 'inactive')}
+                  className="mr-2"
+                />
+                <label htmlFor="status-inactive" className="text-sm text-[#6F6F6F]">
+                  Inactive Only
+                </label>
+              </div>
+            </div>
+          </div>
+
+          {/* Days Filter */}
+          <div>
+            <label className="block text-sm font-medium text-[#6F6F6F] mb-3">Available Days</label>
+            <div className="space-y-2">
+              {daysOfWeek.map((day) => (
+                <div key={day.id} className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id={`filter-day-${day.id}`}
+                    checked={filters.days.includes(day.id)}
+                    onChange={() => handleDayFilterToggle(day.id)}
+                    className="mr-2"
+                  />
+                  <label htmlFor={`filter-day-${day.id}`} className="text-sm text-[#6F6F6F]">
+                    {day.name}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Sports Filter */}
+          <div>
+            <label className="block text-sm font-medium text-[#6F6F6F] mb-3">Available Sports</label>
+            <div className="space-y-2">
+              {sports.map((sport) => (
+                <div key={sport.id} className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id={`filter-sport-${sport.id}`}
+                    checked={filters.sports.includes(sport.id)}
+                    onChange={() => handleSportFilterToggle(sport.id)}
+                    className="mr-2"
+                  />
+                  <label htmlFor={`filter-sport-${sport.id}`} className="text-sm text-[#6F6F6F]">
+                    {sport.name}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        
+        {/* Clear Filters Button */}
+        {isAnyFilterActive() && (
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <Button
+              onClick={clearFilters}
+              className="text-sm text-[#B20000] hover:text-[#8A0000] bg-transparent hover:bg-transparent p-0"
+            >
+              Clear all filters
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Add School Form */}
@@ -382,7 +595,23 @@ export function SchoolsTab() {
 
       {/* Schools List */}
       <div className="space-y-6">
-        {gyms.map(gym => (
+        {filteredGyms.length === 0 && !loading ? (
+          <div className="text-center py-12">
+            <MapPin className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+            <p className="text-[#6F6F6F] text-lg">
+              {isAnyFilterActive() ? 'No schools match your filters' : 'No schools found'}
+            </p>
+            {isAnyFilterActive() && (
+              <Button
+                onClick={clearFilters}
+                className="mt-4 text-[#B20000] hover:text-[#8A0000] bg-transparent hover:bg-transparent"
+              >
+                Clear filters
+              </Button>
+            )}
+          </div>
+        ) : (
+          filteredGyms.map(gym => (
           <div key={gym.id} className="border border-gray-200 rounded-lg p-6">
             {editingGym === gym.id ? (
               // Edit Mode
@@ -577,7 +806,8 @@ export function SchoolsTab() {
               </div>
             )}
           </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );
