@@ -5,7 +5,7 @@ import { Input } from '../../../components/ui/input';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../components/ui/toast';
 import { supabase } from '../../../lib/supabase';
-import { Users, Search, Edit2, Trash2, Crown, Mail, Phone, Calendar } from 'lucide-react';
+import { Users, Search, Edit2, Trash2, Crown, Mail, Phone, Calendar, ChevronUp, ChevronDown, Filter } from 'lucide-react';
 
 interface User {
   id: string;
@@ -21,6 +21,15 @@ interface User {
   team_ids: number[] | null;
 }
 
+type SortField = 'name' | 'email' | 'phone' | 'date_created' | 'is_admin' | 'is_facilitator' | 'team_count';
+type SortDirection = 'asc' | 'desc';
+
+interface UserFilters {
+  administrator: boolean;
+  facilitator: boolean;
+  activePlayer: boolean;
+}
+
 export function UsersTab() {
   const { userProfile } = useAuth();
   const { showToast } = useToast();
@@ -31,20 +40,88 @@ export function UsersTab() {
   const [loading, setLoading] = useState(true);
   const [editingUser, setEditingUser] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<User>>({});
+  
+  // Sorting state
+  const [sortField, setSortField] = useState<SortField>('date_created');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  
+  // Filter state
+  const [filters, setFilters] = useState<UserFilters>({
+    administrator: false,
+    facilitator: false,
+    activePlayer: false
+  });
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     loadUsers();
   }, []);
 
   useEffect(() => {
-    // Filter users based on search term
-    const filtered = users.filter(user => 
+    // Filter and sort users
+    let filtered = users.filter(user => 
       (user.name?.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (user.email?.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (user.phone?.includes(searchTerm))
     );
+    
+    // Apply filters
+    if (filters.administrator) {
+      filtered = filtered.filter(user => user.is_admin === true);
+    }
+    if (filters.facilitator) {
+      filtered = filtered.filter(user => user.is_facilitator === true);
+    }
+    if (filters.activePlayer) {
+      filtered = filtered.filter(user => user.team_ids && user.team_ids.length > 0);
+    }
+    
+    // Apply sorting
+    filtered.sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+      
+      switch (sortField) {
+        case 'name':
+          aValue = a.name?.toLowerCase() || '';
+          bValue = b.name?.toLowerCase() || '';
+          break;
+        case 'email':
+          aValue = a.email?.toLowerCase() || '';
+          bValue = b.email?.toLowerCase() || '';
+          break;
+        case 'phone':
+          aValue = a.phone || '';
+          bValue = b.phone || '';
+          break;
+        case 'date_created':
+          aValue = new Date(a.date_created);
+          bValue = new Date(b.date_created);
+          break;
+        case 'is_admin':
+          aValue = a.is_admin ? 1 : 0;
+          bValue = b.is_admin ? 1 : 0;
+          break;
+        case 'is_facilitator':
+          aValue = a.is_facilitator ? 1 : 0;
+          bValue = b.is_facilitator ? 1 : 0;
+          break;
+        case 'team_count':
+          aValue = a.team_ids?.length || 0;
+          bValue = b.team_ids?.length || 0;
+          break;
+        default:
+          aValue = a.date_created;
+          bValue = b.date_created;
+      }
+      
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+    
     setFilteredUsers(filtered);
-  }, [users, searchTerm]);
+  }, [users, searchTerm, filters, sortField, sortDirection]);
 
   const loadUsers = async () => {
     try {
@@ -128,6 +205,41 @@ export function UsersTab() {
     }
   };
 
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const handleFilterChange = (filterKey: keyof UserFilters) => {
+    setFilters(prev => ({
+      ...prev,
+      [filterKey]: !prev[filterKey]
+    }));
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      administrator: false,
+      facilitator: false,
+      activePlayer: false
+    });
+  };
+
+  const getSortIcon = (field: SortField) => {
+    if (sortField !== field) return null;
+    return sortDirection === 'asc' ? 
+      <ChevronUp className="h-4 w-4 ml-1" /> : 
+      <ChevronDown className="h-4 w-4 ml-1" />;
+  };
+
+  const isAnyFilterActive = () => {
+    return filters.administrator || filters.facilitator || filters.activePlayer;
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -167,14 +279,91 @@ export function UsersTab() {
       </div>
 
       {/* Search Bar */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#6F6F6F]" />
-        <Input
-          placeholder="Search users by name, email, or phone..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10 w-full max-w-md"
-        />
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#6F6F6F]" />
+          <Input
+            placeholder="Search users by name, email, or phone..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 w-full"
+          />
+        </div>
+        
+        {/* Filter Toggle Button */}
+        <Button
+          onClick={() => setShowFilters(!showFilters)}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${
+            isAnyFilterActive() 
+              ? 'border-[#B20000] bg-[#ffeae5] text-[#B20000]' 
+              : 'border-gray-300 bg-white text-[#6F6F6F]'
+          } hover:border-[#B20000] hover:bg-[#ffeae5] hover:text-[#B20000]`}
+        >
+          <Filter className="h-4 w-4" />
+          Filters
+          {isAnyFilterActive() && (
+            <span className="bg-[#B20000] text-white text-xs rounded-full px-2 py-0.5 ml-1">
+              {Object.values(filters).filter(Boolean).length}
+            </span>
+          )}
+        </Button>
+      </div>
+
+      {/* Filters Panel */}
+      {showFilters && (
+        <Card className="bg-gray-50">
+          <CardContent className="p-4">
+            <div className="flex flex-wrap gap-4 items-center">
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="filter-admin"
+                  checked={filters.administrator}
+                  onChange={() => handleFilterChange('administrator')}
+                  className="mr-2"
+                />
+                <label htmlFor="filter-admin" className="text-sm text-[#6F6F6F]">
+                  Administrator
+                </label>
+              </div>
+              
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="filter-facilitator"
+                  checked={filters.facilitator}
+                  onChange={() => handleFilterChange('facilitator')}
+                  className="mr-2"
+                />
+                <label htmlFor="filter-facilitator" className="text-sm text-[#6F6F6F]">
+                  Facilitator
+                </label>
+              </div>
+              
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="filter-active"
+                  checked={filters.activePlayer}
+                  onChange={() => handleFilterChange('activePlayer')}
+                  className="mr-2"
+                />
+                <label htmlFor="filter-active" className="text-sm text-[#6F6F6F]">
+                  Active Player
+                </label>
+              </div>
+              
+              {isAnyFilterActive() && (
+                <Button
+                  onClick={clearFilters}
+                  className="text-sm text-[#B20000] hover:text-[#8A0000] bg-transparent hover:bg-transparent p-0"
+                >
+                  Clear all filters
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Users Table */}
@@ -184,20 +373,50 @@ export function UsersTab() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-[#6F6F6F] uppercase tracking-wider">
-                    User
+                  <th 
+                    className="px-6 py-3 text-left text-xs font-medium text-[#6F6F6F] uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort('name')}
+                  >
+                    <div className="flex items-center">
+                      User
+                      {getSortIcon('name')}
+                    </div>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-[#6F6F6F] uppercase tracking-wider">
-                    Contact
+                  <th 
+                    className="px-6 py-3 text-left text-xs font-medium text-[#6F6F6F] uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort('email')}
+                  >
+                    <div className="flex items-center">
+                      Contact
+                      {getSortIcon('email')}
+                    </div>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-[#6F6F6F] uppercase tracking-wider">
-                    Position
+                  <th 
+                    className="px-6 py-3 text-left text-xs font-medium text-[#6F6F6F] uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort('is_admin')}
+                  >
+                    <div className="flex items-center">
+                      Role
+                      {getSortIcon('is_admin')}
+                    </div>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-[#6F6F6F] uppercase tracking-wider">
-                    Teams
+                  <th 
+                    className="px-6 py-3 text-left text-xs font-medium text-[#6F6F6F] uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort('team_count')}
+                  >
+                    <div className="flex items-center">
+                      Teams
+                      {getSortIcon('team_count')}
+                    </div>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-[#6F6F6F] uppercase tracking-wider">
-                    Joined
+                  <th 
+                    className="px-6 py-3 text-left text-xs font-medium text-[#6F6F6F] uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort('date_created')}
+                  >
+                    <div className="flex items-center">
+                      Joined
+                      {getSortIcon('date_created')}
+                    </div>
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-[#6F6F6F] uppercase tracking-wider">
                     Actions
@@ -224,6 +443,11 @@ export function UsersTab() {
                             {user.is_admin && (
                               <Crown className="h-4 w-4 text-yellow-500" title="Admin" />
                             )}
+                            {user.is_facilitator && (
+                              <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center" title="Facilitator">
+                                <span className="text-white text-xs font-bold">F</span>
+                              </div>
+                            )}
                           </div>
                           <div className="text-sm text-gray-500">
                             ID: {user.id.slice(0, 8)}...
@@ -247,8 +471,24 @@ export function UsersTab() {
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#6F6F6F]">
-                      {user.preferred_position || 'Not specified'}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-2">
+                          {user.is_admin && (
+                            <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">
+                              Admin
+                            </span>
+                          )}
+                          {user.is_facilitator && (
+                            <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                              Facilitator
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-sm text-[#6F6F6F]">
+                          {user.preferred_position || 'No position'}
+                        </div>
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-[#6F6F6F]">
                       {user.team_ids?.length || 0} teams
