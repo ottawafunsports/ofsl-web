@@ -19,6 +19,7 @@ import { LeagueStandings } from './components/LeagueStandings';
 import { SkillLevelRequirements } from './components/SkillLevelRequirements';
 import { AdditionalLeagueInfo } from './components/AdditionalLeagueInfo';
 import { ScoreSubmissionModal } from './components/ScoreSubmissionModal';
+import { LeagueTeams } from './components/LeagueTeams';
 
 export function LeagueDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -150,7 +151,8 @@ export function LeagueDetailPage() {
             <NavigationTabs 
               activeView={activeView} 
               setActiveView={setActiveView} 
-              sport={league.sport_name || ''} 
+              sport={league.sport_name || ''}
+              isAdmin={userProfile?.is_admin || false}
             />
 
             {/* League Info View */}
@@ -182,6 +184,11 @@ export function LeagueDetailPage() {
             {/* Standings View */}
             {activeView === 'standings' && (
               <LeagueStandings mockStandings={mockStandings} />
+            )}
+
+            {/* Admin Teams View */}
+            {activeView === 'teams' && userProfile?.is_admin && (
+              <LeagueTeams leagueId={league.id} />
             )}
           </div>
         </div>
