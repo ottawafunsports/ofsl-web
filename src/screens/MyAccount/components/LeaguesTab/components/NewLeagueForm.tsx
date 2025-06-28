@@ -177,16 +177,6 @@ export function NewLeagueForm({
         </div>
 
         <div className="mt-6">
-          <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Additional Information</label>
-          <RichTextEditor
-            value={newLeague.additional_info}
-            onChange={(content) => setNewLeague({ ...newLeague, additional_info: content })}
-            placeholder="Enter additional information"
-            rows={3}
-          />
-        </div>
-
-        <div className="mt-6">
           <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Gyms/Schools</label>
           <div className="space-y-2 max-h-40 overflow-y-auto border border-gray-300 rounded-lg p-3">
             {gyms.map(gym => (

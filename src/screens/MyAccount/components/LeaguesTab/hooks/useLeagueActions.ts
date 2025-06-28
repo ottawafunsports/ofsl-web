@@ -19,7 +19,6 @@ export function useLeagueActions({ loadData, showToast }: UseLeagueActionsProps)
         .insert({
           name: newLeague.name,
           description: newLeague.description,
-          additional_info: newLeague.additional_info,
           sport_id: newLeague.sport_id,
           skill_id: newLeague.skill_id,
           day_of_week: newLeague.day_of_week,
