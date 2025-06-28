@@ -115,7 +115,7 @@ export function LeagueDetailPage() {
           {/* Admin Edit Link */}
           {userProfile?.is_admin && (
             <Link 
-              to="/my-account/leagues" 
+              to={`/my-account/leagues/edit/${league.id}`}
               className="text-[#B20000] hover:underline text-sm"
             >
               Edit league details
