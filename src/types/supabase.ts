@@ -83,6 +83,9 @@ export interface Database {
           gym: string | null
           address: string | null
           instructions: string | null
+          active: boolean
+          available_days: number[] | null
+          available_sports: number[] | null
         }
         Insert: {
           id: number
@@ -90,6 +93,9 @@ export interface Database {
           gym?: string | null
           address?: string | null
           instructions?: string | null
+          active?: boolean
+          available_days?: number[] | null
+          available_sports?: number[] | null
         }
         Update: {
           id?: number
@@ -97,6 +103,9 @@ export interface Database {
           gym?: string | null
           address?: string | null
           instructions?: string | null
+          active?: boolean
+          available_days?: number[] | null
+          available_sports?: number[] | null
         }
       }
       balances: {

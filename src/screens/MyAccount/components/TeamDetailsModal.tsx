@@ -72,7 +72,7 @@ export function TeamDetailsModal({
               <h2 className="text-2xl font-bold text-[#6F6F6F]">Team Details</h2>
               <button 
                 onClick={closeModal}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-gray-500 hover:text-gray-700 bg-transparent hover:bg-transparent border-none shadow-none p-2"
               >
                 <X className="h-6 w-6" />
               </button>

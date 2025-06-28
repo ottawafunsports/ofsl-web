@@ -338,7 +338,7 @@ export function AddPlayersModal({
             <h2 className="text-2xl font-bold text-[#6F6F6F]">Add Players</h2>
             <button 
               onClick={handleClose}
-              className="text-gray-500 hover:text-gray-700"
+              className="text-gray-500 hover:text-gray-700 bg-transparent hover:bg-transparent border-none shadow-none p-2"
             >
               <X className="h-6 w-6" />
             </button>

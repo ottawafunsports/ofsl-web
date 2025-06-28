@@ -5,7 +5,8 @@ import { Input } from '../../../components/ui/input';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../components/ui/toast';
 import { supabase } from '../../../lib/supabase';
-import { Users, Search, Edit2, Trash2, Crown, Mail, Phone, Calendar } from 'lucide-react';
+import { Users, Search, Edit2, Trash2, Crown, Mail, Phone, Calendar, ChevronUp, ChevronDown, Filter, Key } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface User {
   id: string;
@@ -15,9 +16,19 @@ interface User {
   phone: string;
   preferred_position: string | null;
   is_admin: boolean | null;
+  is_facilitator: boolean | null;
   date_created: string;
   date_modified: string;
   team_ids: number[] | null;
+}
+
+type SortField = 'name' | 'email' | 'phone' | 'date_created' | 'is_admin' | 'is_facilitator' | 'team_count';
+type SortDirection = 'asc' | 'desc';
+
+interface UserFilters {
+  administrator: boolean;
+  facilitator: boolean;
+  activePlayer: boolean;
 }
 
 export function UsersTab() {
@@ -30,20 +41,94 @@ export function UsersTab() {
   const [loading, setLoading] = useState(true);
   const [editingUser, setEditingUser] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<User>>({});
+  const [userRegistrations, setUserRegistrations] = useState<Array<{
+    id: number, 
+    name: string, 
+    sport_name: string | null,
+    role: 'captain' | 'player'
+  }>>([]);
+  const [resettingPassword, setResettingPassword] = useState(false);
+  
+  // Sorting state
+  const [sortField, setSortField] = useState<SortField>('date_created');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  
+  // Filter state
+  const [filters, setFilters] = useState<UserFilters>({
+    administrator: false,
+    facilitator: false,
+    activePlayer: false
+  });
 
   useEffect(() => {
     loadUsers();
   }, []);
 
   useEffect(() => {
-    // Filter users based on search term
-    const filtered = users.filter(user => 
+    // Filter and sort users
+    let filtered = users.filter(user => 
       (user.name?.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (user.email?.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (user.phone?.includes(searchTerm))
     );
+    
+    // Apply filters
+    if (filters.administrator) {
+      filtered = filtered.filter(user => user.is_admin === true);
+    }
+    if (filters.facilitator) {
+      filtered = filtered.filter(user => user.is_facilitator === true);
+    }
+    if (filters.activePlayer) {
+      filtered = filtered.filter(user => user.team_ids && user.team_ids.length > 0);
+    }
+    
+    // Apply sorting
+    filtered.sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+      
+      switch (sortField) {
+        case 'name':
+          aValue = a.name?.toLowerCase() || '';
+          bValue = b.name?.toLowerCase() || '';
+          break;
+        case 'email':
+          aValue = a.email?.toLowerCase() || '';
+          bValue = b.email?.toLowerCase() || '';
+          break;
+        case 'phone':
+          aValue = a.phone || '';
+          bValue = b.phone || '';
+          break;
+        case 'date_created':
+          aValue = new Date(a.date_created);
+          bValue = new Date(b.date_created);
+          break;
+        case 'is_admin':
+          aValue = a.is_admin ? 1 : 0;
+          bValue = b.is_admin ? 1 : 0;
+          break;
+        case 'is_facilitator':
+          aValue = a.is_facilitator ? 1 : 0;
+          bValue = b.is_facilitator ? 1 : 0;
+          break;
+        case 'team_count':
+          aValue = a.team_ids?.length || 0;
+          bValue = b.team_ids?.length || 0;
+          break;
+        default:
+          aValue = a.date_created;
+          bValue = b.date_created;
+      }
+      
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+    
     setFilteredUsers(filtered);
-  }, [users, searchTerm]);
+  }, [users, searchTerm, filters, sortField, sortDirection]);
 
   const loadUsers = async () => {
     try {
@@ -65,17 +150,75 @@ export function UsersTab() {
     }
   };
 
-  const handleEditUser = (user: User) => {
+  const handleEditUser = async (user: User) => {
     setEditingUser(user.id);
     setEditForm({
       name: user.name,
       email: user.email,
       phone: user.phone,
       preferred_position: user.preferred_position,
-      is_admin: user.is_admin
+      is_admin: user.is_admin,
+      is_facilitator: user.is_facilitator
     });
+    
+    // Fetch user's league registrations
+    await loadUserRegistrations(user.team_ids || []);
   };
 
+  const loadUserRegistrations = async (teamIds: number[]) => {
+    if (teamIds.length === 0) {
+      setUserRegistrations([]);
+      return;
+    }
+
+    try {
+      const { data: teamsData, error } = await supabase
+        .from('teams')
+        .select(`
+          id,
+          captain_id,
+          leagues:league_id(
+            id, 
+            name,
+            sports:sport_id(name)
+          )
+        `)
+        .in('id', teamIds);
+
+      if (error) throw error;
+
+      // Process teams to determine role and get unique leagues
+      const leagueMap = new Map();
+      
+      teamsData?.forEach(team => {
+        if (team.leagues) {
+          const league = team.leagues;
+          const isCaptain = team.captain_id === editingUser;
+          const sportName = league.sports?.name;
+          
+          // If we already have this league, update role if user is captain
+          if (leagueMap.has(league.id)) {
+            const existing = leagueMap.get(league.id);
+            if (isCaptain) {
+              existing.role = 'captain';
+            }
+          } else {
+            leagueMap.set(league.id, {
+              id: league.id,
+              name: league.name,
+              sport_name: sportName,
+              role: isCaptain ? 'captain' : 'player'
+            });
+          }
+        }
+      });
+
+      setUserRegistrations(Array.from(leagueMap.values()));
+    } catch (error) {
+      console.error('Error loading user registrations:', error);
+      setUserRegistrations([]);
+    }
+  };
   const handleSaveUser = async () => {
     if (!editingUser) return;
 
@@ -88,6 +231,7 @@ export function UsersTab() {
           phone: editForm.phone,
           preferred_position: editForm.preferred_position,
           is_admin: editForm.is_admin,
+          is_facilitator: editForm.is_facilitator,
           date_modified: new Date().toISOString()
         })
         .eq('id', editingUser);
@@ -125,6 +269,77 @@ export function UsersTab() {
     }
   };
 
+  const handleResetPassword = async () => {
+    if (!editingUser) return;
+
+    const confirmReset = confirm('Are you sure you want to reset this user\'s password? They will receive an email with instructions to set a new password.');
+    if (!confirmReset) return;
+
+    try {
+      setResettingPassword(true);
+      
+      // Get the user's email from the edit form
+      const userEmail = editForm.email;
+      if (!userEmail) {
+        showToast('User email is required to reset password', 'error');
+        return;
+      }
+
+      // Use Supabase Auth Admin API to reset password
+      const { error } = await supabase.auth.admin.generateLink({
+        type: 'recovery',
+        email: userEmail,
+        options: {
+          redirectTo: `${window.location.origin}/reset-password`
+        }
+      });
+
+      if (error) throw error;
+
+      showToast('Password reset email sent successfully!', 'success');
+    } catch (error: any) {
+      console.error('Error resetting password:', error);
+      showToast(error.message || 'Failed to reset password', 'error');
+    } finally {
+      setResettingPassword(false);
+    }
+  };
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const handleFilterChange = (filterKey: keyof UserFilters) => {
+    setFilters(prev => ({
+      ...prev,
+      [filterKey]: !prev[filterKey]
+    }));
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      administrator: false,
+      facilitator: false,
+      activePlayer: false
+    });
+  };
+
+  const getSortIcon = (field: SortField) => {
+    if (sortField !== field) return null;
+    return sortDirection === 'asc' ? 
+      <ChevronUp className="h-4 w-4 ml-1" /> : 
+      <ChevronDown className="h-4 w-4 ml-1" />;
+  };
+
+  const isAnyFilterActive = () => {
+    return filters.administrator || filters.facilitator || filters.activePlayer;
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -152,7 +367,8 @@ export function UsersTab() {
   }
 
   return (
-    <div className="space-y-6">
+    <>
+      <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-2">
           <Users className="h-6 w-6 text-[#6F6F6F]" />
@@ -164,15 +380,71 @@ export function UsersTab() {
       </div>
 
       {/* Search Bar */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#6F6F6F]" />
-        <Input
-          placeholder="Search users by name, email, or phone..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10 w-full max-w-md"
-        />
+      <div className="flex items-center gap-6">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#6F6F6F]" />
+          <Input
+            placeholder="Search users by name, email, or phone..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 w-full"
+          />
+        </div>
+        
+        {/* Filters */}
+        <div className="flex gap-4 items-center">
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="filter-admin"
+              checked={filters.administrator}
+              onChange={() => handleFilterChange('administrator')}
+              className="mr-2"
+            />
+            <label htmlFor="filter-admin" className="text-sm text-[#6F6F6F]">
+              Administrator
+            </label>
+          </div>
+          
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="filter-facilitator"
+              checked={filters.facilitator}
+              onChange={() => handleFilterChange('facilitator')}
+              className="mr-2"
+            />
+            <label htmlFor="filter-facilitator" className="text-sm text-[#6F6F6F]">
+              Facilitator
+            </label>
+          </div>
+          
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="filter-active"
+              checked={filters.activePlayer}
+              onChange={() => handleFilterChange('activePlayer')}
+              className="mr-2"
+            />
+            <label htmlFor="filter-active" className="text-sm text-[#6F6F6F]">
+              Active Player
+            </label>
+          </div>
+        </div>
       </div>
+      
+      {/* Clear filters button */}
+      {isAnyFilterActive() && (
+        <div className="flex justify-start">
+          <Button
+            onClick={clearFilters}
+            className="text-sm text-[#B20000] hover:text-[#8A0000] bg-transparent hover:bg-transparent p-0"
+          >
+            Clear all filters
+          </Button>
+        </div>
+      )}
 
       {/* Users Table */}
       <Card>
@@ -181,20 +453,50 @@ export function UsersTab() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-[#6F6F6F] uppercase tracking-wider">
-                    User
+                  <th 
+                    className="px-6 py-3 text-left text-xs font-medium text-[#6F6F6F] uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort('name')}
+                  >
+                    <div className="flex items-center">
+                      User
+                      {getSortIcon('name')}
+                    </div>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-[#6F6F6F] uppercase tracking-wider">
-                    Contact
+                  <th 
+                    className="px-6 py-3 text-left text-xs font-medium text-[#6F6F6F] uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort('email')}
+                  >
+                    <div className="flex items-center">
+                      Contact
+                      {getSortIcon('email')}
+                    </div>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-[#6F6F6F] uppercase tracking-wider">
-                    Position
+                  <th 
+                    className="px-6 py-3 text-left text-xs font-medium text-[#6F6F6F] uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort('is_admin')}
+                  >
+                    <div className="flex items-center">
+                      Role
+                      {getSortIcon('is_admin')}
+                    </div>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-[#6F6F6F] uppercase tracking-wider">
-                    Teams
+                  <th 
+                    className="px-6 py-3 text-left text-xs font-medium text-[#6F6F6F] uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort('team_count')}
+                  >
+                    <div className="flex items-center">
+                      Teams
+                      {getSortIcon('team_count')}
+                    </div>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-[#6F6F6F] uppercase tracking-wider">
-                    Joined
+                  <th 
+                    className="px-6 py-3 text-left text-xs font-medium text-[#6F6F6F] uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort('date_created')}
+                  >
+                    <div className="flex items-center">
+                      Joined
+                      {getSortIcon('date_created')}
+                    </div>
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-[#6F6F6F] uppercase tracking-wider">
                     Actions
@@ -221,6 +523,11 @@ export function UsersTab() {
                             {user.is_admin && (
                               <Crown className="h-4 w-4 text-yellow-500" title="Admin" />
                             )}
+                            {user.is_facilitator && (
+                              <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center" title="Facilitator">
+                                <span className="text-white text-xs font-bold">F</span>
+                              </div>
+                            )}
                           </div>
                           <div className="text-sm text-gray-500">
                             ID: {user.id.slice(0, 8)}...
@@ -244,8 +551,24 @@ export function UsersTab() {
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#6F6F6F]">
-                      {user.preferred_position || 'Not specified'}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-2">
+                          {user.is_admin && (
+                            <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">
+                              Admin
+                            </span>
+                          )}
+                          {user.is_facilitator && (
+                            <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                              Facilitator
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-sm text-[#6F6F6F]">
+                          {user.preferred_position || 'No position'}
+                        </div>
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-[#6F6F6F]">
                       {user.team_ids?.length || 0} teams
@@ -339,18 +662,90 @@ export function UsersTab() {
                   </select>
                 </div>
 
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="is_admin"
-                    checked={editForm.is_admin || false}
-                    onChange={(e) => setEditForm({ ...editForm, is_admin: e.target.checked })}
-                    className="mr-2"
-                  />
-                  <label htmlFor="is_admin" className="text-sm font-medium text-[#6F6F6F]">
-                    Admin privileges
-                  </label>
+                <div>
+                  <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Registrations</label>
+                  <div className="text-sm">
+                    {userRegistrations.length > 0 ? (
+                      <div className="space-y-1">
+                        {userRegistrations.map((league) => (
+                          <div key={league.id}>
+                            <div className="flex items-center gap-2">
+                              <Link 
+                                to={`/leagues/${league.id}`}
+                                className="text-[#B20000] hover:text-[#8A0000] hover:underline"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                {league.name}
+                              </Link>
+                              {league.sport_name === 'Volleyball' && (
+                                <span className={`px-2 py-1 text-xs rounded-full ${
+                                  league.role === 'captain' 
+                                    ? 'bg-yellow-100 text-yellow-800' 
+                                    : 'bg-blue-100 text-blue-800'
+                                }`}>
+                                  {league.role === 'captain' ? 'Captain' : 'Player'}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="text-[#6F6F6F]">No league registrations</span>
+                    )}
+                  </div>
                 </div>
+
+                {/* User Role Section */}
+                <div className="border-t pt-4">
+                  <h4 className="text-sm font-medium text-[#6F6F6F] mb-3">User Role</h4>
+                  <div className="flex items-center gap-6">
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id="is_admin"
+                        checked={editForm.is_admin || false}
+                        onChange={(e) => setEditForm({ ...editForm, is_admin: e.target.checked })}
+                        className="mr-2"
+                      />
+                      <label htmlFor="is_admin" className="text-sm font-medium text-[#6F6F6F]">
+                        Admin privileges
+                      </label>
+                    </div>
+
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id="is_facilitator"
+                        checked={editForm.is_facilitator || false}
+                        onChange={(e) => setEditForm({ ...editForm, is_facilitator: e.target.checked })}
+                        className="mr-2"
+                      />
+                      <label htmlFor="is_facilitator" className="text-sm font-medium text-[#6F6F6F]">
+                        Facilitator
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Password Reset Section - Only for Admins */}
+                {userProfile?.is_admin && (
+                  <div className="border-t pt-4">
+                    <h4 className="text-sm font-medium text-[#6F6F6F] mb-3">Password Management</h4>
+                    <Button
+                      onClick={handleResetPassword}
+                      disabled={resettingPassword || !editForm.email}
+                      className="w-full bg-orange-500 hover:bg-orange-600 text-white rounded-lg px-4 py-2 flex items-center justify-center gap-2"
+                    >
+                      <Key className="h-4 w-4" />
+                      {resettingPassword ? 'Sending Reset Email...' : 'Reset Password'}
+                    </Button>
+                    <p className="text-xs text-[#6F6F6F] mt-2">
+                      This will send a password reset email to the user's email address.
+                    </p>
+                  </div>
+                )}
               </div>
 
               <div className="flex gap-4 mt-6">
@@ -364,8 +759,10 @@ export function UsersTab() {
                   onClick={() => {
                     setEditingUser(null);
                     setEditForm({});
+                    setUserRegistrations([]);
+                    setResettingPassword(false);
                   }}
-                  className="flex-1 bg-gray-500 hover:bg-gray-600 text-white rounded-lg px-6 py-2"
+                  className="text-gray-500 hover:text-gray-700 bg-transparent hover:bg-transparent border-none shadow-none p-2"
                 >
                   Cancel
                 </Button>
@@ -374,6 +771,7 @@ export function UsersTab() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }
