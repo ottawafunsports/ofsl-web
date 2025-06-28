@@ -191,9 +191,7 @@ export function LeagueDetailPage() {
                   </div>
                 </div>
                 
-                {league.skill_name && (
-                  <SkillLevelRequirements skillLevel={league.skill_name} />
-                )}
+                <SkillLevelRequirements />
                 <AdditionalLeagueInfo />
               </div>
             )}
