@@ -434,14 +434,21 @@ export function LeaguesTab() {
 
             <div className="mt-6">
               <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Description</label>
-              <p className="text-sm text-[#6F6F6F] mb-3">
-                This description will appear in the Details tab of the league page. Include all relevant information about the league, skill requirements, and additional details.
-              </p>
               <RichTextEditor
                 value={newLeague.description}
-                onChange={(content) => setNewLeague({ ...newLeague, description: content })}
-                placeholder="Enter complete league description including skill requirements and additional information..."
-                rows={15}
+                onChange={(e) => setNewLeague({ ...newLeague, description: e.target.value })}
+                placeholder="Enter league description"
+                rows={3}
+              />
+            </div>
+
+            <div className="mt-6">
+              <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Additional Information</label>
+              <RichTextEditor
+                value={newLeague.additional_info}
+                onChange={(e) => setNewLeague({ ...newLeague, additional_info: e.target.value })}
+                placeholder="Enter additional information"
+                rows={3}
               />
             </div>
 

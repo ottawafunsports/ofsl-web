@@ -25,7 +25,7 @@ export function LeagueEditPage() {
   
   const [editLeague, setEditLeague] = useState({
     name: '',
-    description: '',
+    description: '', // This will start empty and not pull from database
     sport_id: null,
     skill_id: null,
     day_of_week: null,
@@ -86,7 +86,7 @@ export function LeagueEditPage() {
         
         setEditLeague({
           name: leagueData.name,
-          description: leagueData.description || '',
+          description: '', // Start with empty description, no database content
           sport_id: leagueData.sport_id,
           skill_id: leagueData.skill_id,
           day_of_week: leagueData.day_of_week,
@@ -299,14 +299,11 @@ export function LeagueEditPage() {
 
             <div className="mt-6">
               <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Description</label>
-              <p className="text-sm text-[#6F6F6F] mb-3">
-                This description will appear in the Details tab of the league page. Include all relevant information about the league, skill requirements, and additional details.
-              </p>
               <RichTextEditor
                 value={editLeague.description}
                 onChange={(content) => setEditLeague({ ...editLeague, description: content })}
-                placeholder="Enter complete league description including skill requirements and additional information..."
-                rows={15}
+                placeholder="Enter league description"
+                rows={10}
               />
             </div>
 
