@@ -142,31 +142,201 @@ export function LeagueEditPage() {
     
     if (sportName === 'Volleyball') {
       if (leagueName.toLowerCase().includes('elite') && leagueName.toLowerCase().includes('women')) {
-        return "OFSL's elite women's volleyball league represents the highest level of competitive play for female athletes. This league is designed for current or former college/university players who demonstrate advanced offensive and defensive systems, consistent high-level execution, and specialized positional play.";
+        return `OFSL's elite women's volleyball league represents the highest level of competitive play for female athletes. This league is designed for current or former college/university players who demonstrate advanced offensive and defensive systems, consistent high-level execution, and specialized positional play.
+
+**Skill Level Requirements - Elite Level:**
+• Tournament-level play with advanced techniques and strategies
+• Consistent power and precision in all shots
+• Excellent court coverage and anticipation skills
+• Strong tactical awareness and game management
+
+**Additional Information:**
+• League runs for 12 weeks with 10 regular season games and 2 weeks of playoffs
+• Registered teams receive a schedule of all games for the season
+• All equipment provided (except personal gear)
+• Please review our standards of play for complete rules
+• Teams are separated by tiers which are updated every week after games
+• Focused on individuals who play at an intermediate to elite skill level
+• Schools and play times may vary between tiers`;
       } else if (leagueName.toLowerCase().includes('coed') && leagueName.toLowerCase().includes('intermediate')) {
-        return "Our coed intermediate volleyball league provides a structured environment for players who are comfortable with basic volleyball skills and are developing consistency in their play. This league welcomes players who understand fundamental rules and strategies.";
+        return `Our coed intermediate volleyball league provides a structured environment for players who are comfortable with basic volleyball skills and are developing consistency in their play. This league welcomes players who understand fundamental rules and strategies.
+
+**Skill Level Requirements - Intermediate Level:**
+• Comfortable with basic strokes and serves
+• Developing consistency in shot placement
+• Learning proper footwork and court positioning
+• Eager to improve and learn new techniques
+
+**Additional Information:**
+• League runs for 12 weeks with 10 regular season games and 2 weeks of playoffs
+• Registered teams receive a schedule of all games for the season
+• All equipment provided (except personal gear)
+• Please review our standards of play for complete rules
+• Teams are separated by tiers which are updated every week after games
+• Focused on individuals who play at an intermediate to elite skill level
+• Schools and play times may vary between tiers`;
       } else if (leagueName.toLowerCase().includes('coed') && leagueName.toLowerCase().includes('advanced')) {
-        return "The coed advanced volleyball league is perfect for players with solid technique in all basic strokes and serves, good footwork and court movement, and the ability to maintain longer rallies with control.";
+        return `The coed advanced volleyball league is perfect for players with solid technique in all basic strokes and serves, good footwork and court movement, and the ability to maintain longer rallies with control.
+
+**Skill Level Requirements - Advanced Level:**
+• Solid technique in all basic strokes and serves
+• Good footwork and court movement
+• Ability to maintain longer rallies with control
+• Basic understanding of doubles positioning
+
+**Additional Information:**
+• League runs for 12 weeks with 10 regular season games and 2 weeks of playoffs
+• Registered teams receive a schedule of all games for the season
+• All equipment provided (except personal gear)
+• Please review our standards of play for complete rules
+• Teams are separated by tiers which are updated every week after games
+• Focused on individuals who play at an intermediate to elite skill level
+• Schools and play times may vary between tiers`;
       } else if (leagueName.toLowerCase().includes('coed') && leagueName.toLowerCase().includes('competitive')) {
-        return "Our coed competitive volleyball league features strong fundamental skills with developing advanced techniques. Players should demonstrate good court positioning and shot selection.";
+        return `Our coed competitive volleyball league features strong fundamental skills with developing advanced techniques. Players should demonstrate good court positioning and shot selection.
+
+**Skill Level Requirements - Competitive Level:**
+• Strong fundamental skills with developing advanced techniques
+• Good court positioning and shot selection
+• Consistent rallies with occasional power shots
+• Understanding of basic tactics and game flow
+
+**Additional Information:**
+• League runs for 12 weeks with 10 regular season games and 2 weeks of playoffs
+• Registered teams receive a schedule of all games for the season
+• All equipment provided (except personal gear)
+• Please review our standards of play for complete rules
+• Teams are separated by tiers which are updated every week after games
+• Focused on individuals who play at an intermediate to elite skill level
+• Schools and play times may vary between tiers`;
       } else if (leagueName.toLowerCase().includes('4s')) {
-        return "This 4-on-4 volleyball format provides a faster-paced, more dynamic game where every player is constantly involved. With fewer players on the court, each participant gets more touches and opportunities.";
+        return `This 4-on-4 volleyball format provides a faster-paced, more dynamic game where every player is constantly involved. With fewer players on the court, each participant gets more touches and opportunities.
+
+**About 4s Format:**
+• Fast-paced, dynamic gameplay with more player involvement
+• Every player gets more touches and opportunities to make plays
+• Develops well-rounded skill set through increased participation
+• Perfect for intensive action and skill development
+
+**Additional Information:**
+• League runs for 12 weeks with 10 regular season games and 2 weeks of playoffs
+• Registered teams receive a schedule of all games for the season
+• All equipment provided (except personal gear)
+• Please review our standards of play for complete rules
+• Teams are separated by tiers which are updated every week after games
+• Focused on individuals who play at an intermediate to elite skill level
+• Schools and play times may vary between tiers`;
       } else {
-        return "OFSL volleyball leagues are organized to provide participants with a structured environment that encourages sportsmanship, physical activity and healthy competition.";
+        return `OFSL volleyball leagues are organized to provide participants with a structured environment that encourages sportsmanship, physical activity and healthy competition. Our tiered system ensures fair and competitive play for all skill levels.
+
+**About Our Volleyball Leagues:**
+• Teams are separated by tiers which are updated every week after games
+• Focused on individuals who play at an intermediate to elite skill level
+• Schools and play times may vary between tiers
+• You must be registered to see standings and schedules
+• To register a team, captains must create an account and be approved by the league
+
+**Additional Information:**
+• League runs for 12 weeks with 10 regular season games and 2 weeks of playoffs
+• Registered teams receive a schedule of all games for the season
+• All equipment provided (except personal gear)
+• Please review our standards of play for complete rules`;
       }
     } else if (sportName === 'Badminton') {
       if (leagueName.toLowerCase().includes('advanced') && leagueName.toLowerCase().includes('singles')) {
-        return "Advanced singles badminton for players with solid technique in all basic strokes and serves, excellent footwork and court movement, and the ability to maintain longer rallies with control and precision.";
+        return `Advanced singles badminton for players with solid technique in all basic strokes and serves, excellent footwork and court movement, and the ability to maintain longer rallies with control and precision.
+
+**Skill Level Requirements - Advanced Level:**
+• Solid technique in all basic strokes and serves
+• Good footwork and court movement
+• Ability to maintain longer rallies with control
+• Basic understanding of doubles positioning
+
+**About Our Badminton Leagues:**
+• Both singles and doubles formats available across all skill levels
+• Focused on players who want competitive yet enjoyable matches
+• Professional-grade shuttlecocks provided for all league play
+• Multiple courts available to ensure optimal playing conditions
+• Individual registration - we'll match you with players of similar skill level
+
+**Additional Information:**
+• League runs for 12 weeks with 10 regular season games and 2 weeks of playoffs
+• Registered teams receive a schedule of all games for the season
+• All equipment provided (except personal gear)
+• Please review our standards of play for complete rules`;
       } else if (leagueName.toLowerCase().includes('intermediate') && leagueName.toLowerCase().includes('doubles')) {
-        return "Intermediate doubles badminton welcomes players who are comfortable with basic strokes and serves, developing consistency in shot placement, and learning proper footwork and court positioning.";
+        return `Intermediate doubles badminton welcomes players who are comfortable with basic strokes and serves, developing consistency in shot placement, and learning proper footwork and court positioning.
+
+**Skill Level Requirements - Intermediate Level:**
+• Comfortable with basic strokes and serves
+• Developing consistency in shot placement
+• Learning proper footwork and court positioning
+• Eager to improve and learn new techniques
+
+**About Our Badminton Leagues:**
+• Both singles and doubles formats available across all skill levels
+• Focused on players who want competitive yet enjoyable matches
+• Professional-grade shuttlecocks provided for all league play
+• Multiple courts available to ensure optimal playing conditions
+• Individual registration - we'll match you with players of similar skill level
+
+**Additional Information:**
+• League runs for 12 weeks with 10 regular season games and 2 weeks of playoffs
+• Registered teams receive a schedule of all games for the season
+• All equipment provided (except personal gear)
+• Please review our standards of play for complete rules`;
       } else if (leagueName.toLowerCase().includes('competitive')) {
-        return "Competitive badminton featuring strong fundamental skills with developing advanced techniques. Players should demonstrate good court positioning and shot selection.";
+        return `Competitive badminton featuring strong fundamental skills with developing advanced techniques. Players should demonstrate good court positioning and shot selection.
+
+**Skill Level Requirements - Competitive Level:**
+• Strong fundamental skills with developing advanced techniques
+• Good court positioning and shot selection
+• Consistent rallies with occasional power shots
+• Understanding of basic tactics and game flow
+
+**About Our Badminton Leagues:**
+• Both singles and doubles formats available across all skill levels
+• Focused on players who want competitive yet enjoyable matches
+• Professional-grade shuttlecocks provided for all league play
+• Multiple courts available to ensure optimal playing conditions
+• Individual registration - we'll match you with players of similar skill level
+
+**Additional Information:**
+• League runs for 12 weeks with 10 regular season games and 2 weeks of playoffs
+• Registered teams receive a schedule of all games for the season
+• All equipment provided (except personal gear)
+• Please review our standards of play for complete rules`;
       } else {
-        return "OFSL badminton leagues offer competitive play for all skill levels, from intermediate to advanced players. Experience fast-paced action and improve your game in a supportive community environment.";
+        return `OFSL badminton leagues offer competitive play for all skill levels, from intermediate to advanced players. Experience fast-paced action and improve your game in a supportive community environment.
+
+**About Our Badminton Leagues:**
+• Both singles and doubles formats available across all skill levels
+• Focused on players who want competitive yet enjoyable matches
+• Professional-grade shuttlecocks provided for all league play
+• Multiple courts available to ensure optimal playing conditions
+• Individual registration - we'll match you with players of similar skill level
+
+**Additional Information:**
+• League runs for 12 weeks with 10 regular season games and 2 weeks of playoffs
+• Registered teams receive a schedule of all games for the season
+• All equipment provided (except personal gear)
+• Please review our standards of play for complete rules`;
       }
     }
     
-    return "Join our league for competitive play in a structured, supportive environment. Perfect for players looking to improve their skills while enjoying organized competition and community.";
+    return `Join our league for competitive play in a structured, supportive environment. Perfect for players looking to improve their skills while enjoying organized competition and community.
+
+**About Our Leagues:**
+• Structured environment promoting sportsmanship and healthy competition
+• Multiple skill levels available to ensure fair and competitive play
+• Professional organization and game management
+• Focus on skill development and community building
+
+**Additional Information:**
+• League runs for 12 weeks with regular season games and playoffs
+• Registered teams receive a schedule of all games for the season
+• All equipment provided (except personal gear)
+• Please review our standards of play for complete rules`;
   };
 
   const handleUpdateLeague = async () => {
