@@ -225,16 +225,26 @@ export function LeagueEditPage() {
             />
             <div className="flex-1">
               <label className="block text-sm font-medium text-[#6F6F6F] mb-1">League Name</label>
-              <Input
-                value={editLeague.name}
-                onChange={(e) => setEditLeague({ ...editLeague, name: e.target.value })}
-                placeholder="Enter league name"
-                className="text-3xl md:text-4xl font-bold text-[#6F6F6F] border-none shadow-none p-0 h-auto bg-transparent focus:ring-0"
-              />
+              <div className="relative group">
+                <Input
+                  value={editLeague.name}
+                  onChange={(e) => setEditLeague({ ...editLeague, name: e.target.value })}
+                  placeholder="Enter league name"
+                  className="text-3xl md:text-4xl font-bold text-[#6F6F6F] border-2 border-dashed border-transparent hover:border-[#B20000] focus:border-[#B20000] focus:border-solid shadow-none p-2 h-auto bg-transparent focus:ring-0 rounded-lg transition-all duration-200"
+                />
+                <div className="absolute inset-0 pointer-events-none border-2 border-dashed border-gray-300 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+              </div>
             </div>
           </div>
           <div className="ml-[52px]">
-            <p className="text-xl text-[#6F6F6F]">2025 Season</p>
+            <div className="relative group inline-block">
+              <div className="relative">
+                <span className="text-xl text-[#6F6F6F] px-2 py-1 rounded-lg border-2 border-dashed border-transparent hover:border-[#B20000] transition-all duration-200 cursor-text bg-transparent hover:bg-gray-50">
+                  2025 Season
+                </span>
+                <div className="absolute inset-0 pointer-events-none border-2 border-dashed border-gray-300 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+              </div>
+            </div>
           </div>
         </div>
 
