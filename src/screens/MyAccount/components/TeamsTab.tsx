@@ -4,10 +4,11 @@ import { useToast } from '../../../components/ui/toast';
 import { supabase } from '../../../lib/supabase';
 import { getUserSubscription } from '../../../lib/stripe';
 import { getUserPaymentSummary, getUserLeaguePayments, type LeaguePayment } from '../../../lib/payments';
-import { Users, Calendar, CheckCircle, CreditCard, AlertCircle, Crown, DollarSign, Clock } from 'lucide-react';
+import { Users, Calendar, CheckCircle, CreditCard, AlertCircle, Crown, DollarSign, Clock, X } from 'lucide-react';
 import { TeamDetailsModal } from './TeamDetailsModal';
 import { getDayName } from '../../../lib/leagues';
 import { getProductByPriceId } from '../../../stripe-config';
+import { Button } from '../../../components/ui/button';
 
 interface Team {
   id: number;
@@ -59,6 +60,9 @@ export function TeamsTab() {
   const [leaguePayments, setLeaguePayments] = useState<LeaguePayment[]>([]);
   const [paymentsLoading, setPaymentsLoading] = useState(false);
 
+  // Add state for unregistering
+  const [unregisteringPayment, setUnregisteringPayment] = useState<number | null>(null);
+
   // Stats calculations from actual data
   const activeTeams = teams.filter(team => team.active).length;
   const captainTeams = teams.filter(team => team.captain_id === userProfile?.id);
@@ -102,6 +106,35 @@ export function TeamsTab() {
       console.error('Error loading payment data:', error);
     } finally {
       setPaymentsLoading(false);
+    }
+  };
+
+  const handleUnregister = async (paymentId: number, leagueName: string) => {
+    const confirmUnregister = confirm(`Are you sure you want to unregister from ${leagueName}? This action cannot be undone and you may lose your spot in the league.`);
+    
+    if (!confirmUnregister) return;
+
+    try {
+      setUnregisteringPayment(paymentId);
+      
+      // Delete the league payment record
+      const { error } = await supabase
+        .from('league_payments')
+        .delete()
+        .eq('id', paymentId);
+
+      if (error) throw error;
+
+      showToast('Successfully unregistered from league', 'success');
+      
+      // Reload payment data to update the UI and amounts
+      await loadPaymentData();
+      
+    } catch (error: any) {
+      console.error('Error unregistering from league:', error);
+      showToast(error.message || 'Failed to unregister from league', 'error');
+    } finally {
+      setUnregisteringPayment(null);
     }
   };
 
@@ -379,6 +412,21 @@ export function TeamsTab() {
                     }`}>
                       {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
                     </span>
+                    
+                    <Button
+                      onClick={() => handleUnregister(payment.id, payment.league_name)}
+                      disabled={unregisteringPayment === payment.id}
+                      className="bg-red-500 hover:bg-red-600 text-white rounded-lg px-3 py-1 text-xs flex items-center gap-1"
+                    >
+                      {unregisteringPayment === payment.id ? (
+                        'Unregistering...'
+                      ) : (
+                        <>
+                          <X className="h-3 w-3" />
+                          Unregister
+                        </>
+                      )}
+                    </Button>
                   </div>
                 </div>
               </div>
