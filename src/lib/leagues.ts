@@ -9,6 +9,7 @@ export interface League {
   skill_id: number | null;
   day_of_week: number | null;
   start_date: string | null;
+  year: string | null;
   end_date: string | null;
   cost: number | null;
   max_teams: number | null;

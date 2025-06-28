@@ -26,6 +26,7 @@ export function NewLeagueForm({
   const [newLeague, setNewLeague] = useState<NewLeague>({
     name: '',
     description: '',
+    year: '2025',
     sport_id: null,
     skill_id: null,
     day_of_week: null,
@@ -41,6 +42,7 @@ export function NewLeagueForm({
     setNewLeague({
       name: '',
       description: '',
+      year: '2025',
       sport_id: null,
       skill_id: null,
       day_of_week: null,
@@ -119,6 +121,27 @@ export function NewLeagueForm({
               <option value="4">Thursday</option>
               <option value="5">Friday</option>
               <option value="6">Saturday</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Year</label>
+            <select
+              value={newLeague.year}
+              onChange={(e) => setNewLeague({ ...newLeague, year: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
+            >
+              <option value="2025">2025</option>
+              <option value="2025/26">2025/26</option>
+              <option value="2026">2026</option>
+              <option value="2026/27">2026/27</option>
+              <option value="2027">2027</option>
+              <option value="2027/28">2027/28</option>
+              <option value="2028">2028</option>
+              <option value="2028/29">2028/29</option>
+              <option value="2029">2029</option>
+              <option value="2029/30">2029/30</option>
+              <option value="2030">2030</option>
             </select>
           </div>
 

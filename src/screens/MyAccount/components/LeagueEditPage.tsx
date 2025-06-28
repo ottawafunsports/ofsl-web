@@ -30,6 +30,7 @@ export function LeagueEditPage() {
     day_of_week: number | null;
     start_date: string;
     end_date: string;
+    year: string;
     cost: number | null;
     max_teams: number;
     gym_ids: number[];
@@ -41,6 +42,7 @@ export function LeagueEditPage() {
     day_of_week: null,
     start_date: '',
     end_date: '',
+    year: '2025',
     cost: null,
     max_teams: 20,
     gym_ids: []
@@ -92,6 +94,7 @@ export function LeagueEditPage() {
           sport_id: leagueData.sport_id,
           skill_id: leagueData.skill_id,
           day_of_week: leagueData.day_of_week,
+          year: leagueData.year || '2025',
           start_date: leagueData.start_date || '',
           end_date: leagueData.end_date || '',
           cost: leagueData.cost,
@@ -121,6 +124,7 @@ export function LeagueEditPage() {
           sport_id: editLeague.sport_id,
           skill_id: editLeague.skill_id,
           day_of_week: editLeague.day_of_week,
+          year: editLeague.year,
           start_date: editLeague.start_date,
           end_date: editLeague.end_date,
           cost: editLeague.cost,
@@ -253,6 +257,27 @@ export function LeagueEditPage() {
                   <option value="4">Thursday</option>
                   <option value="5">Friday</option>
                   <option value="6">Saturday</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Year</label>
+                <select
+                  value={editLeague.year}
+                  onChange={(e) => setEditLeague({ ...editLeague, year: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
+                >
+                  <option value="2025">2025</option>
+                  <option value="2025/26">2025/26</option>
+                  <option value="2026">2026</option>
+                  <option value="2026/27">2026/27</option>
+                  <option value="2027">2027</option>
+                  <option value="2027/28">2027/28</option>
+                  <option value="2028">2028</option>
+                  <option value="2028/29">2028/29</option>
+                  <option value="2029">2029</option>
+                  <option value="2029/30">2029/30</option>
+                  <option value="2030">2030</option>
                 </select>
               </div>
 

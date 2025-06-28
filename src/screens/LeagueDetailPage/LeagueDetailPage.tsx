@@ -99,8 +99,7 @@ export function LeagueDetailPage() {
     dates: formatLeagueDates(league.start_date, league.end_date),
     skillLevel: league.skill_name || 'Not specified',
     price: league.cost || 0,
-    spotsRemaining: league.max_teams ? Math.max(0, league.max_teams - 0) : 0, // TODO: Calculate from actual team count
-    season: `${new Date().getFullYear()} Season`
+    spotsRemaining: league.max_teams ? Math.max(0, league.max_teams - 0) : 0 // TODO: Calculate from actual team count
   };
 
   return (
@@ -135,7 +134,7 @@ export function LeagueDetailPage() {
             <h1 className="text-3xl md:text-4xl font-bold text-[#6F6F6F]">{league.name}</h1>
           </div>
           <div className="ml-[52px]">
-            <p className="text-xl text-[#6F6F6F]">{leagueForInfo.season}</p>
+            <p className="text-xl text-[#6F6F6F]">{league.year || '2025'} Season</p>
           </div>
         </div>
 
