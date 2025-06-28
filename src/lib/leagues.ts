@@ -148,7 +148,7 @@ export const fetchLeagues = async (): Promise<LeagueWithTeamCount[]> => {
 // Fetch a specific league by ID
 export const fetchLeagueById = async (id: number): Promise<League | null> => {
   try {
-    const { data: leagueData, error: leagueError } = await supabase
+    const { data, error } = await supabase
       .from('leagues')
       .select(`
         *,
@@ -158,20 +158,20 @@ export const fetchLeagueById = async (id: number): Promise<League | null> => {
       .eq('id', id)
       .single();
 
-    if (leagueError) {
-      console.error('Error fetching league:', leagueError);
+    if (error) {
+      console.error('Error fetching league:', error);
       return null;
     }
 
-    if (!leagueData) return null;
+    if (!data) return null;
 
     // Get gym information if gym_ids exist
     let gyms: Array<{ id: number; gym: string | null; address: string | null }> = [];
-    if (leagueData.gym_ids && leagueData.gym_ids.length > 0) {
+    if (data.gym_ids && data.gym_ids.length > 0) {
       const { data: gymsData, error: gymsError } = await supabase
         .from('gyms')
         .select('id, gym, address')
-        .in('id', leagueData.gym_ids);
+        .in('id', data.gym_ids);
 
       if (gymsError) {
         console.error('Error fetching gyms:', gymsError);
@@ -181,10 +181,10 @@ export const fetchLeagueById = async (id: number): Promise<League | null> => {
     }
 
     return {
-      ...leagueData,
-      sport_name: leagueData.sports?.name || null,
-      skill_name: leagueData.skills?.name || null,
-      gyms
+      ...data,
+      sport_name: data.sports?.name || null,
+      skill_name: data.skills?.name || null,
+      gyms: gyms || []
     };
   } catch (error) {
     console.error('Error in fetchLeagueById:', error);

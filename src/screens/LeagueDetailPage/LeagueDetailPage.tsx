@@ -158,41 +158,23 @@ export function LeagueDetailPage() {
               <div className="space-y-8">
                 <div>
                   <h2 className="text-2xl font-bold text-[#6F6F6F] mb-4">League Description</h2>
-                  <div className="text-[#6F6F6F] space-y-4">
-                    <p>
-                      OFSL's volleyball leagues are organized to provide participants with a structured environment that encourages sportsmanship, physical activity and healthy competition from intermediate to competitive levels. Our leagues are designed to provide competitive matches while maintaining a fun and inclusive atmosphere.
-                    </p>
-                    
-                    <div>
-                      <h3 className="text-lg font-bold text-[#6F6F6F] mb-3">About our volleyball leagues</h3>
-                      <ul className="space-y-2">
-                        <li className="flex items-start">
-                          <span className="mr-2">•</span>
-                          <span>Separated by tiers which are updated every week after the games.</span>
-                        </li>
-                        <li className="flex items-start">
-                          <span className="mr-2">•</span>
-                          <span>Focused on individuals who play at an intermediate to elite skill level.</span>
-                        </li>
-                        <li className="flex items-start">
-                          <span className="mr-2">•</span>
-                          <span>Schools and play times may vary between tiers.</span>
-                        </li>
-                        <li className="flex items-start">
-                          <span className="mr-2">•</span>
-                          <span>You must be registered in to see the standings and schedules.</span>
-                        </li>
-                        <li className="flex items-start">
-                          <span className="mr-2">•</span>
-                          <span>To register a team, captains must create an account under registration and be approved by the league.</span>
-                        </li>
-                      </ul>
-                    </div>
+                  <div 
+                    className="text-[#6F6F6F] league-description" 
+                    dangerouslySetInnerHTML={{ __html: league.description || 'No description available.' }}
+                  >
                   </div>
                 </div>
                 
-                <SkillLevelRequirements />
-                <AdditionalLeagueInfo />
+                {league.additional_info && (
+                  <div>
+                    <h2 className="text-2xl font-bold text-[#6F6F6F] mb-4">Additional Information</h2>
+                    <div 
+                      className="text-[#6F6F6F] league-additional-info" 
+                      dangerouslySetInnerHTML={{ __html: league.additional_info }}
+                    >
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 

@@ -1,4 +1,5 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 
 interface RichTextEditorProps {
@@ -6,119 +7,113 @@ interface RichTextEditorProps {
   onChange: (content: string) => void;
   placeholder?: string;
   rows?: number;
-  className?: string;
 }
 
 export function RichTextEditor({ 
   value, 
   onChange, 
-  placeholder = "Enter text...", 
-  rows = 5,
-  className = ""
+  placeholder = 'Enter text here...', 
+  rows = 6 
 }: RichTextEditorProps) {
-  const quillRef = useRef<any>(null);
-  const ReactQuill = useRef<any>(null);
-
+  const [mounted, setMounted] = useState(false);
+  
+  // This prevents hydration errors with ReactQuill
   useEffect(() => {
-    // Dynamically import ReactQuill to avoid SSR issues
-    import('react-quill').then((module) => {
-      ReactQuill.current = module.default;
-      // Force re-render after ReactQuill is loaded
-      if (quillRef.current) {
-        quillRef.current.forceUpdate?.();
-      }
-    });
+    setMounted(true);
   }, []);
 
-  // Simple toolbar with basic formatting options
   const modules = {
     toolbar: [
-      ['bold', 'italic', 'underline'],
-      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'header': [1, 2, 3, false] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
       ['link'],
       ['clean']
     ],
   };
 
   const formats = [
-    'bold', 'italic', 'underline',
+    'header',
+    'bold', 'italic', 'underline', 'strike',
     'list', 'bullet',
     'link'
   ];
 
-  // Fallback to regular textarea if ReactQuill hasn't loaded yet
-  if (!ReactQuill.current) {
+  // Calculate height based on rows
+  const editorHeight = `${Math.max(150, rows * 24)}px`;
+
+  if (!mounted) {
     return (
-      <textarea
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        rows={rows}
-        className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000] focus:outline-none resize-vertical ${className}`}
-      />
+      <div 
+        className="border border-gray-300 rounded-lg p-3 bg-white"
+        style={{ minHeight: editorHeight }}
+      >
+        <div className="text-gray-400">{placeholder}</div>
+      </div>
     );
   }
 
   return (
-    <div className={`rich-text-editor ${className}`}>
-      <ReactQuill.current
-        ref={quillRef}
-        theme="snow"
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        modules={modules}
-        formats={formats}
-        style={{
-          minHeight: `${rows * 1.5}rem`,
-        }}
-      />
+    <div className="rich-text-editor">
       <style jsx global>{`
-        .rich-text-editor .ql-toolbar {
-          border: 1px solid #d1d5db;
-          border-bottom: none;
-          border-radius: 0.5rem 0.5rem 0 0;
-        }
         .rich-text-editor .ql-container {
-          border: 1px solid #d1d5db;
-          border-radius: 0 0 0.5rem 0.5rem;
+          border-bottom-left-radius: 0.5rem;
+          border-bottom-right-radius: 0.5rem;
+          background: white;
+          min-height: ${editorHeight};
           font-family: inherit;
         }
+        .rich-text-editor .ql-toolbar {
+          border-top-left-radius: 0.5rem;
+          border-top-right-radius: 0.5rem;
+          background: #f9fafb;
+          border-bottom: 1px solid #e5e7eb;
+        }
         .rich-text-editor .ql-editor {
-          min-height: ${rows * 1.5}rem;
-          font-size: 14px;
+          min-height: ${editorHeight};
+          font-size: 0.875rem;
           line-height: 1.5;
         }
         .rich-text-editor .ql-editor.ql-blank::before {
           color: #9ca3af;
           font-style: normal;
         }
-        .rich-text-editor .ql-toolbar .ql-stroke {
-          stroke: #6b7280;
+        .rich-text-editor .ql-editor p {
+          margin-bottom: 0.75rem;
         }
-        .rich-text-editor .ql-toolbar .ql-fill {
-          fill: #6b7280;
+        .rich-text-editor .ql-editor ul, 
+        .rich-text-editor .ql-editor ol {
+          padding-left: 1.5rem;
+          margin-bottom: 0.75rem;
         }
-        .rich-text-editor .ql-toolbar button:hover .ql-stroke {
-          stroke: #B20000;
+        .rich-text-editor .ql-editor li {
+          margin-bottom: 0.25rem;
         }
-        .rich-text-editor .ql-toolbar button:hover .ql-fill {
-          fill: #B20000;
+        .rich-text-editor .ql-editor h1, 
+        .rich-text-editor .ql-editor h2, 
+        .rich-text-editor .ql-editor h3 {
+          margin-top: 1rem;
+          margin-bottom: 0.5rem;
+          font-weight: 600;
         }
-        .rich-text-editor .ql-toolbar button.ql-active .ql-stroke {
-          stroke: #B20000;
+        .rich-text-editor .ql-editor h1 {
+          font-size: 1.5rem;
         }
-        .rich-text-editor .ql-toolbar button.ql-active .ql-fill {
-          fill: #B20000;
+        .rich-text-editor .ql-editor h2 {
+          font-size: 1.25rem;
         }
-        .rich-text-editor .ql-container.ql-snow {
-          border-color: #d1d5db;
-        }
-        .rich-text-editor .ql-container:focus-within {
-          border-color: #B20000;
-          box-shadow: 0 0 0 1px #B20000;
+        .rich-text-editor .ql-editor h3 {
+          font-size: 1.125rem;
         }
       `}</style>
+      <ReactQuill
+        theme="snow"
+        value={value}
+        onChange={onChange}
+        modules={modules}
+        formats={formats}
+        placeholder={placeholder}
+      />
     </div>
   );
 }

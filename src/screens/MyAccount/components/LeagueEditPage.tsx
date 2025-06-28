@@ -6,7 +6,7 @@ import { Input } from '../../../components/ui/input';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../components/ui/toast';
 import { supabase } from '../../../lib/supabase';
-import { fetchSports, fetchSkills, type League } from '../../../lib/leagues';
+import { fetchSports, fetchSkills, fetchLeagueById, type League } from '../../../lib/leagues';
 import { ChevronLeft, Save, X } from 'lucide-react';
 import { RichTextEditor } from '../../../components/ui/rich-text-editor';
 
@@ -23,9 +23,22 @@ export function LeagueEditPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   
-  const [editLeague, setEditLeague] = useState({
+  const [editLeague, setEditLeague] = useState<{
+    name: string;
+    description: string;
+    additional_info: string;
+    sport_id: number | null;
+    skill_id: number | null;
+    day_of_week: number | null;
+    start_date: string;
+    end_date: string;
+    cost: number | null;
+    max_teams: number;
+    gym_ids: number[];
+  }>({
     name: '',
-    description: '', // This will start empty and not pull from database
+    description: '',
+    additional_info: '',
     sport_id: null,
     skill_id: null,
     day_of_week: null,
@@ -52,8 +65,8 @@ export function LeagueEditPage() {
       setLoading(true);
       
       const [sportsData, skillsData] = await Promise.all([
-        fetchSports(),
-        fetchSkills()
+        fetchSports(), 
+        fetchSkills() 
       ]);
       
       setSports(sportsData);
@@ -69,24 +82,17 @@ export function LeagueEditPage() {
       if (gymsData) setGyms(gymsData);
 
       // Load specific league
-      const { data: leagueData, error: leagueError } = await supabase
-        .from('leagues')
-        .select(`
-          *,
-          sports:sport_id(name),
-          skills:skill_id(name)
-        `)
-        .eq('id', id)
-        .single();
-
-      if (leagueError) throw leagueError;
+      const leagueData = await fetchLeagueById(parseInt(id));
       
-      if (leagueData) {
+      if (!leagueData) {
+        throw new Error('League not found');
+      } else {
         setLeague(leagueData);
         
         setEditLeague({
           name: leagueData.name,
-          description: '', // Start with empty description, no database content
+          description: leagueData.description || '',
+          additional_info: leagueData.additional_info || '',
           sport_id: leagueData.sport_id,
           skill_id: leagueData.skill_id,
           day_of_week: leagueData.day_of_week,
@@ -116,6 +122,7 @@ export function LeagueEditPage() {
         .update({
           name: editLeague.name,
           description: editLeague.description,
+          additional_info: editLeague.additional_info,
           sport_id: editLeague.sport_id,
           skill_id: editLeague.skill_id,
           day_of_week: editLeague.day_of_week,
@@ -300,13 +307,22 @@ export function LeagueEditPage() {
             <div className="mt-6">
               <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Description</label>
               <RichTextEditor
-                value={editLeague.description}
-                onChange={(content) => setEditLeague({ ...editLeague, description: content })}
+                value={editLeague.description || ''}
+                onChange={(content) => setEditLeague(prev => ({ ...prev, description: content }))}
                 placeholder="Enter league description"
                 rows={10}
               />
             </div>
 
+            <div className="mt-6">
+              <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Additional Information</label>
+              <RichTextEditor
+                value={editLeague.additional_info || ''}
+                onChange={(content) => setEditLeague(prev => ({ ...prev, additional_info: content }))}
+                placeholder="Enter additional information"
+                rows={6}
+              />
+            </div>
 
             <div className="mt-6">
               <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Gyms/Schools</label>
