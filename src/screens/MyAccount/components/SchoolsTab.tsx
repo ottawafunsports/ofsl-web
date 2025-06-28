@@ -13,6 +13,8 @@ interface Gym {
   address: string | null;
   instructions: string | null;
   active: boolean | null;
+  available_days: number[] | null;
+  available_sports: number[] | null;
 }
 
 interface Sport {
@@ -97,7 +99,9 @@ export function SchoolsTab() {
           gym: newGym.gym,
           address: newGym.address,
           instructions: newGym.instructions,
-          active: newGym.active
+          active: newGym.active,
+          available_days: newGym.availableDays,
+          available_sports: newGym.availableSports
         });
 
       if (error) throw error;
@@ -128,8 +132,8 @@ export function SchoolsTab() {
       address: gym.address || '',
       instructions: gym.instructions || '',
       active: gym.active ?? true,
-      availableDays: [], // TODO: Load from database when implemented
-      availableSports: [] // TODO: Load from database when implemented
+      availableDays: gym.available_days || [],
+      availableSports: gym.available_sports || []
     });
   };
 
@@ -145,7 +149,9 @@ export function SchoolsTab() {
           gym: editGym.gym,
           address: editGym.address,
           instructions: editGym.instructions,
-          active: editGym.active
+          active: editGym.active,
+          available_days: editGym.availableDays,
+          available_sports: editGym.availableSports
         })
         .eq('id', editingGym);
 
@@ -522,9 +528,9 @@ export function SchoolsTab() {
                   </span>
                   
                   {/* Available Days Tags */}
-                  {gym.active && editGym.availableDays && editGym.availableDays.length > 0 && (
+                  {gym.active && gym.available_days && gym.available_days.length > 0 && (
                     <div className="inline-flex flex-wrap gap-1 ml-2">
-                      {editGym.availableDays.map(dayId => {
+                      {gym.available_days.map(dayId => {
                         const day = daysOfWeek.find(d => d.id === dayId);
                         return day ? (
                           <span key={dayId} className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
@@ -536,9 +542,9 @@ export function SchoolsTab() {
                   )}
                   
                   {/* Available Sports Tags */}
-                  {gym.active && editGym.availableSports && editGym.availableSports.length > 0 && (
+                  {gym.active && gym.available_sports && gym.available_sports.length > 0 && (
                     <div className="inline-flex flex-wrap gap-1 ml-2">
-                      {editGym.availableSports.map(sportId => {
+                      {gym.available_sports.map(sportId => {
                         const sport = sports.find(s => s.id === sportId);
                         return sport ? (
                           <span key={sportId} className="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-800">
