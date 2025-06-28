@@ -66,6 +66,8 @@ export function LeagueEditPage() {
     max_teams: 20,
     gym_ids: []
   });
+  
+  const [seasonText, setSeasonText] = useState('2025 Season');
 
   useEffect(() => {
     if (!userProfile?.is_admin) {
@@ -238,9 +240,12 @@ export function LeagueEditPage() {
           <div className="ml-[52px]">
             <div className="relative group inline-block">
               <div className="relative">
-                <span className="text-xl text-[#6F6F6F] px-2 py-1 rounded-lg border-2 border-dashed border-gray-300 hover:border-[#B20000] transition-all duration-200 cursor-text bg-transparent hover:bg-gray-50">
-                  2025 Season
-                </span>
+                <Input
+                  value={seasonText}
+                  onChange={(e) => setSeasonText(e.target.value)}
+                  placeholder="Enter season"
+                  className="text-xl text-[#6F6F6F] border-2 border-dashed border-gray-300 hover:border-[#B20000] focus:border-[#B20000] focus:border-solid shadow-none p-2 h-auto bg-transparent focus:ring-0 rounded-lg transition-all duration-200 w-auto inline-block min-w-[150px]"
+                />
               </div>
             </div>
           </div>
