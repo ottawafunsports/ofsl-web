@@ -7,6 +7,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../components/ui/toast';
 import { useNavigate } from 'react-router-dom';
 import { createLeaguePayment } from '../../../lib/payments';
+import { getDayName, formatLeagueDates, getPrimaryLocation } from '../../../lib/leagues';
 
 interface Skill {
   id: number;
@@ -19,13 +20,15 @@ interface TeamRegistrationModalProps {
   closeModal: () => void;
   leagueId: number;
   leagueName: string;
+  league?: any; // Add league prop to get additional details
 }
 
 export function TeamRegistrationModal({ 
   showModal, 
   closeModal, 
   leagueId, 
-  leagueName 
+  leagueName,
+  league
 }: TeamRegistrationModalProps) {
   const [teamName, setTeamName] = useState('');
   const [skillLevelId, setSkillLevelId] = useState<number | null>(null);
@@ -177,6 +180,25 @@ export function TeamRegistrationModal({
             <p className="text-sm text-[#6F6F6F]">
               <span className="font-medium">League:</span> {leagueName}
             </p>
+            {league && (
+              <>
+                {league.day_of_week !== null && (
+                  <p className="text-sm text-[#6F6F6F] mt-1">
+                    <span className="font-medium">Day:</span> {getDayName(league.day_of_week)}
+                  </p>
+                )}
+                {league.gyms && league.gyms.length > 0 && (
+                  <p className="text-sm text-[#6F6F6F] mt-1">
+                    <span className="font-medium">School:</span> {getPrimaryLocation(league.gyms)}
+                  </p>
+                )}
+                {(league.start_date || league.end_date) && (
+                  <p className="text-sm text-[#6F6F6F] mt-1">
+                    <span className="font-medium">Season:</span> {formatLeagueDates(league.start_date, league.end_date)}
+                  </p>
+                )}
+              </>
+            )}
             <p className="text-sm text-[#6F6F6F] mt-1">
               <span className="font-medium">Captain:</span> {userProfile?.name || 'Current User'}
             </p>

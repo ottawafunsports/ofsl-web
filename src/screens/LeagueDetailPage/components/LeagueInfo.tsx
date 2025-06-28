@@ -143,6 +143,7 @@ export function LeagueInfo({ league, sport }: LeagueInfoProps) {
         closeModal={() => setShowRegistrationModal(false)}
         leagueId={league.id}
         leagueName={league.name}
+        league={league}
       />
     </>
   );
