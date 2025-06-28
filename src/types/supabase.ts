@@ -83,6 +83,7 @@ export interface Database {
           gym: string | null
           address: string | null
           instructions: string | null
+          active: boolean
         }
         Insert: {
           id: number
@@ -90,6 +91,7 @@ export interface Database {
           gym?: string | null
           address?: string | null
           instructions?: string | null
+          active?: boolean
         }
         Update: {
           id?: number
@@ -97,6 +99,7 @@ export interface Database {
           gym?: string | null
           address?: string | null
           instructions?: string | null
+          active?: boolean
         }
       }
       balances: {
