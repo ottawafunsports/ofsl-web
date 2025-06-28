@@ -51,7 +51,6 @@ export function UsersTab() {
     facilitator: false,
     activePlayer: false
   });
-  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     loadUsers();
@@ -280,7 +279,7 @@ export function UsersTab() {
       </div>
 
       {/* Search Bar */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+      <div className="space-y-4">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#6F6F6F]" />
           <Input
@@ -291,81 +290,57 @@ export function UsersTab() {
           />
         </div>
         
-        {/* Filter Toggle Button */}
-        <Button
-          onClick={() => setShowFilters(!showFilters)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${
-            isAnyFilterActive() 
-              ? 'border-[#B20000] bg-[#ffeae5] text-[#B20000]' 
-              : 'border-gray-300 bg-white text-[#6F6F6F]'
-          } hover:border-[#B20000] hover:bg-[#ffeae5] hover:text-[#B20000]`}
-        >
-          <Filter className="h-4 w-4" />
-          Filters
+        {/* Filters */}
+        <div className="flex flex-wrap gap-4 items-center">
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="filter-admin"
+              checked={filters.administrator}
+              onChange={() => handleFilterChange('administrator')}
+              className="mr-2"
+            />
+            <label htmlFor="filter-admin" className="text-sm text-[#6F6F6F]">
+              Administrator
+            </label>
+          </div>
+          
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="filter-facilitator"
+              checked={filters.facilitator}
+              onChange={() => handleFilterChange('facilitator')}
+              className="mr-2"
+            />
+            <label htmlFor="filter-facilitator" className="text-sm text-[#6F6F6F]">
+              Facilitator
+            </label>
+          </div>
+          
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="filter-active"
+              checked={filters.activePlayer}
+              onChange={() => handleFilterChange('activePlayer')}
+              className="mr-2"
+            />
+            <label htmlFor="filter-active" className="text-sm text-[#6F6F6F]">
+              Active Player
+            </label>
+          </div>
+          
           {isAnyFilterActive() && (
-            <span className="bg-[#B20000] text-white text-xs rounded-full px-2 py-0.5 ml-1">
-              {Object.values(filters).filter(Boolean).length}
-            </span>
+            <Button
+              onClick={clearFilters}
+              className="text-sm text-[#B20000] hover:text-[#8A0000] bg-transparent hover:bg-transparent p-0"
+            >
+              Clear all filters
+            </Button>
           )}
-        </Button>
+        </div>
       </div>
-
-      {/* Filters Panel */}
-      {showFilters && (
-        <Card className="bg-gray-50">
-          <CardContent className="p-4">
-            <div className="flex flex-wrap gap-4 items-center">
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="filter-admin"
-                  checked={filters.administrator}
-                  onChange={() => handleFilterChange('administrator')}
-                  className="mr-2"
-                />
-                <label htmlFor="filter-admin" className="text-sm text-[#6F6F6F]">
-                  Administrator
-                </label>
-              </div>
-              
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="filter-facilitator"
-                  checked={filters.facilitator}
-                  onChange={() => handleFilterChange('facilitator')}
-                  className="mr-2"
-                />
-                <label htmlFor="filter-facilitator" className="text-sm text-[#6F6F6F]">
-                  Facilitator
-                </label>
-              </div>
-              
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="filter-active"
-                  checked={filters.activePlayer}
-                  onChange={() => handleFilterChange('activePlayer')}
-                  className="mr-2"
-                />
-                <label htmlFor="filter-active" className="text-sm text-[#6F6F6F]">
-                  Active Player
-                </label>
-              </div>
-              
-              {isAnyFilterActive() && (
-                <Button
-                  onClick={clearFilters}
-                  className="text-sm text-[#B20000] hover:text-[#8A0000] bg-transparent hover:bg-transparent p-0"
-                >
-                  Clear all filters
-                </Button>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Users Table */}
       <Card>
