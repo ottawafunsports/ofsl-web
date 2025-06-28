@@ -7,7 +7,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../components/ui/toast';
 import { supabase } from '../../../lib/supabase';
 import { fetchSkills } from '../../../lib/leagues';
-import { ChevronLeft, Save, X, Users, Crown, Mail, Trash2, DollarSign, AlertCircle } from 'lucide-react';
+import { ChevronLeft, Save, X, Users, Crown, Mail, Trash2, DollarSign, AlertCircle, Edit2 } from 'lucide-react';
 
 interface Skill {
   id: number;
@@ -440,8 +440,20 @@ export function TeamEditPage() {
 
               {paymentInfo.notes && (
                 <div className="mb-6">
-                  <div className="text-sm font-medium text-[#6F6F6F] mb-2">Notes</div>
-                  <div className="bg-gray-50 p-3 rounded-lg text-sm text-[#6F6F6F]">
+                  <div className="flex justify-between items-center mb-2">
+                    <div className="text-sm font-medium text-[#6F6F6F]">Notes</div>
+                    <Button
+                      onClick={() => {
+                        setPaymentNotes(paymentInfo.notes || '');
+                        document.getElementById('payment-notes-textarea')?.scrollIntoView({ behavior: 'smooth' });
+                      }}
+                      className="bg-blue-500 hover:bg-blue-600 text-white rounded-lg px-3 py-1 text-xs flex items-center gap-1"
+                    >
+                      <Edit2 className="h-3 w-3" />
+                      Edit Notes
+                    </Button>
+                  </div>
+                  <div className="bg-gray-50 p-3 rounded-lg text-sm text-[#6F6F6F] whitespace-pre-wrap">
                     {paymentInfo.notes}
                   </div>
                 </div>
@@ -493,6 +505,7 @@ export function TeamEditPage() {
                       Payment Notes (Optional)
                     </label>
                     <textarea
+                      id="payment-notes-textarea"
                       value={paymentNotes}
                       onChange={(e) => setPaymentNotes(e.target.value)}
                       placeholder="Add any notes about this payment..."
