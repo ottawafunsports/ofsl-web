@@ -762,7 +762,7 @@ export function UsersTab() {
                     setUserRegistrations([]);
                     setResettingPassword(false);
                   }}
-                  className="flex-1 bg-gray-500 hover:bg-gray-600 text-white rounded-lg px-6 py-2"
+                  className="text-gray-500 hover:text-gray-700 bg-transparent hover:bg-transparent border-none shadow-none p-2"
                 >
                   Cancel
                 </Button>

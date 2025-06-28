@@ -167,7 +167,7 @@ export function SchoolsTab() {
             <h3 className="text-xl font-bold text-[#6F6F6F]">Add New School/Gym</h3>
             <Button
               onClick={() => setShowNewGymForm(false)}
-              className="text-gray-500 hover:text-gray-700"
+              className="text-gray-500 hover:text-gray-700 bg-transparent hover:bg-transparent border-none shadow-none p-2"
             >
               <X className="h-5 w-5" />
             </Button>
@@ -235,7 +235,7 @@ export function SchoolsTab() {
                   <h3 className="text-xl font-bold text-[#6F6F6F]">Edit School/Gym</h3>
                   <Button
                     onClick={handleCancelEdit}
-                    className="text-gray-500 hover:text-gray-700"
+                    className="text-gray-500 hover:text-gray-700 bg-transparent hover:bg-transparent border-none shadow-none p-2"
                   >
                     <X className="h-5 w-5" />
                   </Button>
