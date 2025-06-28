@@ -41,7 +41,12 @@ export function UsersTab() {
   const [loading, setLoading] = useState(true);
   const [editingUser, setEditingUser] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<User>>({});
-  const [userRegistrations, setUserRegistrations] = useState<Array<{id: number, name: string}>>([]);
+  const [userRegistrations, setUserRegistrations] = useState<Array<{
+    id: number, 
+    name: string, 
+    sport_name: string | null,
+    role: 'captain' | 'player'
+  }>>([]);
   const [resettingPassword, setResettingPassword] = useState(false);
   
   // Sorting state
@@ -167,23 +172,48 @@ export function UsersTab() {
     }
 
     try {
-      const { data: teams, error } = await supabase
+      const { data: teamsData, error } = await supabase
         .from('teams')
         .select(`
-          leagues:league_id(id, name)
+          id,
+          captain_id,
+          leagues:league_id(
+            id, 
+            name,
+            sports:sport_id(name)
+          )
         `)
         .in('id', teamIds);
 
       if (error) throw error;
 
-      const leagues = teams
-        ?.map(team => team.leagues)
-        .filter(league => league !== null && league !== undefined)
-        .filter((league, index, self) => 
-          index === self.findIndex(l => l?.id === league?.id)
-        ) || []; // Remove duplicates
+      // Process teams to determine role and get unique leagues
+      const leagueMap = new Map();
+      
+      teamsData?.forEach(team => {
+        if (team.leagues) {
+          const league = team.leagues;
+          const isCaptain = team.captain_id === editingUser;
+          const sportName = league.sports?.name;
+          
+          // If we already have this league, update role if user is captain
+          if (leagueMap.has(league.id)) {
+            const existing = leagueMap.get(league.id);
+            if (isCaptain) {
+              existing.role = 'captain';
+            }
+          } else {
+            leagueMap.set(league.id, {
+              id: league.id,
+              name: league.name,
+              sport_name: sportName,
+              role: isCaptain ? 'captain' : 'player'
+            });
+          }
+        }
+      });
 
-      setUserRegistrations(leagues as Array<{id: number, name: string}>);
+      setUserRegistrations(Array.from(leagueMap.values()));
     } catch (error) {
       console.error('Error loading user registrations:', error);
       setUserRegistrations([]);
@@ -639,14 +669,25 @@ export function UsersTab() {
                       <div className="space-y-1">
                         {userRegistrations.map((league) => (
                           <div key={league.id}>
-                            <Link 
-                              to={`/leagues/${league.id}`}
-                              className="text-[#B20000] hover:text-[#8A0000] hover:underline"
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              {league.name}
-                            </Link>
+                            <div className="flex items-center gap-2">
+                              <Link 
+                                to={`/leagues/${league.id}`}
+                                className="text-[#B20000] hover:text-[#8A0000] hover:underline"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                {league.name}
+                              </Link>
+                              {league.sport_name === 'Volleyball' && (
+                                <span className={`px-2 py-1 text-xs rounded-full ${
+                                  league.role === 'captain' 
+                                    ? 'bg-yellow-100 text-yellow-800' 
+                                    : 'bg-blue-100 text-blue-800'
+                                }`}>
+                                  {league.role === 'captain' ? 'Captain' : 'Player'}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         ))}
                       </div>
