@@ -117,18 +117,87 @@ export function TeamsTab() {
     try {
       setUnregisteringPayment(paymentId);
       
+      // Get the league payment details first to find associated team
+      const { data: paymentData, error: paymentError } = await supabase
+        .from('league_payments')
+        .select('team_id, league_id, user_id')
+        .eq('id', paymentId);
+
+      if (paymentError) throw paymentError;
+      
+      if (!paymentData || paymentData.length === 0) {
+        throw new Error('Payment record not found');
+      }
+
+      const payment = paymentData[0];
+
+      // If there's a team associated, remove user from team and update team roster
+      if (payment.team_id) {
+        // Get current team data
+        const { data: teamData, error: teamError } = await supabase
+          .from('teams')
+          .select('roster, captain_id')
+          .eq('id', payment.team_id)
+          .single();
+
+        if (teamError) throw teamError;
+
+        // Remove user from roster
+        const updatedRoster = (teamData.roster || []).filter((userId: string) => userId !== payment.user_id);
+        
+        // If user was the captain and there are other players, we need to handle captain transfer
+        // For now, we'll just remove them and let admin handle captain reassignment
+        const updates: any = { roster: updatedRoster };
+        
+        // If the user was the captain and no one else is left, deactivate the team
+        if (teamData.captain_id === payment.user_id) {
+          if (updatedRoster.length === 0) {
+            updates.active = false;
+            updates.captain_id = null;
+          } else {
+            // Set the first remaining player as captain
+            updates.captain_id = updatedRoster[0];
+          }
+        }
+
+        // Update team
+        const { error: updateTeamError } = await supabase
+          .from('teams')
+          .update(updates)
+          .eq('id', payment.team_id);
+
+        if (updateTeamError) throw updateTeamError;
+
+        // Update user's team_ids array
+        if (userProfile) {
+          const currentTeamIds = userProfile.team_ids || [];
+          const updatedTeamIds = currentTeamIds.filter((teamId: number) => teamId !== payment.team_id);
+          
+          const { error: userUpdateError } = await supabase
+            .from('users')
+            .update({ team_ids: updatedTeamIds })
+            .eq('id', userProfile.id);
+
+          if (userUpdateError) throw userUpdateError;
+        }
+      }
+
       // Delete the league payment record
-      const { error } = await supabase
+      const { error: deleteError } = await supabase
         .from('league_payments')
         .delete()
         .eq('id', paymentId);
 
-      if (error) throw error;
+      if (deleteError) throw deleteError;
 
       showToast('Successfully unregistered from league', 'success');
       
-      // Reload payment data to update the UI and amounts
+      // Reload all data to update the UI and amounts
       await loadPaymentData();
+      await loadUserTeams();
+      
+      // Reload the page to stay on current tab and refresh all data
+      window.location.reload();
       
     } catch (error: any) {
       console.error('Error unregistering from league:', error);
