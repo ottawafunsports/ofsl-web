@@ -212,170 +212,201 @@ export function LeagueEditPage() {
             <ChevronLeft className="h-5 w-5 mr-1" />
             Back to Manage Leagues
           </Link>
-          <h1 className="text-3xl font-bold text-[#6F6F6F]">Edit League</h1>
         </div>
 
-        {/* Edit Form */}
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-[#6F6F6F] mb-2">League Name</label>
-                <Input
-                  value={editLeague.name}
-                  onChange={(e) => setEditLeague({ ...editLeague, name: e.target.value })}
-                  placeholder="Enter league name"
-                  className="w-full"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Sport</label>
-                <select
-                  value={editLeague.sport_id || ''}
-                  onChange={(e) => setEditLeague({ ...editLeague, sport_id: e.target.value ? parseInt(e.target.value) : null })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
-                >
-                  <option value="">Select sport...</option>
-                  {sports.map(sport => (
-                    <option key={sport.id} value={sport.id}>{sport.name}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Skill Level</label>
-                <select
-                  value={editLeague.skill_id || ''}
-                  onChange={(e) => setEditLeague({ ...editLeague, skill_id: e.target.value ? parseInt(e.target.value) : null })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
-                >
-                  <option value="">Select skill level...</option>
-                  {skills.map(skill => (
-                    <option key={skill.id} value={skill.id}>{skill.name}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Day of Week</label>
-                <select
-                  value={editLeague.day_of_week || ''}
-                  onChange={(e) => setEditLeague({ ...editLeague, day_of_week: e.target.value ? parseInt(e.target.value) : null })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
-                >
-                  <option value="">Select day...</option>
-                  <option value="0">Sunday</option>
-                  <option value="1">Monday</option>
-                  <option value="2">Tuesday</option>
-                  <option value="3">Wednesday</option>
-                  <option value="4">Thursday</option>
-                  <option value="5">Friday</option>
-                  <option value="6">Saturday</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Start Date</label>
-                <Input
-                  type="date"
-                  value={editLeague.start_date}
-                  onChange={(e) => setEditLeague({ ...editLeague, start_date: e.target.value })}
-                  className="w-full"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-[#6F6F6F] mb-2">End Date</label>
-                <Input
-                  type="date"
-                  value={editLeague.end_date}
-                  onChange={(e) => setEditLeague({ ...editLeague, end_date: e.target.value })}
-                  className="w-full"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Cost ($)</label>
-                <Input
-                  type="number"
-                  value={editLeague.cost || ''}
-                  onChange={(e) => setEditLeague({ ...editLeague, cost: e.target.value ? parseFloat(e.target.value) : null })}
-                  placeholder="0.00"
-                  className="w-full"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Max Teams</label>
-                <Input
-                  type="number"
-                  value={editLeague.max_teams}
-                  onChange={(e) => setEditLeague({ ...editLeague, max_teams: parseInt(e.target.value) || 20 })}
-                  className="w-full"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Description</label>
-              <textarea
-                value={editLeague.description}
-                onChange={(e) => setEditLeague({ ...editLeague, description: e.target.value })}
-                placeholder="Enter league description"
-                rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
+        {/* League Name Header */}
+        <div className="mb-8">
+          <div className="flex items-center mb-2">
+            <img
+              src={getSportIcon(league.sports?.name)}
+              alt={league.sports?.name || 'Sport'}
+              className="w-10 h-10 mr-3 flex-shrink-0"
+            />
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-[#6F6F6F] mb-1">League Name</label>
+              <Input
+                value={editLeague.name}
+                onChange={(e) => setEditLeague({ ...editLeague, name: e.target.value })}
+                placeholder="Enter league name"
+                className="text-3xl md:text-4xl font-bold text-[#6F6F6F] border-none shadow-none p-0 h-auto bg-transparent focus:ring-0"
               />
             </div>
+          </div>
+          <div className="ml-[52px]">
+            <p className="text-xl text-[#6F6F6F]">2025 Season</p>
+          </div>
+        </div>
 
-            <div>
-              <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Additional Information</label>
-              <textarea
-                value={editLeague.additional_info}
-                onChange={(e) => setEditLeague({ ...editLeague, additional_info: e.target.value })}
-                placeholder="Enter additional information"
-                rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
-              />
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          {/* Sidebar - League Details */}
+          <div className="md:col-span-1">
+            <div className="bg-gray-100 rounded-lg p-6 mb-6">
+              <h3 className="text-lg font-bold text-[#6F6F6F] mb-4">League Details</h3>
+              
+              <div className="space-y-4">
+                {/* Sport */}
+                <div>
+                  <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Sport</label>
+                  <select
+                    value={editLeague.sport_id || ''}
+                    onChange={(e) => setEditLeague({ ...editLeague, sport_id: e.target.value ? parseInt(e.target.value) : null })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
+                  >
+                    <option value="">Select sport...</option>
+                    {sports.map(sport => (
+                      <option key={sport.id} value={sport.id}>{sport.name}</option>
+                    ))}
+                  </select>
+                </div>
 
-            <div>
-              <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Gyms/Schools</label>
-              <div className="space-y-2 max-h-40 overflow-y-auto border border-gray-300 rounded-lg p-3">
-                {gyms.map(gym => (
-                  <label key={gym.id} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={editLeague.gym_ids.includes(gym.id)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setEditLeague({ ...editLeague, gym_ids: [...editLeague.gym_ids, gym.id] });
-                        } else {
-                          setEditLeague({ ...editLeague, gym_ids: editLeague.gym_ids.filter(id => id !== gym.id) });
-                        }
-                      }}
-                      className="mr-2"
-                    />
-                    <span className="text-sm">{gym.gym}</span>
-                  </label>
-                ))}
+                {/* Day & Time */}
+                <div>
+                  <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Day of Week</label>
+                  <select
+                    value={editLeague.day_of_week || ''}
+                    onChange={(e) => setEditLeague({ ...editLeague, day_of_week: e.target.value ? parseInt(e.target.value) : null })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
+                  >
+                    <option value="">Select day...</option>
+                    <option value="0">Sunday</option>
+                    <option value="1">Monday</option>
+                    <option value="2">Tuesday</option>
+                    <option value="3">Wednesday</option>
+                    <option value="4">Thursday</option>
+                    <option value="5">Friday</option>
+                    <option value="6">Saturday</option>
+                  </select>
+                </div>
+
+                {/* Location/Gyms */}
+                <div>
+                  <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Gyms/Schools</label>
+                  <div className="space-y-2 max-h-32 overflow-y-auto border border-gray-300 rounded-lg p-3">
+                    {gyms.map(gym => (
+                      <label key={gym.id} className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={editLeague.gym_ids.includes(gym.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setEditLeague({ ...editLeague, gym_ids: [...editLeague.gym_ids, gym.id] });
+                            } else {
+                              setEditLeague({ ...editLeague, gym_ids: editLeague.gym_ids.filter(id => id !== gym.id) });
+                            }
+                          }}
+                          className="mr-2"
+                        />
+                        <span className="text-sm">{gym.gym}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Season Dates */}
+                <div>
+                  <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Start Date</label>
+                  <Input
+                    type="date"
+                    value={editLeague.start_date}
+                    onChange={(e) => setEditLeague({ ...editLeague, start_date: e.target.value })}
+                    className="w-full"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-[#6F6F6F] mb-2">End Date</label>
+                  <Input
+                    type="date"
+                    value={editLeague.end_date}
+                    onChange={(e) => setEditLeague({ ...editLeague, end_date: e.target.value })}
+                    className="w-full"
+                  />
+                </div>
+
+                {/* Price */}
+                <div>
+                  <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Cost ($)</label>
+                  <Input
+                    type="number"
+                    value={editLeague.cost || ''}
+                    onChange={(e) => setEditLeague({ ...editLeague, cost: e.target.value ? parseFloat(e.target.value) : null })}
+                    placeholder="0.00"
+                    className="w-full"
+                  />
+                </div>
+
+                {/* Max Teams */}
+                <div>
+                  <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Max Teams</label>
+                  <Input
+                    type="number"
+                    value={editLeague.max_teams}
+                    onChange={(e) => setEditLeague({ ...editLeague, max_teams: parseInt(e.target.value) || 20 })}
+                    className="w-full"
+                  />
+                </div>
+
+                {/* Skill Level */}
+                <div>
+                  <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Skill Level</label>
+                  <select
+                    value={editLeague.skill_id || ''}
+                    onChange={(e) => setEditLeague({ ...editLeague, skill_id: e.target.value ? parseInt(e.target.value) : null })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
+                  >
+                    <option value="">Select skill level...</option>
+                    {skills.map(skill => (
+                      <option key={skill.id} value={skill.id}>{skill.name}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
+          </div>
 
-            <div className="flex gap-4 pt-6 border-t border-gray-200">
-              <Button
-                onClick={handleUpdateLeague}
-                disabled={saving || !editLeague.name || !editLeague.sport_id}
-                className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] px-6 py-2 flex items-center gap-2"
-              >
-                <Save className="h-4 w-4" />
-                {saving ? 'Saving...' : 'Save Changes'}
-              </Button>
-              <Link to="/my-account/leagues">
-                <Button className="bg-gray-500 hover:bg-gray-600 text-white rounded-[10px] px-6 py-2">
-                  Cancel
+          {/* Main content area - League Description and Details */}
+          <div className="md:col-span-3">
+            <div className="space-y-8">
+              {/* League Description */}
+              <div>
+                <h2 className="text-2xl font-bold text-[#6F6F6F] mb-4">League Description</h2>
+                <textarea
+                  value={editLeague.description}
+                  onChange={(e) => setEditLeague({ ...editLeague, description: e.target.value })}
+                  placeholder="Enter league description"
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
+                />
+              </div>
+
+              {/* Additional Information */}
+              <div>
+                <h2 className="text-2xl font-bold text-[#6F6F6F] mb-4">Additional Information</h2>
+                <textarea
+                  value={editLeague.additional_info}
+                  onChange={(e) => setEditLeague({ ...editLeague, additional_info: e.target.value })}
+                  placeholder="Enter additional information"
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
+                />
+              </div>
+
+              {/* Save/Cancel Actions */}
+              <div className="flex gap-4 pt-6 border-t border-gray-200">
+                <Button
+                  onClick={handleUpdateLeague}
+                  disabled={saving || !editLeague.name || !editLeague.sport_id}
+                  className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] px-6 py-2 flex items-center gap-2"
+                >
+                  <Save className="h-4 w-4" />
+                  {saving ? 'Saving...' : 'Save Changes'}
                 </Button>
-              </Link>
+                <Link to="/my-account/leagues">
+                  <Button className="bg-gray-500 hover:bg-gray-600 text-white rounded-[10px] px-6 py-2">
+                    Cancel
+                  </Button>
+                </Link>
+              </div>
             </div>
           </div>
         </div>
@@ -383,3 +414,20 @@ export function LeagueEditPage() {
     </div>
   );
 }
+
+// Helper function to get sport icon based on sport type
+const getSportIcon = (sport: string | null) => {
+  if (!sport) return "";
+  switch (sport) {
+    case 'Volleyball':
+      return "/Volleyball.png";
+    case 'Badminton':
+      return "/Badminton.png";
+    case 'Basketball':
+      return "/Basketball.png";
+    case 'Pickleball':
+      return "/Pickleball.png";
+    default:
+      return "";
+  }
+};
