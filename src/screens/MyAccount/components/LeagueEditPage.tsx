@@ -313,7 +313,7 @@ export function LeagueEditPage() {
               </div>
             </div>
 
-            <div className="mt-8 pb-4">
+            <div className="mt-8 pb-8">
               <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Description</label>
               <RichTextEditor
                 value={editLeague.description}
