@@ -101,6 +101,7 @@ export function LeagueInfo({ league, sport, onSpotsUpdate }: LeagueInfoProps) {
   // Find matching product for this league
   const matchingProduct = getProductByLeagueId(league.id);
 
+  // Only show payment button if there's a valid product and the user is the team captain
   return (
     <>
       <div className="bg-gray-100 rounded-lg p-6 mb-6">
@@ -170,12 +171,12 @@ export function LeagueInfo({ league, sport, onSpotsUpdate }: LeagueInfoProps) {
         {/* Register Button or Payment Button */}
         {matchingProduct && isTeamCaptain ? (
           <PaymentButton
-            priceId={matchingProduct.priceId}
+            priceId={matchingProduct.priceId} 
             productName={matchingProduct.name}
             mode={matchingProduct.mode}
             metadata={{ leagueId: league.id.toString() }}
-            className="border-[#B20000] text-[#B20000] hover:bg-[#B20000] hover:text-white rounded-[10px] w-full py-3"
-            variant="outline" 
+            className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] w-full py-3"
+            variant="default"
           >
             {actualSpotsRemaining === 0 ? "Join Waitlist" : "Register & Pay Now"}
           </PaymentButton>
@@ -194,8 +195,7 @@ export function LeagueInfo({ league, sport, onSpotsUpdate }: LeagueInfoProps) {
         ) : (
           <Button
             onClick={handleRegisterClick}
-            variant="outline"
-            className="border-[#B20000] text-[#B20000] hover:bg-[#B20000] hover:text-white rounded-[10px] w-full py-3"
+            className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] w-full py-3"
             disabled={actualSpotsRemaining === 0}
           >
             {actualSpotsRemaining === 0 ? "Join Waitlist" : "Register Team"}
