@@ -451,8 +451,8 @@ export const LeaguesPage = (): JSX.Element => {
                         <DollarSign className="h-4 w-4 text-[#B20000] mr-1.5" />
                         <p className="text-sm font-medium text-[#6F6F6F]">
                           ${league.cost} {league.sport_name === "Volleyball" ? "per team" : "per player"}
-                            const product = leagueProducts[league.id];
-                            return product ? formatPrice(product.price) : `$${league.cost}`;
+                        </p>
+                      </div>
                     </div>
                   </div>
                   
