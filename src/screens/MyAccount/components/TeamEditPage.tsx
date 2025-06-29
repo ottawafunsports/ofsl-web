@@ -3,13 +3,13 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent } from '../../../components/ui/card';
 import { Input } from '../../../components/ui/input';
-import { Calendar as CalendarIcon } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../components/ui/toast';
 import { supabase } from '../../../lib/supabase';
 import { fetchSkills } from '../../../lib/leagues';
-import { ChevronLeft, Save, X, Users, Crown, Mail, Trash2, DollarSign, AlertCircle, Edit2, History } from 'lucide-react';
+import { ChevronLeft, Save, X, Users, Crown, Mail, Trash2, DollarSign, Edit2, History } from 'lucide-react';
 
+// Type definitions
 interface Skill {
   id: number;
   name: string;
@@ -28,16 +28,24 @@ interface PaymentInfo {
   amount_paid: number;
   status: 'pending' | 'partial' | 'paid' | 'overdue';
   due_date: string | null;
-  payment_method: 'cash' | 'e_transfer' | 'online' | null;
+  payment_method: string | null;
   notes: string | null;
 }
 
-interface PaymentHistory {
+interface PaymentHistoryEntry {
   id: number;
   amount: number;
-  payment_method: 'cash' | 'e_transfer' | 'online' | null;
+  payment_method: string | null;
   date: string; 
   notes: string | null;
+}
+
+interface EditPaymentForm {
+  id: number | null;
+  amount: string;
+  payment_method: string | null;
+  date: string;
+  notes: string;
 }
 
 export function TeamEditPage() {
@@ -46,32 +54,14 @@ export function TeamEditPage() {
   const { userProfile } = useAuth();
   const { showToast } = useToast();
   
+  // State for team data
   const [team, setTeam] = useState<any>(null);
   const [skills, setSkills] = useState<Skill[]>([]);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
-  const [paymentInfo, setPaymentInfo] = useState<PaymentInfo | null>(null);
-  const [depositAmount, setDepositAmount] = useState<string>('');
-  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'e_transfer' | 'online'>('e_transfer');
-  const [paymentNotes, setPaymentNotes] = useState<string>('');
-  const [processingPayment, setProcessingPayment] = useState(false);
-  const [paymentHistory, setPaymentHistory] = useState<PaymentHistory[]>([]);
-  const [editingPayment, setEditingPayment] = useState<{
-    id: number | null;
-    amount: string;
-    payment_method: 'cash' | 'e_transfer' | 'online' | null;
-    date: string;
-    notes: string;
-  }>({
-    id: null,
-    amount: '',
-    payment_method: null,
-    date: '',
-    notes: ''
-  });
-  const [editingNoteId, setEditingNoteId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   
+  // State for team edit form
   const [editTeam, setEditTeam] = useState<{
     name: string;
     skill_level_id: number | null;
@@ -80,6 +70,27 @@ export function TeamEditPage() {
     skill_level_id: null
   });
 
+  // State for payment information
+  const [paymentInfo, setPaymentInfo] = useState<PaymentInfo | null>(null);
+  const [paymentHistory, setPaymentHistory] = useState<PaymentHistoryEntry[]>([]);
+  
+  // State for new payment form
+  const [depositAmount, setDepositAmount] = useState<string>('');
+  const [paymentMethod, setPaymentMethod] = useState<string>('e_transfer');
+  const [paymentNotes, setPaymentNotes] = useState<string>('');
+  const [processingPayment, setProcessingPayment] = useState(false);
+  
+  // State for editing payment
+  const [editingPayment, setEditingPayment] = useState<EditPaymentForm>({
+    id: null,
+    amount: '',
+    payment_method: null,
+    date: '',
+    notes: ''
+  });
+  const [editingNoteId, setEditingNoteId] = useState<number | null>(null);
+
+  // Load data on component mount
   useEffect(() => {
     if (!userProfile?.is_admin) {
       navigate('/my-account/profile');
@@ -91,17 +102,16 @@ export function TeamEditPage() {
     }
   }, [id, userProfile]);
 
+  // Main data loading function
   const loadData = async () => {
     try {
       setLoading(true);
       
-      const [skillsData] = await Promise.all([
-        fetchSkills()
-      ]);
-      
+      // Load skills data
+      const skillsData = await fetchSkills();
       setSkills(skillsData);
 
-      // Load specific team
+      // Load team data
       const { data: teamData, error: teamError } = await supabase
         .from('teams')
         .select(`
@@ -117,94 +127,21 @@ export function TeamEditPage() {
       
       if (!teamData) {
         throw new Error('Team not found');
-      } else {
-        setTeam(teamData);
-        
-        setEditTeam({
-          name: teamData.name,
-          skill_level_id: teamData.skill_level_id
-        });
-
-        // Load team members
-        if (teamData.roster && teamData.roster.length > 0) {
-          const { data: membersData, error: membersError } = await supabase
-            .from('users')
-            .select('id, name, email')
-            .in('id', teamData.roster);
-
-          if (membersError) {
-            console.error('Error loading team members:', membersError);
-          } else {
-            setTeamMembers(membersData || []);
-          }
-        }
       }
-        // Load payment information
-        const { data: paymentData, error: paymentError } = await supabase
-          .from('league_payments')
-          .select('*')
-          .eq('team_id', teamData.id)
-          .eq('league_id', teamData.league_id)
-          .maybeSingle();
+      
+      setTeam(teamData);
+      
+      setEditTeam({
+        name: teamData.name,
+        skill_level_id: teamData.skill_level_id
+      });
 
-        if (paymentError) {
-          console.error('Error loading payment information:', paymentError);
-        } else if (paymentData) {
-          // Set payment info
-          setPaymentInfo(paymentData);
-          
-          // Parse payment history from notes
-          if (paymentData.notes) {
-            const mockHistory: PaymentHistory[] = [];
-            let calculatedTotal = 0;
-            const notesLines = paymentData.notes.split('\n').filter(line => line.trim() !== '');
-
-            notesLines.forEach((note, index) => {
-              // Try to extract payment information from the note
-              let amount = 0;
-              let method: 'cash' | 'e_transfer' | 'online' | null = null;
-              let date = new Date().toISOString();
-              
-              // Look for dollar amount pattern like $200 or $200.00
-              const amountMatch = note.match(/\$(\d+(\.\d+)?)/);
-              if (amountMatch) {
-                amount = parseFloat(amountMatch[1]);
-                calculatedTotal += amount;
-              }
-              
-              // Look for payment method
-              if (note.toLowerCase().includes('e-transfer') || note.toLowerCase().includes('etransfer') || note.toLowerCase().includes('e_transfer')) {
-                method = 'e_transfer';
-              } else if (note.toLowerCase().includes('cash')) {
-                method = 'cash';
-              } else if (note.toLowerCase().includes('online')) {
-                method = 'online';
-              }
-              
-              // Look for date pattern like 6-28 or 06/28
-              const dateMatch = note.match(/(\d{1,2})[-\/](\d{1,2})/);
-              if (dateMatch) {
-                const month = parseInt(dateMatch[1]) - 1; // JS months are 0-indexed
-                const day = parseInt(dateMatch[2]);
-                const year = new Date().getFullYear();
-                date = new Date(year, month, day).toISOString();
-              }
-              
-              // Store the original note text for reference
-              const originalNote = note.trim();
-              
-              mockHistory.push({
-                id: index + 1,
-                amount,
-                payment_method: method,
-                date,
-                notes: originalNote
-              });
-            });
-            
-            setPaymentHistory(mockHistory);
-          }
-        }
+      // Load team members
+      await loadTeamMembers(teamData.roster);
+      
+      // Load payment information
+      await loadPaymentInfo(teamData.id, teamData.league_id);
+      
     } catch (error) {
       console.error('Error loading data:', error);
       showToast('Failed to load team data', 'error');
@@ -213,6 +150,104 @@ export function TeamEditPage() {
     }
   };
 
+  // Load team members
+  const loadTeamMembers = async (roster: string[]) => {
+    if (!roster || roster.length === 0) {
+      setTeamMembers([]);
+      return;
+    }
+    
+    try {
+      const { data: membersData, error: membersError } = await supabase
+        .from('users')
+        .select('id, name, email')
+        .in('id', roster);
+
+      if (membersError) {
+        console.error('Error loading team members:', membersError);
+        return;
+      }
+      
+      setTeamMembers(membersData || []);
+    } catch (error) {
+      console.error('Error in loadTeamMembers:', error);
+    }
+  };
+
+  // Load payment information
+  const loadPaymentInfo = async (teamId: number, leagueId: number) => {
+    try {
+      const { data: paymentData, error: paymentError } = await supabase
+        .from('league_payments')
+        .select('*')
+        .eq('team_id', teamId)
+        .eq('league_id', leagueId)
+        .maybeSingle();
+
+      if (paymentError) {
+        console.error('Error loading payment information:', paymentError);
+        return;
+      }
+      
+      if (paymentData) {
+        setPaymentInfo(paymentData);
+        
+        // Parse payment history from notes
+        parsePaymentHistory(paymentData.notes);
+      }
+    } catch (error) {
+      console.error('Error in loadPaymentInfo:', error);
+    }
+  };
+
+  // Parse payment history from notes
+  const parsePaymentHistory = (notes: string | null) => {
+    if (!notes) {
+      setPaymentHistory([]);
+      return;
+    }
+    
+    const history: PaymentHistoryEntry[] = [];
+    const notesLines = notes.split('\n').filter(line => line.trim() !== '');
+    
+    notesLines.forEach((note, index) => {
+      // Extract payment information from the note
+      const amountMatch = note.match(/\$(\d+(\.\d+)?)/);
+      const amount = amountMatch ? parseFloat(amountMatch[1]) : 0;
+      
+      // Determine payment method
+      let method: string | null = null;
+      if (note.toLowerCase().includes('e-transfer') || note.toLowerCase().includes('etransfer') || note.toLowerCase().includes('e_transfer')) {
+        method = 'e_transfer';
+      } else if (note.toLowerCase().includes('cash')) {
+        method = 'cash';
+      } else if (note.toLowerCase().includes('online')) {
+        method = 'online';
+      }
+      
+      // Extract date if present
+      const dateMatch = note.match(/(\d{1,2})[-\/](\d{1,2})/);
+      let date = new Date().toISOString();
+      if (dateMatch) {
+        const month = parseInt(dateMatch[1]) - 1; // JS months are 0-indexed
+        const day = parseInt(dateMatch[2]);
+        const year = new Date().getFullYear();
+        date = new Date(year, month, day).toISOString();
+      }
+      
+      history.push({
+        id: index + 1,
+        amount,
+        payment_method: method,
+        date,
+        notes: note.trim()
+      });
+    });
+    
+    setPaymentHistory(history);
+  };
+
+  // Update team information
   const handleUpdateTeam = async () => {
     if (!id) return;
 
@@ -246,6 +281,7 @@ export function TeamEditPage() {
     }
   };
 
+  // Process a new payment
   const handleProcessPayment = async () => {
     if (!paymentInfo || !depositAmount || parseFloat(depositAmount) <= 0) {
       showToast('Please enter a valid deposit amount', 'error');
@@ -260,44 +296,63 @@ export function TeamEditPage() {
       return;
     }
 
-    // Create a new payment history entry
-    const today = new Date().toISOString().split('T')[0];
-    const newNote = paymentNotes.trim();
-    
-    // Get existing notes
-    let updatedNotes = paymentInfo.notes || '';
-    
-    // Add new note
-    if (newNote) {
-      updatedNotes = updatedNotes 
-        ? `${updatedNotes}\n${newNote}`
-        : newNote;
-    }
-
     try {
       setProcessingPayment(true);
 
-      const { error } = await supabase
+      // Format the current date
+      const today = new Date();
+      const formattedDate = `${today.getMonth() + 1}/${today.getDate()}/${today.getFullYear()}`;
+      
+      // Create a new note entry with just the user's notes
+      let newNote = '';
+      
+      if (paymentNotes.trim()) {
+        newNote = paymentNotes.trim();
+      }
+      
+      // Add the new note to existing notes
+      const updatedNotes = paymentInfo.notes 
+        ? `${paymentInfo.notes}\n${newNote}` 
+        : newNote;
+
+      // Update the payment record
+      const { data, error } = await supabase
         .from('league_payments')
         .update({
           amount_paid: newAmountPaid,
           payment_method: paymentMethod,
-          notes: updatedNotes || null
+          notes: newNote ? updatedNotes : paymentInfo.notes // Only update notes if there's something to add
         })
-        .eq('id', paymentInfo.id);
+        .eq('id', paymentInfo.id)
+        .select()
+        .single();
 
       if (error) throw error;
 
-      showToast(`Payment of $${depositValue.toFixed(2)} processed successfully!`, 'success');
+      // Update local state
+      if (data) {
+        setPaymentInfo(data);
+        
+        // Add new entry to payment history
+        if (newNote) {
+          const newHistoryEntry: PaymentHistoryEntry = {
+            id: paymentHistory.length + 1,
+            amount: depositValue,
+            payment_method: paymentMethod,
+            date: today.toISOString(),
+            notes: newNote
+          };
+          
+          setPaymentHistory([...paymentHistory, newHistoryEntry]);
+        }
+      }
 
-      // Reload payment data
-      await loadData();
+      showToast(`Payment of $${depositValue.toFixed(2)} processed successfully!`, 'success');
       
       // Reset form
       setDepositAmount('');
       setPaymentNotes('');
-      setEditingNoteId(null);
-      setPaymentMethod('cash');
+      setPaymentMethod('e_transfer');
 
     } catch (error) {
       console.error('Error processing payment:', error);
@@ -306,6 +361,8 @@ export function TeamEditPage() {
       setProcessingPayment(false);
     }
   };
+
+  // Remove a team member
   const handleRemoveMember = async (memberId: string) => {
     if (!team || !confirm('Are you sure you want to remove this member from the team?')) {
       return;
@@ -360,7 +417,8 @@ export function TeamEditPage() {
     }
   };
 
-  const handleEditPayment = (entry: PaymentHistory) => {
+  // Edit a payment entry
+  const handleEditPayment = (entry: PaymentHistoryEntry) => {
     setEditingNoteId(entry.id);
     setEditingPayment({
       id: entry.id,
@@ -371,38 +429,29 @@ export function TeamEditPage() {
     });
   };
 
+  // Save edited payment
   const handleSavePaymentEdit = async () => {
     if (!paymentInfo || editingNoteId === null) return;
-    
-    const newAmount = parseFloat(editingPayment.amount) || 0;
-    const originalEntry = paymentHistory.find(h => h.id === editingNoteId);
     
     try {
       setProcessingPayment(true);
       
+      const originalEntry = paymentHistory.find(h => h.id === editingNoteId);
       if (!originalEntry) return;
       
-      // Calculate the difference in amount
-      const amountDifference = newAmount - originalEntry.amount;
-
-      // Format the payment method for display
-      const formattedMethod = editingPayment.payment_method 
-        ? editingPayment.payment_method.replace('_', '-')
-        : '';
-      
       // Create a deep copy of the payment history
-      const updatedHistory = JSON.parse(JSON.stringify(paymentHistory));
+      const updatedHistory = [...paymentHistory];
       const entryIndex = updatedHistory.findIndex(h => h.id === editingNoteId);
       
       if (entryIndex !== -1) {
+        // Update the entry with new values
         updatedHistory[entryIndex] = {
           ...updatedHistory[entryIndex],
-          amount: newAmount,
+          amount: parseFloat(editingPayment.amount) || 0,
           payment_method: editingPayment.payment_method,
           date: new Date(editingPayment.date).toISOString(),
           notes: editingPayment.notes
         };
-        
       }
       
       // Convert updated history to notes format
@@ -410,9 +459,6 @@ export function TeamEditPage() {
         .map(entry => entry.notes)
         .filter(note => note && note.trim() !== '') 
         .join('\n');
-      
-      // Store the original notes for reference
-      const originalNotes = paymentInfo.notes;
       
       // Calculate the new total amount paid based on all entries
       const newAmountPaid = updatedHistory.reduce((total, entry) => total + entry.amount, 0);
@@ -443,7 +489,7 @@ export function TeamEditPage() {
         setPaymentHistory(updatedHistory);
       }
 
-      showToast(`Payment record updated successfully! Amount paid adjusted by $${amountDifference.toFixed(2)}`, 'success');
+      showToast('Payment record updated successfully!', 'success');
       
       // Reset form
       setEditingNoteId(null);
@@ -463,6 +509,7 @@ export function TeamEditPage() {
     }
   };
 
+  // Cancel editing a payment
   const handleCancelEdit = () => {
     setEditingNoteId(null);
     setEditingPayment({
@@ -474,6 +521,7 @@ export function TeamEditPage() {
     });
   };
 
+  // Helper function to get payment status color
   const getPaymentStatusColor = (status: string) => {
     switch (status) {
       case 'paid':
@@ -483,11 +531,19 @@ export function TeamEditPage() {
       case 'overdue':
         return 'bg-red-100 text-red-800';
       case 'pending':
-        return 'bg-gray-100 text-gray-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
   };
+
+  // Helper function to format payment method for display
+  const formatPaymentMethod = (method: string | null) => {
+    if (!method) return '-';
+    
+    // Convert e_transfer to E-TRANSFER, etc.
+    return method.replace('_', '-').toUpperCase();
+  };
+
   if (!userProfile?.is_admin) {
     return null;
   }
@@ -640,12 +696,13 @@ export function TeamEditPage() {
                 )}
                 {paymentInfo.payment_method && (
                   <div>
-                    <span className="font-medium">Payment Method:</span> {paymentInfo.payment_method.replace('_', ' ').toUpperCase()}
+                    <span className="font-medium">Payment Method:</span> {formatPaymentMethod(paymentInfo.payment_method)}
                   </div>
                 )}
               </div>
 
-              {paymentInfo.notes && (
+              {/* Payment History */}
+              {paymentHistory.length > 0 && (
                 <div className="mb-6">
                   <div className="flex justify-between items-center mb-2">
                     <div className="text-sm font-medium text-[#6F6F6F] flex items-center gap-2">
@@ -665,94 +722,92 @@ export function TeamEditPage() {
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
-                    {paymentHistory.map((entry) => (
-                      <tr key={entry.id}>
-                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
-                          {editingNoteId === entry.id ? (
-                            <div className="relative">
-                              <Input
-                                type="date"
-                                value={editingPayment.date}
-                                onChange={(e) => setEditingPayment({...editingPayment, date: e.target.value})}
-                                className="w-full"
-                              />
-                            </div>
-                          ) : (
-                            new Date(entry.date).toLocaleDateString()
-                          )}
-                        </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {editingNoteId === entry.id ? (
-                            <Input
-                              type="number"
-                              step="any"
-                              min="0"
-                              value={editingPayment.amount}
-                              onChange={(e) => setEditingPayment({...editingPayment, amount: e.target.value})}
-                              className="w-full"
-                            />
-                          ) : (
-                            entry.amount > 0 ? `$${entry.amount.toFixed(2)}` : '-'
-                          )}
-                        </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
-                          {editingNoteId === entry.id ? (
-                            <select
-                              value={editingPayment.payment_method || ''}
-                              onChange={(e) => setEditingPayment({...editingPayment, payment_method: e.target.value as any})}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
-                            >
-                              <option value="">Select method</option>
-                              <option value="e_transfer">E-Transfer</option>
-                              <option value="online">Online</option>
-                              <option value="cash">Cash</option>
-                            </select>
-                          ) : (
-                            entry.payment_method ? entry.payment_method.replace('_', '-').toUpperCase() : '-'
-                          )}
-                        </td>
-                        <td className="px-3 py-2 text-sm text-gray-500 max-w-xs">
-                          {editingNoteId === entry.id ? (
-                            <textarea
-                              value={editingPayment.notes}
-                              onChange={(e) => setEditingPayment({...editingPayment, notes: e.target.value})}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
-                              rows={2}
-                            />
-                          ) : (
-                            <span className="truncate block">{entry.notes}</span>
-                          )}
-                        </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-right text-sm font-medium">
-                          {editingNoteId === entry.id ? (
-                            <div className="flex gap-2 justify-end">
-                              <Button
-                                onClick={handleSavePaymentEdit}
-                                className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-lg px-3 py-1 text-xs flex items-center gap-1"
-                              >
-                                <Save className="h-3 w-3" />
-                                Save
-                              </Button>
-                              <Button
-                                onClick={handleCancelEdit}
-                                className="bg-gray-500 hover:bg-gray-600 text-white rounded-lg px-3 py-1 text-xs flex items-center gap-1"
-                              >
-                                <X className="h-3 w-3" />
-                                Cancel
-                              </Button>
-                            </div>
-                          ) : (
-                            <Button
-                              onClick={() => handleEditPayment(entry)}
-                              className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-lg px-3 py-1 text-xs flex items-center gap-1 ml-auto"
-                            >
-                              <Edit2 className="h-3 w-3" />
-                              Edit
-                            </Button>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
+                        {paymentHistory.map((entry) => (
+                          <tr key={entry.id}>
+                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
+                              {editingNoteId === entry.id ? (
+                                <Input
+                                  type="date"
+                                  value={editingPayment.date}
+                                  onChange={(e) => setEditingPayment({...editingPayment, date: e.target.value})}
+                                  className="w-full"
+                                />
+                              ) : (
+                                new Date(entry.date).toLocaleDateString()
+                              )}
+                            </td>
+                            <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
+                              {editingNoteId === entry.id ? (
+                                <Input
+                                  type="number"
+                                  step="any"
+                                  min="0"
+                                  value={editingPayment.amount}
+                                  onChange={(e) => setEditingPayment({...editingPayment, amount: e.target.value})}
+                                  className="w-full"
+                                />
+                              ) : (
+                                entry.amount > 0 ? `$${entry.amount.toFixed(2)}` : '-'
+                              )}
+                            </td>
+                            <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
+                              {editingNoteId === entry.id ? (
+                                <select
+                                  value={editingPayment.payment_method || ''}
+                                  onChange={(e) => setEditingPayment({...editingPayment, payment_method: e.target.value})}
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
+                                >
+                                  <option value="">Select method</option>
+                                  <option value="e_transfer">E-Transfer</option>
+                                  <option value="online">Online</option>
+                                  <option value="cash">Cash</option>
+                                </select>
+                              ) : (
+                                formatPaymentMethod(entry.payment_method)
+                              )}
+                            </td>
+                            <td className="px-3 py-2 text-sm text-gray-500 max-w-xs">
+                              {editingNoteId === entry.id ? (
+                                <textarea
+                                  value={editingPayment.notes}
+                                  onChange={(e) => setEditingPayment({...editingPayment, notes: e.target.value})}
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
+                                  rows={2}
+                                />
+                              ) : (
+                                <span className="truncate block">{entry.notes}</span>
+                              )}
+                            </td>
+                            <td className="px-3 py-2 whitespace-nowrap text-right text-sm font-medium">
+                              {editingNoteId === entry.id ? (
+                                <div className="flex gap-2 justify-end">
+                                  <Button
+                                    onClick={handleSavePaymentEdit}
+                                    className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-lg px-3 py-1 text-xs flex items-center gap-1"
+                                  >
+                                    <Save className="h-3 w-3" />
+                                    Save
+                                  </Button>
+                                  <Button
+                                    onClick={handleCancelEdit}
+                                    className="bg-gray-500 hover:bg-gray-600 text-white rounded-lg px-3 py-1 text-xs flex items-center gap-1"
+                                  >
+                                    <X className="h-3 w-3" />
+                                    Cancel
+                                  </Button>
+                                </div>
+                              ) : (
+                                <Button
+                                  onClick={() => handleEditPayment(entry)}
+                                  className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-lg px-3 py-1 text-xs flex items-center gap-1 ml-auto"
+                                >
+                                  <Edit2 className="h-3 w-3" />
+                                  Edit
+                                </Button>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
                       </tbody>
                     </table>
                   </div>
@@ -771,7 +826,7 @@ export function TeamEditPage() {
                       </label>
                       <Input
                         type="number"
-                        step="0.01"
+                        step="any"
                         min="0"
                         max={paymentInfo.amount_due - paymentInfo.amount_paid}
                         value={depositAmount}
@@ -790,12 +845,12 @@ export function TeamEditPage() {
                       </label>
                       <select
                         value={paymentMethod}
-                        onChange={(e) => setPaymentMethod(e.target.value as 'cash' | 'e_transfer' | 'online')}
+                        onChange={(e) => setPaymentMethod(e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
                       >
-                        <option value="e_transfer">E-TRANSFER</option>
-                        <option value="online">ONLINE</option>
-                        <option value="cash">CASH</option>
+                        <option value="e_transfer">E-Transfer</option>
+                        <option value="online">Online</option>
+                        <option value="cash">Cash</option>
                       </select>
                     </div>
                   </div>
@@ -805,7 +860,6 @@ export function TeamEditPage() {
                       Payment Notes (Optional)
                     </label>
                     <textarea
-                      id="payment-notes-textarea"
                       value={paymentNotes}
                       onChange={(e) => setPaymentNotes(e.target.value)}
                       placeholder="Add any notes about this payment..."
@@ -828,7 +882,7 @@ export function TeamEditPage() {
               )}
 
               {/* Fully Paid Message */}
-              {(paymentInfo.amount_due - paymentInfo.amount_paid) === 0 && (
+              {(paymentInfo.amount_due - paymentInfo.amount_paid) <= 0 && (
                 <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-2">
                   <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
                     <span className="text-white text-xs">✓</span>
@@ -839,6 +893,7 @@ export function TeamEditPage() {
             </CardContent>
           </Card>
         )}
+
         {/* Team Members */}
         <Card>
           <CardContent className="p-6">
