@@ -10,7 +10,7 @@ import {
   getDayName,
   formatLeagueDates,
   getPrimaryLocation,
-  type LeagueWithTeamCount 
+  LeagueWithTeamCount 
 } from "../../lib/leagues";
 import { getProductByLeagueId } from "../../stripe-config";
 import { useAuth } from "../../contexts/AuthContext";
