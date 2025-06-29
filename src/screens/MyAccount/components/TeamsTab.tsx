@@ -525,7 +525,7 @@ export function TeamsTab() {
                       className="block"
                     >
                       <h3 className="text-lg font-bold text-[#6F6F6F] mb-2 hover:text-[#B20000] transition-colors cursor-pointer">
-                        {team.league?.name || 'Unknown League'} - Winter 2025
+                        {team.league?.name || 'Unknown League'}
                       </h3>
                     </Link>
                     
