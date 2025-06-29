@@ -7,6 +7,7 @@ import { getUserSubscription, createPaymentIntent } from '../../../../lib/stripe
 import { getUserPaymentSummary, getUserLeaguePayments, type LeaguePayment } from '../../../../lib/payments';
 import { getProductByLeagueId, formatPrice } from '../../../../stripe-config';
 import { Users, Calendar, CheckCircle, AlertCircle, CreditCard, AlertTriangle, Crown, DollarSign, Trash2, User } from 'lucide-react';
+import { Button } from '../../../../components/ui/button';
 import { TeamDetailsModal } from '../TeamDetailsModal';
 import { StatsCard } from './components/StatsCard';
 import { TeamCard } from './components/TeamCard';
