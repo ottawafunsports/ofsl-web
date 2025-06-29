@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 
@@ -15,12 +15,17 @@ export function RichTextEditor({
   placeholder = 'Enter content here...', 
   rows = 6 
 }: RichTextEditorProps) {
-  const [mounted, setMounted] = useState(false);
-  
-  // This is needed because ReactQuill is a client-side only component
+  const [editorValue, setEditorValue] = useState(value || '');
+  const quillRef = useRef<ReactQuill>(null);
+
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    setEditorValue(value || '');
+  }, [value]);
+
+  const handleChange = (content: string) => {
+    setEditorValue(content);
+    onChange(content);
+  };
 
   const modules = {
     toolbar: [
@@ -39,27 +44,21 @@ export function RichTextEditor({
     'link'
   ];
 
-  if (!mounted) {
-    return (
-      <textarea
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        rows={rows}
-        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
-      />
-    );
-  }
-
   return (
-    <ReactQuill
-      theme="snow"
-      value={value}
-      onChange={onChange}
-      placeholder={placeholder}
-      modules={modules}
-      formats={formats}
-      style={{ height: `${rows * 24}px` }}
-    />
+    <div className="rich-text-editor">
+      <ReactQuill
+        ref={quillRef}
+        theme="snow"
+        value={editorValue}
+        onChange={handleChange}
+        modules={modules}
+        formats={formats}
+        placeholder={placeholder}
+        style={{ 
+          height: `${Math.max(150, rows * 24)}px`,
+          marginBottom: '2.5rem' // Space for toolbar
+        }}
+      />
+    </div>
   );
 }
