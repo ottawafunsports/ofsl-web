@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent } from '../../../components/ui/card';
 import { Input } from '../../../components/ui/input';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Trash } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../components/ui/toast';
 import { supabase } from '../../../lib/supabase';
@@ -119,6 +119,9 @@ export function TeamEditPage() {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  
+  // State for team deletion
+  const [deleting, setDeleting] = useState(false);
   
   // State for team edit form
   const [editTeam, setEditTeam] = useState<{
@@ -466,6 +469,67 @@ export function TeamEditPage() {
       showToast('Failed to update team', 'error');
     } finally {
       setSaving(false);
+    }
+  };
+
+  // Delete team and associated records
+  const handleDeleteTeam = async () => {
+    if (!id || !team) return;
+    
+    const confirmDelete = confirm(`Are you sure you want to delete the team "${team.name}"? This action cannot be undone and will remove all team data including registrations and payment records.`);
+    
+    if (!confirmDelete) return;
+    
+    try {
+      setDeleting(true);
+      
+      // 1. Update team_ids for all users in the roster
+      if (team.roster && team.roster.length > 0) {
+        for (const userId of team.roster) {
+          const { data: userData, error: fetchError } = await supabase
+            .from('users')
+            .select('team_ids')
+            .eq('id', userId)
+            .single();
+            
+          if (fetchError) {
+            console.error(`Error fetching user ${userId}:`, fetchError);
+            continue;
+          }
+          
+          if (userData) {
+            const updatedTeamIds = (userData.team_ids || []).filter((teamId: number) => teamId !== parseInt(id));
+            
+            const { error: updateError } = await supabase
+              .from('users')
+              .update({ team_ids: updatedTeamIds })
+              .eq('id', userId);
+              
+            if (updateError) {
+              console.error(`Error updating user ${userId}:`, updateError);
+            }
+          }
+        }
+      }
+      
+      // 2. Delete the team (league_payments will be deleted via ON DELETE CASCADE)
+      const { error: deleteError } = await supabase
+        .from('teams')
+        .delete()
+        .eq('id', id);
+        
+      if (deleteError) throw deleteError;
+      
+      showToast('Team deleted successfully', 'success');
+      
+      // Navigate back to teams page
+      navigate('/my-account/teams');
+      
+    } catch (error: any) {
+      console.error('Error deleting team:', error);
+      showToast(error.message || 'Failed to delete team', 'error');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -832,6 +896,14 @@ export function TeamEditPage() {
               >
                 <Save className="h-4 w-4" />
                 {saving ? 'Saving...' : 'Save Changes'}
+              </Button>
+              <Button
+                onClick={handleDeleteTeam}
+                disabled={deleting}
+                className="bg-red-600 hover:bg-red-700 text-white rounded-[10px] px-6 py-2 flex items-center gap-2"
+              >
+                <Trash className="h-4 w-4" />
+                {deleting ? 'Deleting...' : 'Delete Team'}
               </Button>
             </div>
           </CardContent>
