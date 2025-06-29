@@ -240,7 +240,7 @@ export function TeamRegistrationModal({
               <Button
                 type="submit"
                 disabled={loading || skillsLoading}
-                className="flex-1 bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] px-6 py-2"
+                className="flex-1 border border-[#B20000] bg-white hover:bg-[#B20000] text-[#B20000] hover:text-white rounded-[10px] px-6 py-2"
               >
                 {loading ? 'Registering...' : 'Register Team'}
               </Button>

@@ -570,67 +570,69 @@ export function TeamsTab() {
                     </div>
 
                     <div className="flex flex-col items-end gap-2 ml-4">
-                      {/* Skill Level */}
-                      {team.skill?.name && (
-                        <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
-                          {team.skill.name}
-                        </span>
-                      )}
-                      
-                      {/* Action Buttons */}
-                      <div className="flex flex-col gap-2 mt-2">
-                        <button
-                          onClick={() => handleManageTeam(team)}
-                          className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-lg px-4 py-2 text-sm transition-colors flex items-center gap-1"
-                        >
-                          <Users className="h-3 w-3" />
-                          {team.captain_id === userProfile?.id ? 'Manage Players' : 'View Team'}
-                        </button>
-                        
-                        {/* Pay Now Button */}
-                        {team.payment && team.payment.amount_due > team.payment.amount_paid && (
-                          <button
-                            onClick={() => handlePayNow(team.payment!.id)}
-                            className="bg-green-600 hover:bg-green-700 text-white rounded-lg px-4 py-2 text-sm transition-colors flex items-center gap-1"
-                          >
-                            <DollarSign className="h-3 w-3" />
-                            Pay Now
-                          </button>
+                      <div className="flex flex-col items-end">
+                        {/* Skill Level */}
+                        {team.skill?.name && (
+                          <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full mb-3">
+                            {team.skill.name}
+                          </span>
                         )}
                         
-                        {team.captain_id === userProfile?.id ? (
+                        {/* Action Buttons - Horizontal layout */}
+                        <div className="flex gap-2">
                           <button
-                            onClick={() => handleDeleteTeam(team)}
-                            disabled={deletingTeam === team.id}
-                            className="bg-red-600 hover:bg-red-700 text-white rounded-lg px-4 py-2 text-sm transition-colors flex items-center justify-center gap-1"
+                            onClick={() => handleManageTeam(team)}
+                            className="border border-[#B20000] bg-white hover:bg-gray-50 text-[#B20000] rounded-lg px-3 py-1.5 text-sm transition-colors flex items-center gap-1"
                           >
-                            {deletingTeam === team.id ? (
-                              'Deleting...'
-                            ) : (
-                              <>
-                                <Trash2 className="h-4 w-4" />
-                                Delete Team
-                              </>
-                            )}
+                            <Users className="h-3 w-3" />
+                            {team.captain_id === userProfile?.id ? 'Manage' : 'View'}
                           </button>
-                        ) : (
-                          team.payment && (
+                          
+                          {/* Pay Now Button */}
+                          {team.payment && team.payment.amount_due > team.payment.amount_paid && (
                             <button
-                              onClick={() => handleUnregister(team.payment!.id, team.league?.name || 'league')}
-                              disabled={unregisteringPayment === team.payment?.id}
-                              className="bg-red-600 hover:bg-red-700 text-white rounded-lg px-4 py-2 text-sm transition-colors flex items-center justify-center gap-1"
+                              onClick={() => handlePayNow(team.payment!.id)}
+                              className="bg-green-600 hover:bg-green-700 text-white rounded-lg px-3 py-1.5 text-sm transition-colors flex items-center gap-1"
                             >
-                              {unregisteringPayment === team.payment?.id ? (
-                                'Removing...'
+                              <DollarSign className="h-3 w-3" />
+                              Pay
+                            </button>
+                          )}
+                          
+                          {team.captain_id === userProfile?.id ? (
+                            <button
+                              onClick={() => handleDeleteTeam(team)}
+                              disabled={deletingTeam === team.id}
+                              className="border border-red-600 bg-white hover:bg-red-50 text-red-600 rounded-lg px-3 py-1.5 text-sm transition-colors flex items-center gap-1"
+                            >
+                              {deletingTeam === team.id ? (
+                                'Deleting...'
                               ) : (
                                 <>
-                                  <Trash2 className="h-4 w-4" />
-                                  Leave Team
+                                  <Trash2 className="h-3 w-3" />
+                                  Delete
                                 </>
                               )}
                             </button>
-                          )
-                        )}
+                          ) : (
+                            team.payment && (
+                              <button
+                                onClick={() => handleUnregister(team.payment!.id, team.league?.name || 'league')}
+                                disabled={unregisteringPayment === team.payment?.id}
+                                className="border border-red-600 bg-white hover:bg-red-50 text-red-600 rounded-lg px-3 py-1.5 text-sm transition-colors flex items-center gap-1"
+                              >
+                                {unregisteringPayment === team.payment?.id ? (
+                                  'Removing...'
+                                ) : (
+                                  <>
+                                    <Trash2 className="h-3 w-3" />
+                                    Leave
+                                  </>
+                                )}
+                              </button>
+                            )
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
