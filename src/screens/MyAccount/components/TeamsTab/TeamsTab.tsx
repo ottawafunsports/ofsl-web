@@ -4,7 +4,7 @@ import { useToast } from '../../../../components/ui/toast';
 import { supabase } from '../../../../lib/supabase';
 import { getUserSubscription } from '../../../../lib/stripe';
 import { getUserPaymentSummary, getUserLeaguePayments, type LeaguePayment } from '../../../../lib/payments';
-import { Users, Calendar, CheckCircle, AlertCircle, DollarSign } from 'lucide-react';
+import { Users, Calendar, CheckCircle, AlertCircle, CreditCard } from 'lucide-react';
 import { TeamDetailsModal } from '../TeamDetailsModal';
 import { StatsCard } from './components/StatsCard';
 import { TeamCard } from './components/TeamCard';
@@ -360,7 +360,7 @@ export function TeamsTab() {
       {leaguePayments.length > 0 && (
         <div className="mb-8">
           <h3 className="text-lg font-bold text-[#6F6F6F] mb-4 flex items-center gap-2">
-            <DollarSign className="h-5 w-5" />
+            <CreditCard className="h-5 w-5" />
             League Payments
           </h3>
           

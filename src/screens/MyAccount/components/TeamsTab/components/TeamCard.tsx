@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Button } from '../../../../../components/ui/button';
-import { Calendar, Crown, DollarSign, Users } from 'lucide-react';
+import { Calendar, Crown, CreditCard, Users } from 'lucide-react';
 import { getDayName } from '../../../../../lib/leagues';
 
 interface TeamCardProps {
@@ -69,7 +69,7 @@ export function TeamCard({ team, currentUserId, onManageTeam }: TeamCardProps) {
               <span>{getPrimaryLocation(team.gyms)}</span>
             </div>
             <div className="flex items-center gap-1">
-              <DollarSign className="h-4 w-4" />
+              <CreditCard className="h-4 w-4" />
               <span>{formatCostWithIcon(team.league?.cost)}</span>
             </div>
             <div>
