@@ -5,7 +5,8 @@ import { useAuth } from "../../../contexts/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import { TeamRegistrationModal } from "./TeamRegistrationModal";
 import { PaymentButton } from "../../../components/PaymentButton";
-import { getProductByLeagueId, formatPrice } from "../../../stripe-config";
+import { formatPrice } from "../../../stripe-config";
+import { getStripeProductByLeagueId } from "../../../lib/stripe";
 import { supabase } from "../../../lib/supabase";
 import { useEffect } from "react";
 
@@ -34,12 +35,25 @@ export function LeagueInfo({ league, sport, onSpotsUpdate }: LeagueInfoProps) {
   const [actualSpotsRemaining, setActualSpotsRemaining] = useState(league.spotsRemaining || 0);
   const { user } = useAuth();
   const [isTeamCaptain, setIsTeamCaptain] = useState(false);
+  const [matchingProduct, setMatchingProduct] = useState<any>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     loadActualTeamCount();
     checkIfTeamCaptain();
+    loadProductInfo();
   }, [league.id]);
+
+  const loadProductInfo = async () => {
+    try {
+      const product = await getStripeProductByLeagueId(league.id);
+      if (product) {
+        setMatchingProduct(product);
+      }
+    } catch (error) {
+      console.error('Error loading product info:', error);
+    }
+  };
 
   const checkIfTeamCaptain = async () => {
     if (!user) return;
@@ -97,9 +111,6 @@ export function LeagueInfo({ league, sport, onSpotsUpdate }: LeagueInfoProps) {
     // User is logged in, show registration modal
     setShowRegistrationModal(true);
   };
-
-  // Find matching product for this league
-  const matchingProduct = getProductByLeagueId(league.id);
 
   // Only show payment button if there's a valid product and the user is the team captain
   return (
@@ -171,7 +182,7 @@ export function LeagueInfo({ league, sport, onSpotsUpdate }: LeagueInfoProps) {
         {/* Register Button or Payment Button */}
         {matchingProduct && isTeamCaptain ? (
           <PaymentButton
-            priceId={matchingProduct.priceId} 
+            priceId={matchingProduct.price_id} 
             productName={matchingProduct.name}
             price={matchingProduct.price}
             mode={matchingProduct.mode}
