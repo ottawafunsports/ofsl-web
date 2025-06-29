@@ -115,7 +115,7 @@ export function SuccessPage() {
                 </span>
               </div>
             </div>
-          )}
+          ) : null}
 
           {subscription && subscription.subscription_status === 'active' && (
             <div className="space-y-2 text-sm">
