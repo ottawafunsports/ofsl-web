@@ -157,13 +157,12 @@ export function TeamEditPage() {
           if (paymentData.notes) {
             const mockHistory: PaymentHistory[] = [];
             let calculatedTotal = 0;
-
             const notesLines = paymentData.notes.split('\n').filter(line => line.trim() !== '');
             
             notesLines.forEach((note, index) => {
               // Try to extract payment information from the note
               let amount = 0;
-              let method: 'stripe' | 'cash' | 'e_transfer' | 'waived' | null = null;
+              let method: 'cash' | 'e_transfer' | 'online' | null = null;
               let date = new Date().toISOString();
               
               // Look for dollar amount pattern like $200 or $200.00
@@ -174,7 +173,7 @@ export function TeamEditPage() {
               }
               
               // Look for payment method
-              if (note.toLowerCase().includes('e-transfer') || note.toLowerCase().includes('etransfer')) {
+              if (note.toLowerCase().includes('e-transfer') || note.toLowerCase().includes('etransfer') || note.toLowerCase().includes('e_transfer')) {
                 method = 'e_transfer';
               } else if (note.toLowerCase().includes('cash')) {
                 method = 'cash';
@@ -263,7 +262,7 @@ export function TeamEditPage() {
 
     // Create a new payment history entry
     const today = new Date().toISOString().split('T')[0];
-    const newNote = `$${depositValue.toFixed(2)} ${paymentMethod.replace('_', ' ').toUpperCase()} ${today} ${paymentNotes.trim()}`;
+    const newNote = `$${depositValue.toFixed(2)} ${paymentMethod.toUpperCase()} ${today} ${paymentNotes.trim()}`;
     
     // Get existing notes
     let updatedNotes = paymentInfo.notes || '';
@@ -394,7 +393,7 @@ export function TeamEditPage() {
           amount: newAmount,
           payment_method: editingPayment.payment_method,
           date: new Date(editingPayment.date).toISOString(),
-          notes: `$${newAmount.toFixed(2)} ${editingPayment.payment_method?.replace('_', ' ').toUpperCase() || ''} ${editingPayment.date} ${editingPayment.notes}`
+          notes: `$${newAmount.toFixed(2)} ${editingPayment.payment_method?.toUpperCase() || ''} ${editingPayment.date} ${editingPayment.notes}`
         };
         
       }
@@ -701,7 +700,7 @@ export function TeamEditPage() {
                               <option value="cash">CASH</option>
                             </select>
                           ) : (
-                            entry.payment_method ? entry.payment_method.replace('_', ' ').toUpperCase() : '-'
+                            entry.payment_method ? entry.payment_method.toUpperCase() : '-'
                           )}
                         </td>
                         <td className="px-3 py-2 text-sm text-gray-500 max-w-xs">
