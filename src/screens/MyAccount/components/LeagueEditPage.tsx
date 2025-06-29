@@ -9,7 +9,6 @@ import { supabase } from '../../../lib/supabase';
 import { fetchSports, fetchSkills, fetchLeagueById, type League } from '../../../lib/leagues';
 import { ChevronLeft, Save, X } from 'lucide-react';
 import { RichTextEditor } from '../../../components/ui/rich-text-editor';
-import { RichTextEditor } from '../../../components/ui/rich-text-editor';
 export function LeagueEditPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
