@@ -14,14 +14,6 @@ import {
 } from "../../lib/leagues";
 import { getProductByLeagueId } from "../../stripe-config";
 import { useAuth } from "../../contexts/AuthContext";
-  fetchLeagues, 
-  fetchSports, 
-  fetchSkills, 
-  getDayName, 
-  formatLeagueDates, 
-  getPrimaryLocation,
-  type LeagueWithTeamCount 
-} from "../../lib/leagues";
 
 // Filter options data
 const filterOptions = {
