@@ -261,12 +261,11 @@ export function TeamEditPage() {
       return;
     }
 
-    // Prepare the updated notes
+    // Get existing notes
     let updatedNotes = paymentInfo.notes || '';
     
-    // Add new note with amount information
-    const today = new Date().toLocaleDateString();
-    const formattedNote = `$${depositValue.toFixed(2)} ${paymentMethod.replace('_', ' ').toUpperCase()} ${today} ${paymentNotes.trim()}`.trim();
+    // Use only the notes entered by the user without adding any formatting
+    const formattedNote = paymentNotes.trim();
     
     // Add new note
     if (formattedNote) {
@@ -385,7 +384,7 @@ export function TeamEditPage() {
       
       // Calculate the difference in amount
       const amountDifference = newAmount - originalEntry.amount;
-
+      
       // Create a deep copy of the payment history
       const updatedHistory = JSON.parse(JSON.stringify(paymentHistory));
       const entryIndex = updatedHistory.findIndex(h => h.id === editingNoteId);
@@ -399,13 +398,8 @@ export function TeamEditPage() {
           notes: editingPayment.notes
         };
         
-        // Format the note to include the amount
-        const formattedDate = new Date(editingPayment.date).toLocaleDateString();
-        const formattedMethod = editingPayment.payment_method ? 
-          editingPayment.payment_method.replace('_', ' ').toUpperCase() : '';
-        
-        // Create a formatted note that includes the amount
-        updatedHistory[entryIndex].notes = `$${newAmount.toFixed(2)} ${formattedMethod} ${formattedDate} ${editingPayment.notes}`.trim();
+        // Use the notes exactly as entered by the user without adding any formatting
+        updatedHistory[entryIndex].notes = editingPayment.notes.trim();
       }
       
       // Convert updated history to notes format
