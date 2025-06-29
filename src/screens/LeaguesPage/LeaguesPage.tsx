@@ -12,7 +12,7 @@ import {
   getPrimaryLocation,
   LeagueWithTeamCount 
 } from "../../lib/leagues";
-import { getProductByLeagueId } from "../../stripe-config";
+import { getProductByLeagueId, formatPrice } from "../../stripe-config";
 import { useAuth } from "../../contexts/AuthContext";
 
 // Filter options data
@@ -420,7 +420,10 @@ export const LeaguesPage = (): JSX.Element => {
                       <div className="flex items-center">
                         <DollarSign className="h-4 w-4 text-[#B20000] mr-1.5" />
                         <p className="text-sm font-medium text-[#6F6F6F]">
-                          ${league.cost} {league.sport_name === "Volleyball" ? "per team" : "per player"}
+                          {(() => {
+                            const product = getProductByLeagueId(league.id);
+                            return product ? formatPrice(product.price) : `$${league.cost}`;
+                          })()} {league.sport_name === "Volleyball" ? "per team" : "per player"}
                         </p>
                       </div>
                     </div>

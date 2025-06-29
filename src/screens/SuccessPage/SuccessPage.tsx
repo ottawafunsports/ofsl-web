@@ -1,16 +1,19 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { CheckCircle, ArrowRight } from 'lucide-react';
+import { CheckCircle, ArrowRight, CreditCard } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { getUserSubscription, getUserOrders } from '../../lib/stripe';
+import { formatPrice } from '../../stripe-config';
 
 export function SuccessPage() {
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [subscription, setSubscription] = useState<any>(null);
   const [recentOrder, setRecentOrder] = useState<any>(null);
+  const [paymentProcessed, setPaymentProcessed] = useState(false);
   
   const productName = searchParams.get('product') || 'Your purchase';
+  const price = searchParams.get('price') ? parseFloat(searchParams.get('price')!) : null;
 
   useEffect(() => {
     const loadPaymentData = async () => {
@@ -27,6 +30,7 @@ export function SuccessPage() {
         if (ordersData && ordersData.length > 0) {
           setRecentOrder(ordersData[0]);
         }
+        setPaymentProcessed(true);
       } catch (error) {
         console.error('Error loading payment data:', error);
       } finally {
@@ -50,7 +54,7 @@ export function SuccessPage() {
       <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
         <div className="mb-6">
           <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-[#6F6F6F] mb-2">Payment Successful!</h1>
+          <h1 className="text-2xl font-bold text-[#6F6F6F] mb-2">{paymentProcessed ? "Payment Successful!" : "Registration Complete!"}</h1>
           <p className="text-[#6F6F6F]">
             Thank you for your purchase of <span className="font-medium">{productName}</span>
           </p>
@@ -60,7 +64,7 @@ export function SuccessPage() {
         <div className="bg-gray-50 rounded-lg p-4 mb-6 text-left">
           <h3 className="font-medium text-[#6F6F6F] mb-3">Payment Details</h3>
           
-          {recentOrder && (
+          {recentOrder ? (
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span>Amount:</span>
@@ -81,6 +85,33 @@ export function SuccessPage() {
                 <span>Date:</span>
                 <span className="font-medium">
                   {new Date(recentOrder.order_date).toLocaleDateString()}
+                </span>
+              </div>
+            </div>
+          ) : price ? (
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span>Amount:</span>
+                <span className="font-medium">
+                  {formatPrice(price)}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>Status:</span>
+                <span className="font-medium text-green-600 capitalize">
+                  paid
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>Date:</span>
+                <span className="font-medium">
+                  {new Date().toLocaleDateString()}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>Payment Method:</span>
+                <span className="font-medium flex items-center">
+                  <CreditCard className="h-3 w-3 mr-1" /> Credit Card
                 </span>
               </div>
             </div>

@@ -5,7 +5,7 @@ import { useAuth } from "../../../contexts/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import { TeamRegistrationModal } from "./TeamRegistrationModal";
 import { PaymentButton } from "../../../components/PaymentButton";
-import { getProductByLeagueId } from "../../../stripe-config";
+import { getProductByLeagueId, formatPrice } from "../../../stripe-config";
 import { supabase } from "../../../lib/supabase";
 import { useEffect } from "react";
 
@@ -146,9 +146,9 @@ export function LeagueInfo({ league, sport, onSpotsUpdate }: LeagueInfoProps) {
           <div className="flex items-start">
             <DollarSign className="h-4 w-4 text-[#B20000] mr-2 mt-1 flex-shrink-0" />
             <div>
-              <p className="font-medium text-[#6F6F6F]">Price</p>
+              <p className="font-medium text-[#6F6F6F]">League Fee</p>
               <p className="text-sm text-[#6F6F6F]">
-                ${league.price}{" "}
+                {matchingProduct ? formatPrice(matchingProduct.price) : `$${league.price}`}{" "}
                 {sport === "Volleyball" ? "per team" : "per player"}
               </p>
             </div>
@@ -176,6 +176,7 @@ export function LeagueInfo({ league, sport, onSpotsUpdate }: LeagueInfoProps) {
             mode={matchingProduct.mode}
             metadata={{ leagueId: league.id.toString() }}
             className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] w-full py-3"
+            price={matchingProduct.price}
             variant="default"
           >
             {actualSpotsRemaining === 0 ? "Join Waitlist" : "Register & Pay Now"}

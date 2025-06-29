@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Button } from './ui/button';
-import { createCheckoutSession } from '../lib/stripe';
+import { createCheckoutSession, getUserSubscription } from '../lib/stripe';
 import { useToast } from './ui/toast';
-import { CreditCard, Loader2, DollarSign } from 'lucide-react';
+import { CreditCard, Loader2 } from 'lucide-react';
+import { getProductByPriceId, formatPrice } from '../stripe-config';
 
 interface PaymentButtonProps {
   priceId: string;
@@ -12,6 +13,7 @@ interface PaymentButtonProps {
   className?: string;
   children?: React.ReactNode;
   variant?: 'default' | 'outline' | 'secondary';
+  price?: number;
   icon?: React.ReactNode;
 }
 
@@ -22,6 +24,7 @@ export function PaymentButton({
   metadata = {},
   className,
   children,
+  price,
   variant = 'default',
   icon = <CreditCard className="h-4 w-4 mr-2" />
 }: PaymentButtonProps) {
@@ -29,6 +32,7 @@ export function PaymentButton({
   const { showToast } = useToast();
 
   const handlePayment = async () => {
+    const product = getProductByPriceId(priceId);
     try {
       setLoading(true);
       
@@ -36,7 +40,7 @@ export function PaymentButton({
         priceId,
         mode,
         metadata,
-        successUrl: `${window.location.origin}/success?product=${encodeURIComponent(productName)}`,
+        successUrl: `${window.location.origin}/success?product=${encodeURIComponent(productName)}&price=${price || (product?.price || 0)}`,
         cancelUrl: window.location.href
       });
 
@@ -60,7 +64,7 @@ export function PaymentButton({
       {loading ? (
         <>
           <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-          Processing...
+          {mode === 'subscription' ? 'Subscribe' : 'Purchase'} {productName} {price ? `- ${formatPrice(price)}` : ''}
         </>
       ) : (
         children || (

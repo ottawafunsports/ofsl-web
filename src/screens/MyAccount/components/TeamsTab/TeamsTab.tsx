@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { useToast } from '../../../../components/ui/toast';
 import { supabase } from '../../../../lib/supabase'; 
-import { getUserSubscription, createPaymentIntent, createCheckoutSession } from '../../../../lib/stripe';
+import { getUserSubscription, createPaymentIntent } from '../../../../lib/stripe';
 import { getUserPaymentSummary, getUserLeaguePayments, type LeaguePayment } from '../../../../lib/payments';
-import { getProductByLeagueId } from '../../../../stripe-config';
+import { getProductByLeagueId, formatPrice } from '../../../../stripe-config';
 import { Users, Calendar, CheckCircle, AlertCircle, CreditCard, AlertTriangle, Crown, DollarSign, Trash2, User } from 'lucide-react';
 import { TeamDetailsModal } from '../TeamDetailsModal';
 import { StatsCard } from './components/StatsCard';
@@ -407,35 +407,9 @@ export function TeamsTab() {
   const handlePayNow = (paymentId: number) => {
     const payment = leaguePayments.find(p => p.id === paymentId);
     if (payment) {
-      // Check if there's a Stripe product for this league
-      const product = getProductByLeagueId(payment.league_id);
-      
-      if (product) {
-        // Use Stripe Checkout if there's a product
-        handleStripeCheckout(product.priceId, product.name, payment.league_id);
-      } else {
-        // Use custom payment modal if no product
-        setSelectedPayment(payment);
-        setShowPaymentModal(true);
-      }
-    }
-  };
-
-  const handleStripeCheckout = async (priceId: string, productName: string, leagueId: number) => {
-    try {
-      const { url } = await createCheckoutSession({
-        priceId,
-        mode: 'payment',
-        metadata: { leagueId: leagueId.toString() },
-        successUrl: `${window.location.origin}/success?product=${encodeURIComponent(productName)}`,
-        cancelUrl: window.location.href
-      });
-
-      // Redirect to Stripe Checkout
-      window.location.href = url;
-    } catch (error: any) {
-      console.error('Payment error:', error);
-      showToast(error.message || 'Failed to start payment process', 'error');
+      // Use custom payment modal
+      setSelectedPayment(payment);
+      setShowPaymentModal(true);
     }
   };
 
