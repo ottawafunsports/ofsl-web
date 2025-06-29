@@ -273,14 +273,15 @@ export function TeamEditPage() {
   // Parse payment history from notes
   const parsePaymentHistory = (notes: string | null) => {
     if (!notes) {
-      setPaymentHistory([]);
+      // Initialize with empty array
+      setPaymentHistory([]); 
       return;
     }
     
     try {
       // First try to parse as JSON (for new format)
       try {
-        const parsedHistory = JSON.parse(notes);
+        const parsedHistory = JSON.parse(notes); 
         if (Array.isArray(parsedHistory)) {
           setPaymentHistory(parsedHistory);
           return;
@@ -292,7 +293,7 @@ export function TeamEditPage() {
       // Legacy parsing from plain text notes
       const history: PaymentHistoryEntry[] = [];
       const notesLines = notes.split('\n').filter(line => line.trim() !== '');
-    
+      
       notesLines.forEach((note, index) => {
         // Extract payment information from the note
         const amountMatch = note.match(/\$(\d+(\.\d+)?)/);
@@ -329,9 +330,37 @@ export function TeamEditPage() {
       });
     
       setPaymentHistory(history);
+      
+      // If we had to parse legacy format, update the database with the new JSON format
+      if (history.length > 0 && paymentInfo) {
+        updatePaymentHistoryInDatabase(history, paymentInfo.id);
+      }
     } catch (error) {
       console.error('Error parsing payment history:', error);
       setPaymentHistory([]);
+    }
+  };
+
+  // Helper function to update payment history in database
+  const updatePaymentHistoryInDatabase = async (history: PaymentHistoryEntry[], paymentId: number) => {
+    try {
+      // Calculate total amount from history entries
+      const totalAmount = history.reduce((sum, entry) => sum + entry.amount, 0);
+      
+      // Update the database with JSON format and correct total
+      const { error } = await supabase
+        .from('league_payments')
+        .update({ 
+          notes: JSON.stringify(history),
+          amount_paid: totalAmount
+        })
+        .eq('id', paymentId);
+
+      if (error) {
+        console.error('Error updating payment history in database:', error);
+      }
+    } catch (error) {
+      console.error('Error in updatePaymentHistoryInDatabase:', error);
     }
   };
 
@@ -364,8 +393,11 @@ export function TeamEditPage() {
       // Store history as JSON in notes field
       const updatedNotes = JSON.stringify(updatedHistory);
       
-      // Calculate the new total amount paid based on remaining entries
-      const newAmountPaid = updatedHistory.reduce((total, entry) => total + entry.amount, 0);
+      // Calculate the new total amount paid based on remaining entries - ensure it's a number
+      const newAmountPaid = updatedHistory.reduce((total, entry) => {
+        const amount = typeof entry.amount === 'number' ? entry.amount : parseFloat(entry.amount.toString()) || 0;
+        return total + amount;
+      }, 0);
       
       // Update in database
       const { data, error } = await supabase
@@ -384,8 +416,9 @@ export function TeamEditPage() {
       if (data) {
         setPaymentInfo({
           ...paymentInfo,
-          ...data,
-          amount_paid: newAmountPaid
+          amount_paid: totalPaid,
+          payment_method: paymentMethod,
+          notes: updatedNotes
         });
         
         // Update payment history
@@ -462,7 +495,7 @@ export function TeamEditPage() {
       const newHistoryEntry: PaymentHistoryEntry = {
         id: paymentHistory.length > 0 ? Math.max(...paymentHistory.map(h => h.id)) + 1 : 1,
         payment_id: paymentInfo.id,
-        amount: depositValue,
+        amount: parseFloat(editingPayment.amount) || 0, 
         payment_method: paymentMethod,
         date: today.toISOString(),
         notes: paymentNotes.trim() || `Payment of $${depositValue.toFixed(2)} via ${formatPaymentMethod(paymentMethod)}`
@@ -471,14 +504,17 @@ export function TeamEditPage() {
       // Add new entry to payment history
       const updatedHistory = [...paymentHistory, newHistoryEntry];
 
-      // Store history as JSON in notes field
+      // Store history as JSON in notes field - ensure it's properly formatted
       const updatedNotes = JSON.stringify(updatedHistory);
+
+      // Calculate total from all history entries to ensure consistency
+      const totalPaid = updatedHistory.reduce((sum, entry) => sum + entry.amount, 0);
 
       // Update the payment record
       const { data, error } = await supabase
         .from('league_payments')
         .update({
-          amount_paid: newAmountPaid,
+          amount_paid: totalPaid,
           payment_method: paymentMethod, // Update the payment method
           notes: updatedNotes
         })
@@ -602,11 +638,14 @@ export function TeamEditPage() {
         };
       }
       
-      // Convert updated history to notes format
+      // Convert updated history to JSON format
       const updatedNotes = JSON.stringify(updatedHistory);
       
-      // Calculate the new total amount paid based on all entries
-      const newAmountPaid = updatedHistory.reduce((total, entry) => total + entry.amount, 0);
+      // Calculate the new total amount paid based on all entries - ensure it's a number
+      const newAmountPaid = updatedHistory.reduce((total, entry) => {
+        const amount = typeof entry.amount === 'number' ? entry.amount : parseFloat(entry.amount.toString()) || 0;
+        return total + amount;
+      }, 0);
       
       // Update in database
       const { data, error } = await supabase
@@ -626,8 +665,9 @@ export function TeamEditPage() {
       if (data) {
         setPaymentInfo({
           ...paymentInfo,
-          ...data,
-          amount_paid: newAmountPaid
+          amount_paid: newAmountPaid,
+          payment_method: editingPayment.payment_method || paymentInfo.payment_method,
+          notes: updatedNotes
         });
         
         // Update payment history with the new values
@@ -889,7 +929,7 @@ export function TeamEditPage() {
                                 <Input
                                   type="number"
                                   step="any"
-                                  min="0"
+                                  min="0.01"
                                   value={editingPayment.amount}
                                   onChange={(e) => setEditingPayment({...editingPayment, amount: e.target.value})}
                                   className="w-full"
@@ -903,7 +943,7 @@ export function TeamEditPage() {
                                 <select
                                   value={editingPayment.payment_method || 'e_transfer'}
                                   onChange={(e) => setEditingPayment({...editingPayment, payment_method: e.target.value || null})}
-                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
+                                  className="w-full px-2 py-1 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
                                 >
                                   <option value="e_transfer">E-Transfer</option>
                                   <option value="online">Online</option>
@@ -918,7 +958,7 @@ export function TeamEditPage() {
                                 <textarea
                                   value={editingPayment.notes}
                                   onChange={(e) => setEditingPayment({...editingPayment, notes: e.target.value || ''})}
-                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
+                                  className="w-full px-2 py-1 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
                                   rows={2}
                                 />
                               ) : (
@@ -983,7 +1023,7 @@ export function TeamEditPage() {
                       <Input
                         type="number"
                         step="any"
-                        min="0"
+                        min="0.01"
                         max={paymentInfo.amount_due - paymentInfo.amount_paid}
                         value={depositAmount}
                         onChange={(e) => setDepositAmount(e.target.value)}
