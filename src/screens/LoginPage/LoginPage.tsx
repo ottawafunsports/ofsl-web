@@ -43,11 +43,21 @@ export function LoginPage() {
     setLoading(true);
     
     try {
-      const { error } = await signIn(email, password);
+      const { error } = await signIn(email.trim(), password);
       
       if (error) {
         setError(error.message);
         setLoading(false);
+      } else {
+        // On successful login, we'll redirect in the auth context
+        // But add a fallback redirect here in case that fails
+        setTimeout(() => {
+          if (document.visibilityState === 'visible') {
+            // If we're still on this page after 2 seconds, force a redirect
+            const redirectPath = localStorage.getItem('redirectAfterLogin') || '/';
+            window.location.replace(redirectPath);
+          }
+        }, 2000);
       }
       // Don't set loading to false on success - the redirect will handle it
     } catch (err) {

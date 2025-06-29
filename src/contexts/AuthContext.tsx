@@ -147,10 +147,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const redirectPath = localStorage.getItem('redirectAfterLogin');
         if (redirectPath) {
           localStorage.removeItem('redirectAfterLogin');
-          // Use a shorter timeout and more reliable redirect
-          setTimeout(() => {
-            window.location.href = redirectPath;
-          }, 100);
+          // Use window.location.replace for immediate redirect without adding to history
+          window.location.replace(redirectPath);
           return;
         }
         
@@ -161,9 +159,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           
           if (!isProfileComplete) {
             // Redirect to account page for profile completion
-            setTimeout(() => {
-              window.location.href = '/my-account/profile?complete=true';
-            }, 100);
+            window.location.replace('/my-account/profile?complete=true');
           }
         }
       }
@@ -299,6 +295,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.removeItem('redirectAfterLogin');
       
       console.log('User signed out successfully');
+      
+      // Force page reload to ensure clean state
+      window.location.replace('/');
     } catch (error) {
       console.error('Error in signOut:', error);
       // Even if there's an error, clear the local state
