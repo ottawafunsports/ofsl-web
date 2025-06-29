@@ -7,6 +7,7 @@ import { TeamRegistrationModal } from "./TeamRegistrationModal";
 import { PaymentButton } from "../../../components/PaymentButton";
 import { formatPrice } from "../../../stripe-config";
 import { getStripeProductByLeagueId } from "../../../lib/stripe";
+import { getStripeProductByLeagueId } from "../../../lib/stripe";
 import { supabase } from "../../../lib/supabase";
 import { useEffect } from "react";
 
@@ -33,6 +34,7 @@ interface LeagueInfoProps {
 export function LeagueInfo({ league, sport, onSpotsUpdate }: LeagueInfoProps) {
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
   const [actualSpotsRemaining, setActualSpotsRemaining] = useState(league.spotsRemaining || 0);
+  const [stripeProduct, setStripeProduct] = useState<any>(null);
   const { user } = useAuth();
   const [isTeamCaptain, setIsTeamCaptain] = useState(false);
   const [matchingProduct, setMatchingProduct] = useState<any>(null);
@@ -41,8 +43,18 @@ export function LeagueInfo({ league, sport, onSpotsUpdate }: LeagueInfoProps) {
   useEffect(() => {
     loadActualTeamCount();
     checkIfTeamCaptain();
+    loadStripeProduct();
     loadProductInfo();
   }, [league.id]);
+
+  const loadStripeProduct = async () => {
+    try {
+      const product = await getStripeProductByLeagueId(league.id);
+      setStripeProduct(product);
+    } catch (error) {
+      console.error('Error loading Stripe product:', error);
+    }
+  };
 
   const loadProductInfo = async () => {
     try {
@@ -159,7 +171,7 @@ export function LeagueInfo({ league, sport, onSpotsUpdate }: LeagueInfoProps) {
             <div>
               <p className="font-medium text-[#6F6F6F]">League Fee</p>
               <p className="text-sm text-[#6F6F6F]">
-                {matchingProduct ? formatPrice(matchingProduct.price) : `$${league.price}`}{" "}
+                {stripeProduct ? formatPrice(stripeProduct.price) : `$${league.price}`}{" "}
                 {sport === "Volleyball" ? "per team" : "per player"}
               </p>
             </div>
@@ -180,12 +192,12 @@ export function LeagueInfo({ league, sport, onSpotsUpdate }: LeagueInfoProps) {
         </div>
 
         {/* Register Button or Payment Button */}
-        {matchingProduct && isTeamCaptain ? (
+        {stripeProduct && isTeamCaptain ? (
           <PaymentButton
-            priceId={matchingProduct.price_id} 
-            productName={matchingProduct.name}
-            price={matchingProduct.price}
-            mode={matchingProduct.mode}
+            priceId={stripeProduct.price_id} 
+            productName={stripeProduct.name}
+            price={stripeProduct.price}
+            mode={stripeProduct.mode}
             metadata={{ leagueId: league.id.toString() }}
             className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] w-full py-3"
             variant="default"

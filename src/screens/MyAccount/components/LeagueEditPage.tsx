@@ -14,7 +14,7 @@ import { StripeProductSelector } from './LeaguesTab/components/StripeProductSele
 export function LeagueEditPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { userProfile } = useAuth();
+import { getStripeProductByLeagueId, updateStripeProductLeagueId } from '../../../lib/stripe';
   const { showToast } = useToast();
   
   const [league, setLeague] = useState<any>(null);
@@ -90,10 +90,10 @@ export function LeagueEditPage() {
       if (!leagueData) {
         throw new Error('League not found');
       } else {
-        // Check if this league is linked to a Stripe product
-        const { data: productData, error: productError } = await supabase
-          .from('stripe_products')
-          .select('id')
+        // Get the Stripe product linked to this league
+        const linkedProduct = await getStripeProductByLeagueId(parseInt(id));
+        if (linkedProduct) {
+          setSelectedProductId(linkedProduct.id);
           .eq('league_id', parseInt(id))
           .maybeSingle();
           
@@ -151,12 +151,16 @@ export function LeagueEditPage() {
       if (error) throw error;
       
       // Update the Stripe product mapping if changed
-      if (selectedProductId) {
-        // Update the stripe_products table to link this product to the league
-        const { error: updateProductError } = await supabase
-          .from('stripe_products')
-          .update({ league_id: parseInt(id) })
-          .eq('id', selectedProductId);
+      try {
+        // If we have a previous product linked to this league, unlink it
+        const currentProduct = await getStripeProductByLeagueId(parseInt(id));
+        if (currentProduct && currentProduct.id !== selectedProductId) {
+          await updateStripeProductLeagueId(currentProduct.id, null);
+        }
+        
+        // Link the new product to this league
+        if (selectedProductId) {
+          await updateStripeProductLeagueId(selectedProductId, parseInt(id));
 
         if (updateProductError) {
           console.error('Error updating product mapping:', updateProductError);
@@ -164,6 +168,10 @@ export function LeagueEditPage() {
         } else {
           showToast('League linked to Stripe product successfully', 'success');
         }
+      } catch (productError) {
+        console.error('Error updating product association:', productError);
+        // Don't fail the whole operation if just the product linking fails
+        showToast('League updated but product linking failed', 'warning');
       }
 
       showToast('League updated successfully!', 'success');
@@ -360,6 +368,7 @@ export function LeagueEditPage() {
             <div className="mt-8">
               <StripeProductSelector
                 selectedProductId={selectedProductId}
+                leagueId={parseInt(id)}
                 onChange={setSelectedProductId}
               />
             </div>

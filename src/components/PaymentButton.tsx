@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from './ui/button';
-import { createCheckoutSession, getUserSubscription, getStripeProductByPriceId } from '../lib/stripe';
+import { createCheckoutSession, getUserSubscription, getStripeProductByLeagueId } from '../lib/stripe';
 import { useToast } from './ui/toast';
 import { CreditCard, Loader2 } from 'lucide-react';
 import { formatPrice } from '../stripe-config';
@@ -34,9 +34,18 @@ export function PaymentButton({
   const handlePayment = async () => {
     let productName = productName;
     let productPrice = price;
-    
     try {
       setLoading(true);
+      
+      // If metadata contains leagueId, get the product from the database
+      let productPrice = price;
+      if (metadata?.leagueId && !productPrice) {
+        const leagueId = parseInt(metadata.leagueId);
+        const product = await getStripeProductByLeagueId(leagueId);
+        if (product) {
+          productPrice = product.price;
+        }
+      }
       
       // If we don't have a product name or price, try to fetch it from the database
       if (!productName || !price) {

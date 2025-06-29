@@ -48,12 +48,8 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Method not allowed' }, 405);
     }
 
-    // Authenticate the request
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return corsResponse({ error: 'Unauthorized' }, 401);
-    }
-
+    // Authenticate the user
+    const authHeader = req.headers.get('Authorization')!;
     const token = authHeader.replace('Bearer ', '');
     const {
       data: { user },
@@ -69,90 +65,69 @@ Deno.serve(async (req) => {
     }
 
     // Check if user is an admin
-    const { data: userProfile, error: profileError } = await supabase
+    const { data: userData, error: userError } = await supabase
       .from('users')
       .select('is_admin')
       .eq('auth_id', user.id)
       .single();
 
-    if (profileError || !userProfile || !userProfile.is_admin) {
+    if (userError) {
+      return corsResponse({ error: 'Failed to fetch user data' }, 500);
+    }
+
+    if (!userData?.is_admin) {
       return corsResponse({ error: 'Unauthorized - Admin access required' }, 403);
     }
 
-    // Fetch products from Stripe
+    // Fetch all active products from Stripe
     const products = await stripe.products.list({
       active: true,
       expand: ['data.default_price'],
     });
 
-    // Transform products to our format
+    // Transform products to match our database schema
     const transformedProducts = products.data.map(product => {
       const price = product.default_price as Stripe.Price;
+      
       return {
         id: product.id,
-        priceId: price?.id || '',
+        price_id: price?.id || '',
         name: product.name,
         description: product.description || '',
-        mode: price?.type === 'recurring' ? 'subscription' : 'payment',
-        price: price ? price.unit_amount ? price.unit_amount / 100 : 0 : 0,
-        currency: price?.currency || 'usd',
+        mode: price?.type || 'payment',
+        price: price?.unit_amount ? price.unit_amount / 100 : null,
+        currency: price?.currency || 'cad',
         interval: price?.type === 'recurring' ? price.recurring?.interval : null,
-        metadata: product.metadata || {},
-        leagueId: product.metadata?.leagueId ? parseInt(product.metadata.leagueId) : null,
+        // league_id will be set manually by admins
+        updated_at: new Date().toISOString(),
       };
     });
 
-    // Store products in the database
-    if (req.method === 'POST') {
-      // Check if stripe_products table exists, create it if not
-      const { error: tableCheckError } = await supabase.rpc('check_table_exists', { table_name: 'stripe_products' });
-      
-      if (tableCheckError) {
-        // Table doesn't exist, create it
-        const { error: createTableError } = await supabase.rpc('create_stripe_products_table');
-        
-        if (createTableError) {
-          console.error('Error creating stripe_products table:', createTableError);
-          return corsResponse({ error: 'Failed to create products table' }, 500);
-        }
-      }
+    // Filter out products without a price
+    const validProducts = transformedProducts.filter(product => product.price_id);
 
-      // Clear existing products and insert new ones
-      const { error: deleteError } = await supabase
-        .from('stripe_products')
-        .delete()
-        .neq('id', 'placeholder'); // Delete all records
+    // Upsert products to the database
+    const { data, error } = await supabase
+      .from('stripe_products')
+      .upsert(validProducts, {
+        onConflict: 'id',
+        ignoreDuplicates: false,
+      })
+      .select();
 
-      if (deleteError) {
-        console.error('Error clearing products:', deleteError);
-        return corsResponse({ error: 'Failed to clear existing products' }, 500);
-      }
-
-      // Insert new products
-      const { error: insertError } = await supabase
-        .from('stripe_products')
-        .insert(transformedProducts);
-
-      if (insertError) {
-        console.error('Error inserting products:', insertError);
-        return corsResponse({ error: 'Failed to insert products' }, 500);
-      }
-
-      return corsResponse({ 
-        success: true, 
-        message: 'Products synced successfully',
-        count: transformedProducts.length
-      });
+    if (error) {
+      console.error('Error upserting products:', error);
+      return corsResponse({ error: 'Failed to update products in database' }, 500);
     }
 
-    // For GET requests, just return the products without storing them
-    return corsResponse({ 
-      products: transformedProducts,
-      count: transformedProducts.length
+    return corsResponse({
+      success: true,
+      message: `Successfully synced ${validProducts.length} products`,
+      products: data,
     });
 
   } catch (error: any) {
-    console.error(`Error syncing products: ${error.message}`);
+    console.error(`Stripe products sync error: ${error.message}`);
     return corsResponse({ 
       error: `Failed to sync products: ${error.message}` 
     }, 500);

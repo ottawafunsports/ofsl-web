@@ -12,7 +12,8 @@ import {
   getPrimaryLocation,
   LeagueWithTeamCount 
 } from "../../lib/leagues";
-import { formatPrice } from "../../stripe-config";
+import { formatPrice } from '../../stripe-config';
+import { getStripeProductByLeagueId } from '../../lib/stripe';
 import { getStripeProductByLeagueId } from "../../lib/stripe";
 import { useAuth } from "../../contexts/AuthContext";
 
@@ -33,6 +34,9 @@ export const LeaguesPage = (): JSX.Element => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // State for Stripe products
+  const [leagueProducts, setLeagueProducts] = useState<Record<number, any>>({});
+
   // Filter state
   const [filters, setFilters] = useState({
     sport: "All Sports",
@@ -52,6 +56,13 @@ export const LeaguesPage = (): JSX.Element => {
     loadData();
   }, []);
 
+  // Load Stripe products for leagues
+  useEffect(() => {
+    if (leagues.length > 0) {
+      loadStripeProducts();
+    }
+  }, [leagues]);
+
   // Initialize filters from URL parameters
   useEffect(() => {
     const sportParam = searchParams.get('sport');
@@ -62,6 +73,24 @@ export const LeaguesPage = (): JSX.Element => {
       }));
     }
   }, [searchParams, sports]);
+
+  const loadStripeProducts = async () => {
+    try {
+      const productMap: Record<number, any> = {};
+      
+      // Load products for each league in parallel
+      await Promise.all(leagues.map(async (league) => {
+        const product = await getStripeProductByLeagueId(league.id);
+        if (product) {
+          productMap[league.id] = product;
+        }
+      }));
+      
+      setLeagueProducts(productMap);
+    } catch (error) {
+      console.error('Error loading Stripe products:', error);
+    }
+  };
 
   const loadData = async () => {
     try {
@@ -422,8 +451,8 @@ export const LeaguesPage = (): JSX.Element => {
                         <DollarSign className="h-4 w-4 text-[#B20000] mr-1.5" />
                         <p className="text-sm font-medium text-[#6F6F6F]">
                           ${league.cost} {league.sport_name === "Volleyball" ? "per team" : "per player"}
-                        </p>
-                      </div>
+                            const product = leagueProducts[league.id];
+                            return product ? formatPrice(product.price) : `$${league.cost}`;
                     </div>
                   </div>
                   
