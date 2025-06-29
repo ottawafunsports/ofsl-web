@@ -566,7 +566,7 @@ export function TeamsTab() {
                                 {team.captain_id === userProfile?.id && 
                                  team.payment.amount_due > team.payment.amount_paid && (
                                   <Button
-                                    onClick={() => {
+                                    onClick={(e) => {
                                       e.stopPropagation();
                                       handlePayNow(team.payment!.id);
                                     }}
