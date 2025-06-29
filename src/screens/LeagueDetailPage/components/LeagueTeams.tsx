@@ -249,39 +249,35 @@ export function LeagueTeams({ leagueId, onTeamsUpdate }: LeagueTeamsProps) {
                 <div className="flex-1">
                   <h3 className="text-lg font-bold text-[#6F6F6F] mb-2">{team.name}</h3>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm mt-4">
                     {/* Captain */}
-                    <div className="flex items-center gap-2">
-                      <Crown className="h-4 w-4 text-yellow-500" />
+                    <div className="flex items-center gap-2" title="Captain">
+                      <Crown className="h-5 w-5 text-yellow-500" />
                       <div>
-                        <span className="font-medium text-[#6F6F6F]">Captain:</span>
                         <p className="text-[#6F6F6F]">{team.captain_name || 'Unknown'}</p>
                       </div>
                     </div>
 
                     {/* Team Size */}
-                    <div className="flex items-center gap-2">
-                      <Users className="h-4 w-4 text-blue-500" />
+                    <div className="flex items-center gap-2" title="Players">
+                      <Users className="h-5 w-5 text-blue-500" />
                       <div>
-                        <span className="font-medium text-[#6F6F6F]">Players:</span>
                         <p className="text-[#6F6F6F]">{team.roster.length}</p>
                       </div>
                     </div>
 
                     {/* Registration Date */}
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-green-500" />
+                    <div className="flex items-center gap-2" title="Registration Date">
+                      <Calendar className="h-5 w-5 text-green-500" />
                       <div>
-                        <span className="font-medium text-[#6F6F6F]">Registered:</span>
                         <p className="text-[#6F6F6F]">{formatDate(team.created_at)}</p>
                       </div>
                     </div>
 
                     {/* Payment Info */}
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="h-4 w-4 text-purple-500" />
+                    <div className="flex items-center gap-2" title="Payment">
+                      <DollarSign className="h-5 w-5 text-purple-500" />
                       <div>
-                        <span className="font-medium text-[#6F6F6F]">Payment:</span>
                         {team.amount_due && team.amount_paid !== null ? (
                           <p className="text-[#6F6F6F]">
                             ${team.amount_paid.toFixed(2)} / ${team.amount_due.toFixed(2)}
