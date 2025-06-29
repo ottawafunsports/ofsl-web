@@ -14,7 +14,6 @@ import {
 } from "../../lib/leagues";
 import { formatPrice } from '../../stripe-config';
 import { getStripeProductByLeagueId } from '../../lib/stripe';
-import { getStripeProductByLeagueId } from "../../lib/stripe";
 import { useAuth } from "../../contexts/AuthContext";
 
 // Filter options data

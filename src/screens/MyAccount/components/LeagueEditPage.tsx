@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { getStripeProductByLeagueId, updateStripeProductLeagueId } from '../../../lib/stripe';
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent } from '../../../components/ui/card';
 import { Input } from '../../../components/ui/input';
@@ -15,7 +16,6 @@ export function LeagueEditPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { userProfile } = useAuth();
-  import { getStripeProductByLeagueId, updateStripeProductLeagueId } from '../../../lib/stripe';
   const { showToast } = useToast();
   
   const [league, setLeague] = useState<any>(null);
