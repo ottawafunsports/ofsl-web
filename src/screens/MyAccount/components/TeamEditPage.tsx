@@ -386,7 +386,7 @@ export function TeamEditPage() {
   const handleSavePaymentEdit = async () => {
     if (!paymentInfo || editingNoteId === null) return;
     
-    const originalAmount = parseFloat(editingPayment.amount) || 0;
+    const newAmount = parseFloat(editingPayment.amount) || 0;
     const originalEntry = paymentHistory.find(h => h.id === editingNoteId);
     
     try {
@@ -395,7 +395,7 @@ export function TeamEditPage() {
       if (!originalEntry) return;
       
       // Calculate the difference in amount
-      const amountDifference = originalAmount - originalEntry.amount;
+      const amountDifference = newAmount - originalEntry.amount;
       
       // Update the total amount paid
       const newAmountPaid = paymentInfo.amount_paid + amountDifference;
@@ -403,7 +403,7 @@ export function TeamEditPage() {
       // Create updated entry
       const updatedEntry = {
         ...originalEntry,
-        amount: originalAmount,
+        amount: newAmount,
         payment_method: editingPayment.payment_method,
         date: new Date(editingPayment.date).toISOString(),
         notes: editingPayment.notes
@@ -420,10 +420,10 @@ export function TeamEditPage() {
       // Update in database
       const { error } = await supabase
         .from('league_payments')
-        .update({
-          notes: updatedNotes,
-          amount_paid: newAmountPaid
-        })
+        .update({ 
+          notes: updatedNotes, 
+          amount_paid: newAmountPaid 
+        }) 
         .eq('id', paymentInfo.id);
 
       if (error) throw error;
