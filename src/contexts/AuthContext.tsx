@@ -144,7 +144,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Handle redirect only for explicit sign-in events (not initial session)
       if (event === 'SIGNED_IN') {
         // Check for redirect after login
-        const redirectPath = localStorage.getItem('redirectAfterLogin');
+        const redirectPath = localStorage.getItem('redirectAfterLogin') || '/my-account/teams';
         if (redirectPath) {
           localStorage.removeItem('redirectAfterLogin');
           // Use window.location.replace for immediate redirect without adding to history
@@ -153,14 +153,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
         
         // Check if this is a first-time sign in or incomplete profile
-        if (profile) {
+        else if (profile) {
           const isProfileComplete = profile.name && profile.phone && 
             profile.name.trim() !== '' && profile.phone.trim() !== '';
           
           if (!isProfileComplete) {
             // Redirect to account page for profile completion
             window.location.replace('/my-account/profile?complete=true');
+          } else {
+            // Redirect to teams page by default
+            window.location.replace('/my-account/teams');
           }
+        } else {
+          // Fallback redirect to teams page
+          window.location.replace('/my-account/teams');
         }
       }
     }

@@ -144,10 +144,33 @@ export const getUserLeaguePayments = async (): Promise<LeaguePayment[]> => {
 // Get payment summary for the current user
 export const getUserPaymentSummary = async (): Promise<PaymentSummary> => {
   try {
-    // Get all payments including virtual ones
-    const payments = await getUserLeaguePayments();
+    // Get user ID
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return {
+        total_outstanding: 0,
+        total_paid: 0,
+        pending_payments: 0,
+        overdue_payments: 0
+      };
+    }
     
-    if (!payments || payments.length === 0) {
+    // Get all payments for the current user
+    const { data: payments, error } = await supabase
+      .from('user_payment_summary')
+      .select('amount_outstanding, amount_paid, status');
+    
+    if (error) {
+      console.error('Error fetching payment summary:', error);
+      return {
+        total_outstanding: 0,
+        total_paid: 0,
+        pending_payments: 0,
+        overdue_payments: 0
+      };
+    }
+    
+    if (!payments) {
       return {
         total_outstanding: 0,
         total_paid: 0,
@@ -158,8 +181,8 @@ export const getUserPaymentSummary = async (): Promise<PaymentSummary> => {
 
     // Calculate summary from all payments
     const summary = payments.reduce((acc, payment) => {
-      acc.total_outstanding += payment.amount_outstanding || 0;
-      acc.total_paid += payment.amount_paid || 0;
+      acc.total_outstanding += payment.amount_outstanding || 0; 
+      acc.total_paid += payment.amount_paid || 0; 
       
       if (payment.status === 'pending' || payment.status === 'partial') {
         acc.pending_payments++;
@@ -349,11 +372,6 @@ export const updateLeaguePayment = async (
 
 // Get outstanding balance for a specific user
 export const getUserOutstandingBalance = async (userId?: string): Promise<number> => {
-  // Use the new payment summary function that includes virtual payments
-  const summary = await getUserPaymentSummary();
-  return summary.total_outstanding;
-  
-  /* Legacy code - kept for reference
   try {
     if (!userId) {
       // Use the SQL function for current user
@@ -374,5 +392,4 @@ export const getUserOutstandingBalance = async (userId?: string): Promise<number
     console.error('Error calculating outstanding balance:', error);
     return 0;
   }
-  */
 };
