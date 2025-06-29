@@ -990,14 +990,14 @@ export function TeamEditPage() {
                                 <div className="flex gap-2">
                                   <Button
                                     onClick={() => handleEditPayment(entry)}
-                                    className="bg-blue-500 hover:bg-blue-600 text-white rounded-lg p-1 h-7 w-7 flex items-center justify-center"
+                                    className="bg-transparent hover:bg-blue-50 text-blue-500 hover:text-blue-600 rounded-lg p-1 h-7 w-7 flex items-center justify-center transition-colors"
                                     title="Edit Payment"
                                   >
                                     <Edit2 className="h-3 w-3" />
                                   </Button>
                                   <Button
                                     onClick={() => confirmDeletePayment(entry)}
-                                    className="bg-red-500 hover:bg-red-600 text-white rounded-lg p-1 h-7 w-7 flex items-center justify-center"
+                                    className="bg-transparent hover:bg-red-50 text-red-500 hover:text-red-600 rounded-lg p-1 h-7 w-7 flex items-center justify-center transition-colors"
                                     title="Delete Payment"
                                   >
                                     <Trash2 className="h-3 w-3" />
