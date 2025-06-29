@@ -253,39 +253,31 @@ export function LeagueTeams({ leagueId, onTeamsUpdate }: LeagueTeamsProps) {
                     {/* Captain */}
                     <div className="flex items-center gap-2" title="Captain">
                       <Crown className="h-5 w-5 text-yellow-500" />
-                      <div>
-                        <p className="text-[#6F6F6F]">{team.captain_name || 'Unknown'}</p>
-                      </div>
+                      <p className="text-[#6F6F6F]">{team.captain_name || 'Unknown'}</p>
                     </div>
 
                     {/* Team Size */}
                     <div className="flex items-center gap-2" title="Players">
                       <Users className="h-5 w-5 text-blue-500" />
-                      <div>
-                        <p className="text-[#6F6F6F]">{team.roster.length}</p>
-                      </div>
+                      <p className="text-[#6F6F6F]">{team.roster.length}</p>
                     </div>
 
                     {/* Registration Date */}
                     <div className="flex items-center gap-2" title="Registration Date">
                       <Calendar className="h-5 w-5 text-green-500" />
-                      <div>
-                        <p className="text-[#6F6F6F]">{formatDate(team.created_at)}</p>
-                      </div>
+                      <p className="text-[#6F6F6F]">{formatDate(team.created_at)}</p>
                     </div>
 
                     {/* Payment Info */}
                     <div className="flex items-center gap-2" title="Payment">
                       <DollarSign className="h-5 w-5 text-purple-500" />
-                      <div>
-                        {team.amount_due && team.amount_paid !== null ? (
-                          <p className="text-[#6F6F6F]">
-                            ${team.amount_paid.toFixed(2)} / ${team.amount_due.toFixed(2)}
-                          </p>
-                        ) : (
-                          <p className="text-[#6F6F6F]">No payment required</p>
-                        )}
-                      </div>
+                      {team.amount_due && team.amount_paid !== null ? (
+                        <p className="text-[#6F6F6F]">
+                          ${team.amount_paid.toFixed(2)} / ${team.amount_due.toFixed(2)}
+                        </p>
+                      ) : (
+                        <p className="text-[#6F6F6F]">No payment required</p>
+                      )}
                     </div>
                   </div>
                 </div>

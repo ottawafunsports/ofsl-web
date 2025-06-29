@@ -312,6 +312,20 @@ export function TeamsTab() {
       // Process teams and fetch additional data
       const teamsWithFullDetails = await Promise.all(
         (teamsData || []).map(async (team) => {
+          // Get captain name
+          let captainName = null;
+          if (team.captain_id) {
+            const { data: captainData, error: captainError } = await supabase
+              .from('users')
+              .select('name')
+              .eq('id', team.captain_id)
+              .single();
+              
+            if (!captainError && captainData) {
+              captainName = captainData.name;
+            }
+          }
+          
           let rosterDetails: Array<{ id: string; name: string; email: string; }> = [];
           let gyms: Array<{ id: number; gym: string | null; address: string | null; }> = [];
 
@@ -346,6 +360,7 @@ export function TeamsTab() {
           return {
             ...team,
             league: team.leagues,
+            captain_name: captainName,
             skill: team.skills,
             roster_details: rosterDetails,
             gyms: gyms
@@ -447,8 +462,6 @@ export function TeamsTab() {
       {/* League Payments Section */}
       {leaguePayments.length > 0 && (
         <div className="mb-8">
-          <h2 className="text-xl font-bold text-[#6F6F6F] mb-6">Your Teams & Registrations</h2>
-        
           {teams.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-[#6F6F6F] text-lg mb-4">You haven't joined any teams yet.</p>
@@ -493,7 +506,7 @@ export function TeamsTab() {
                           <Crown className="h-5 w-5 text-yellow-500" />
                           <div>
                             <p className="text-[#6F6F6F]">
-                              {team.captain_name || 'Unknown Captain'}
+                              {team.captain_id === userProfile?.id ? userProfile.name : team.captain_name || 'Unknown'}
                               {team.captain_id === userProfile?.id && (
                                 <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">You</span>
                               )}
