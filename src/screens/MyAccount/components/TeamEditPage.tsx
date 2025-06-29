@@ -386,17 +386,24 @@ export function TeamEditPage() {
   const handleSavePaymentEdit = async () => {
     if (!paymentInfo || editingNoteId === null) return;
     
+    const originalAmount = parseFloat(editingPayment.amount) || 0;
+    const originalEntry = paymentHistory.find(h => h.id === editingNoteId);
+    
     try {
       setProcessingPayment(true);
       
-      // Find the original entry
-      const originalEntry = paymentHistory.find(h => h.id === editingNoteId);
       if (!originalEntry) return;
+      
+      // Calculate the difference in amount
+      const amountDifference = originalAmount - originalEntry.amount;
+      
+      // Update the total amount paid
+      const newAmountPaid = paymentInfo.amount_paid + amountDifference;
       
       // Create updated entry
       const updatedEntry = {
         ...originalEntry,
-        amount: parseFloat(editingPayment.amount) || 0,
+        amount: originalAmount,
         payment_method: editingPayment.payment_method,
         date: new Date(editingPayment.date).toISOString(),
         notes: editingPayment.notes
@@ -414,13 +421,14 @@ export function TeamEditPage() {
       const { error } = await supabase
         .from('league_payments')
         .update({
-          notes: updatedNotes
+          notes: updatedNotes,
+          amount_paid: newAmountPaid
         })
         .eq('id', paymentInfo.id);
 
       if (error) throw error;
 
-      showToast('Payment record updated successfully!', 'success');
+      showToast(`Payment record updated successfully! Amount paid adjusted by $${amountDifference.toFixed(2)}`, 'success');
       
       // Reload payment data
       await loadData();
