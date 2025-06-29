@@ -157,16 +157,16 @@ export function TeamEditPage() {
           if (paymentData.notes) {
             const mockHistory: PaymentHistory[] = [];
             let calculatedTotal = 0;
-            
+
             const notesLines = paymentData.notes.split('\n').filter(line => line.trim() !== '');
             
-            notesLines.forEach((note, index) => {              
+            notesLines.forEach((note, index) => {
               // Try to extract payment information from the note
               let amount = 0;
               let method: 'stripe' | 'cash' | 'e_transfer' | 'waived' | null = null;
               let date = new Date().toISOString();
               
-              // Look for dollar amount pattern like $200
+              // Look for dollar amount pattern like $200 or $200.00
               const amountMatch = note.match(/\$(\d+(\.\d+)?)/);
               if (amountMatch) {
                 amount = parseFloat(amountMatch[1]);
@@ -191,40 +191,19 @@ export function TeamEditPage() {
                 date = new Date(year, month, day).toISOString();
               }
               
+              // Store the original note text for reference
+              const originalNote = note.trim();
+              
               mockHistory.push({
                 id: index + 1,
                 amount,
                 payment_method: method,
                 date,
-                notes: note.trim()
+                notes: originalNote
               });
             });
             
             setPaymentHistory(mockHistory);
-            
-            // Check if the calculated total matches the stored amount_paid
-            if (Math.abs(calculatedTotal - paymentData.amount_paid) > 0.01) {
-              console.warn('Payment history total does not match amount_paid in database', {
-                calculatedTotal,
-                storedAmountPaid: paymentData.amount_paid
-              });
-              
-              // Update the amount_paid to match the history
-              const { error: updateError } = await supabase
-                .from('league_payments')
-                .update({ amount_paid: calculatedTotal })
-                .eq('id', paymentData.id);
-                
-              if (updateError) {
-                console.error('Error syncing payment amount:', updateError);
-              } else {
-                // Update local state
-                setPaymentInfo({
-                  ...paymentData,
-                  amount_paid: calculatedTotal
-                });
-              }
-            }
           }
         }
     } catch (error) {
@@ -285,31 +264,15 @@ export function TeamEditPage() {
     // Prepare the updated notes
     let updatedNotes = paymentInfo.notes || '';
     
-    // If we're editing an existing note
-    if (editingNoteId !== null && paymentHistory.length > 0) {
-      const historyEntry = paymentHistory.find(h => h.id === editingNoteId);
-      if (historyEntry) {
-        // Split notes into lines
-        const notesLines = updatedNotes.split('\n');
-        
-        // Find the line index that matches the history entry
-        const lineIndex = notesLines.findIndex(line => 
-          line.trim() === historyEntry.notes?.trim()
-        );
-        
-        // Replace that line with the new note
-        if (lineIndex !== -1) {
-          notesLines[lineIndex] = paymentNotes.trim();
-          updatedNotes = notesLines.join('\n');
-        }
-      }
-    } else {
-      // Add new note
-      if (paymentNotes.trim()) {
-        updatedNotes = updatedNotes 
-          ? `${updatedNotes}\n${paymentNotes.trim()}`
-          : paymentNotes.trim();
-      }
+    // Add new note with amount information
+    const today = new Date().toLocaleDateString();
+    const formattedNote = `$${depositValue.toFixed(2)} ${paymentMethod.replace('_', ' ').toUpperCase()} ${today} ${paymentNotes.trim()}`.trim();
+    
+    // Add new note
+    if (formattedNote) {
+      updatedNotes = updatedNotes 
+        ? `${updatedNotes}\n${formattedNote}`
+        : formattedNote;
     }
 
     try {
@@ -327,7 +290,7 @@ export function TeamEditPage() {
       if (error) throw error;
 
       showToast(`Payment of $${depositValue.toFixed(2)} processed successfully!`, 'success');
-      
+
       // Reload payment data
       await loadData();
       
@@ -422,7 +385,7 @@ export function TeamEditPage() {
       
       // Calculate the difference in amount
       const amountDifference = newAmount - originalEntry.amount;
-      
+
       // Create a deep copy of the payment history
       const updatedHistory = JSON.parse(JSON.stringify(paymentHistory));
       const entryIndex = updatedHistory.findIndex(h => h.id === editingNoteId);
@@ -435,13 +398,24 @@ export function TeamEditPage() {
           date: new Date(editingPayment.date).toISOString(),
           notes: editingPayment.notes
         };
+        
+        // Format the note to include the amount
+        const formattedDate = new Date(editingPayment.date).toLocaleDateString();
+        const formattedMethod = editingPayment.payment_method ? 
+          editingPayment.payment_method.replace('_', ' ').toUpperCase() : '';
+        
+        // Create a formatted note that includes the amount
+        updatedHistory[entryIndex].notes = `$${newAmount.toFixed(2)} ${formattedMethod} ${formattedDate} ${editingPayment.notes}`.trim();
       }
       
       // Convert updated history to notes format
       const updatedNotes = updatedHistory
         .map(entry => entry.notes)
-        .filter(note => note && note.trim() !== '')
+        .filter(note => note && note.trim() !== '') 
         .join('\n');
+      
+      // Store the original notes for reference
+      const originalNotes = paymentInfo.notes;
       
       // Calculate the new total amount paid based on all entries
       const newAmountPaid = updatedHistory.reduce((total, entry) => total + entry.amount, 0);
@@ -455,13 +429,14 @@ export function TeamEditPage() {
         })
         .eq('id', paymentInfo.id)
         .select()
-        .single();
+        .single(); 
 
       if (error) throw error;
       
       // Update local state with the returned data
       if (data) {
         setPaymentInfo({
+          ...paymentInfo,
           ...data,
           amount_paid: newAmountPaid
         });
@@ -725,7 +700,7 @@ export function TeamEditPage() {
                         <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
                           {editingNoteId === entry.id ? (
                             <select
-                              value={editingPayment.payment_method || ''}
+                              value={editingPayment.payment_method || 'e_transfer'}
                               onChange={(e) => setEditingPayment({...editingPayment, payment_method: e.target.value as any})}
                               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
                             >
@@ -828,34 +803,26 @@ export function TeamEditPage() {
 
                   <div className="mt-4">
                     <label className="block text-sm font-medium text-[#6F6F6F] mb-2">
-                      {editingNoteId === null ? 'Payment Notes (Optional)' : 'Edit Payment Note'}
+                      Payment Notes (Optional)
                     </label>
-                    {editingNoteId === null && (
-                      <textarea
-                        id="payment-notes-textarea"
-                        value={paymentNotes}
-                        onChange={(e) => setPaymentNotes(e.target.value)}
-                        placeholder="Add any notes about this payment..."
-                        rows={3}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
-                      />
-                    )}
+                    <textarea
+                      id="payment-notes-textarea"
+                      value={paymentNotes}
+                      onChange={(e) => setPaymentNotes(e.target.value)}
+                      placeholder="Add any notes about this payment..."
+                      rows={3}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
+                    />
                   </div>
 
                   <div className="mt-6 flex gap-4">
                     <Button
                       onClick={handleProcessPayment}
-                      disabled={processingPayment || (!editingNoteId && (!depositAmount || parseFloat(depositAmount) <= 0))}
+                      disabled={processingPayment || !depositAmount || parseFloat(depositAmount) <= 0}
                       className="bg-green-600 hover:bg-green-700 text-white rounded-[10px] px-6 py-2 flex items-center gap-2"
                     >
-                      {editingNoteId !== null ? (
-                        null
-                      ) : (
-                        <>
-                          <DollarSign className="h-4 w-4" />
-                          {processingPayment ? 'Processing...' : 'Process Payment'}
-                        </>
-                      )}
+                      <DollarSign className="h-4 w-4" />
+                      {processingPayment ? 'Processing...' : 'Process Payment'}
                     </Button>
                   </div>
                 </div>
