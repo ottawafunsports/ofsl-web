@@ -185,8 +185,7 @@ export const HomePage = (): JSX.Element => {
             <Link to="/volleyball" className="w-full sm:w-auto">
               <Button
                 variant="outline"
-                className="bg-white hover:bg-[#0d0d0d42] text-[#b20000] hover:text-white rounded-[10px] border border-white px-[15px] md:px-[25px] py-2.5"
-                className="w-full sm:w-auto bg-[#0d0d0d42] text-white border border-white rounded-[10px] px-[15px] md:px-[25px] py-2.5"
+                className="w-full sm:w-auto bg-[#0d0d0d42] hover:bg-white text-white hover:text-[#b20000] border border-white rounded-[10px] px-[15px] md:px-[25px] py-2.5"
               >
                 <span className="text-base md:text-lg text-white">
                   Womens Elite

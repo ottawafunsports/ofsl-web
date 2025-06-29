@@ -107,7 +107,11 @@ async function handleEvent(event: Stripe.Event) {
           amount_subtotal,
           amount_total,
           currency,
+          metadata,
         } = stripeData as Stripe.Checkout.Session;
+
+        // Extract league_id from metadata if available
+        const leagueId = metadata?.leagueId ? parseInt(metadata.leagueId as string) : null;
 
         // Insert the order into the stripe_orders table
         const { data: orderData, error: orderError } = await supabase.from('stripe_orders').insert({
@@ -119,6 +123,7 @@ async function handleEvent(event: Stripe.Event) {
           currency,
           payment_status,
           status: 'completed',
+          league_id: leagueId,
         }).select().single();
 
         if (orderError) {
@@ -129,7 +134,7 @@ async function handleEvent(event: Stripe.Event) {
         console.info(`Successfully processed one-time payment for session: ${checkout_session_id}`);
 
         // Now process league payments
-        await processLeaguePayments(customerId, orderData, amount_total);
+        await processLeaguePayments(customerId, orderData, amount_total, leagueId);
 
       } catch (error) {
         console.error('Error processing one-time payment:', error);
@@ -138,7 +143,7 @@ async function handleEvent(event: Stripe.Event) {
   }
 }
 
-async function processLeaguePayments(customerId: string, orderData: any, amountTotal: number) {
+async function processLeaguePayments(customerId: string, orderData: any, amountTotal: number, leagueId: number | null = null) {
   try {
     // Get the user ID from the stripe_customers table
     const { data: customerData, error: customerError } = await supabase
@@ -155,17 +160,39 @@ async function processLeaguePayments(customerId: string, orderData: any, amountT
     const userId = customerData.user_id;
     console.log(`Processing payments for user ${userId} with amount ${amountTotal/100}`);
 
-    // Get pending league payments for this user
-    const { data: pendingPayments, error: paymentsError } = await supabase
-      .from('league_payments')
-      .select('*')
-      .eq('user_id', userId)
-      .in('status', ['pending', 'partial'])
-      .order('due_date', { ascending: true });
+    let pendingPayments;
+    
+    // If we have a specific league ID, only process payments for that league
+    if (leagueId) {
+      const { data, error } = await supabase
+        .from('league_payments')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('league_id', leagueId)
+        .in('status', ['pending', 'partial'])
+        .order('due_date', { ascending: true });
+        
+      if (error) {
+        console.error('Error fetching league-specific payments:', error);
+        return;
+      }
+      
+      pendingPayments = data;
+    } else {
+      // Otherwise, get all pending payments for this user
+      const { data, error } = await supabase
+        .from('league_payments')
+        .select('*')
+        .eq('user_id', userId)
+        .in('status', ['pending', 'partial'])
+        .order('due_date', { ascending: true });
 
-    if (paymentsError) {
-      console.error('Error fetching pending payments:', paymentsError);
-      return;
+      if (error) {
+        console.error('Error fetching pending payments:', error);
+        return;
+      }
+      
+      pendingPayments = data;
     }
 
     const paymentCount = pendingPayments?.length || 0;

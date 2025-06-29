@@ -4,6 +4,16 @@ import { Card, CardContent } from "../../components/ui/card";
 import { ChevronDown, X, MapPin, Calendar, Clock, Users, DollarSign } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { 
+  fetchLeagues,
+  fetchSports,
+  fetchSkills,
+  getDayName,
+  formatLeagueDates,
+  getPrimaryLocation,
+  type LeagueWithTeamCount 
+} from "../../lib/leagues";
+import { getProductByLeagueId } from "../../stripe-config";
+import { useAuth } from "../../contexts/AuthContext";
   fetchLeagues, 
   fetchSports, 
   fetchSkills, 
@@ -21,6 +31,7 @@ const filterOptions = {
 
 export const LeaguesPage = (): JSX.Element => {
   const [searchParams] = useSearchParams();
+  const { userProfile } = useAuth();
   
   // Data state
   const [leagues, setLeagues] = useState<LeagueWithTeamCount[]>([]);
@@ -436,6 +447,7 @@ export const LeaguesPage = (): JSX.Element => {
                       className={`bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] px-4 ${
                         league.spots_remaining === 0 ? 'opacity-90' : ''
                       }`}
+                      variant="default"
                       disabled={league.spots_remaining === 0}
                     >
                       {league.spots_remaining === 0 ? 'Join Waitlist' : 'View Details'}

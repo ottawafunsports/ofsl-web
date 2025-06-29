@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { useToast } from '../../../../components/ui/toast';
 import { supabase } from '../../../../lib/supabase'; 
-import { getUserSubscription, createPaymentIntent } from '../../../../lib/stripe';
+import { getUserSubscription, createPaymentIntent, createCheckoutSession } from '../../../../lib/stripe';
 import { getUserPaymentSummary, getUserLeaguePayments, type LeaguePayment } from '../../../../lib/payments';
+import { getProductByLeagueId } from '../../../../stripe-config';
 import { Users, Calendar, CheckCircle, AlertCircle, CreditCard, AlertTriangle, Crown, DollarSign, Trash2, User } from 'lucide-react';
 import { TeamDetailsModal } from '../TeamDetailsModal';
 import { StatsCard } from './components/StatsCard';
@@ -406,8 +407,35 @@ export function TeamsTab() {
   const handlePayNow = (paymentId: number) => {
     const payment = leaguePayments.find(p => p.id === paymentId);
     if (payment) {
-      setSelectedPayment(payment);
-      setShowPaymentModal(true);
+      // Check if there's a Stripe product for this league
+      const product = getProductByLeagueId(payment.league_id);
+      
+      if (product) {
+        // Use Stripe Checkout if there's a product
+        handleStripeCheckout(product.priceId, product.name, payment.league_id);
+      } else {
+        // Use custom payment modal if no product
+        setSelectedPayment(payment);
+        setShowPaymentModal(true);
+      }
+    }
+  };
+
+  const handleStripeCheckout = async (priceId: string, productName: string, leagueId: number) => {
+    try {
+      const { url } = await createCheckoutSession({
+        priceId,
+        mode: 'payment',
+        metadata: { leagueId: leagueId.toString() },
+        successUrl: `${window.location.origin}/success?product=${encodeURIComponent(productName)}`,
+        cancelUrl: window.location.href
+      });
+
+      // Redirect to Stripe Checkout
+      window.location.href = url;
+    } catch (error: any) {
+      console.error('Payment error:', error);
+      showToast(error.message || 'Failed to start payment process', 'error');
     }
   };
 
@@ -544,7 +572,7 @@ export function TeamsTab() {
                         {/* Payment Info */}
                         <div className="flex items-center gap-2">
                           <DollarSign className="h-5 w-5 text-purple-500" />
-                          <div>
+                          <div className="flex-1">
                             {team.payment ? (
                               <div className="flex items-center gap-2">
                                 <p className="text-[#6F6F6F]">
@@ -560,9 +588,18 @@ export function TeamsTab() {
                                 </span>
                               </div>
                             ) : (
-                              <p className="text-[#6F6F6F]">
-                                {team.league?.cost ? `$${team.league.cost.toFixed(2)} (Unpaid)` : 'No payment required'}
-                              </p>
+                              team.league?.cost ? (
+                                <div className="flex items-center gap-2">
+                                  <p className="text-[#6F6F6F]">
+                                    ${team.league.cost.toFixed(2)} (Unpaid)
+                                  </p>
+                                  <span className="px-2 py-0.5 text-xs rounded-full bg-orange-100 text-orange-800">
+                                    Pending
+                                  </span>
+                                </div>
+                              ) : (
+                                <p className="text-[#6F6F6F]">No payment required</p>
+                              )
                             )}
                           </div>
                         </div>
@@ -573,13 +610,13 @@ export function TeamsTab() {
                       <div className="flex flex-col items-end w-full">
                         {/* Skill Level */}
                         {team.skill?.name && (
-                          <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full mb-3">
+                          <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full mb-2">
                             {team.skill.name}
                           </span>
                         )}
                         
                         {/* Action Buttons - Horizontal layout */}
-                        <div className="flex gap-2 mt-2 justify-end">
+                        <div className="flex gap-2 mt-1 justify-end">
                           <button
                             onClick={() => handleManageTeam(team)}
                             className="border border-[#B20000] bg-white hover:bg-[#B20000] hover:text-white text-[#B20000] rounded-lg px-3 py-1.5 text-sm transition-colors flex items-center gap-1"
@@ -589,7 +626,9 @@ export function TeamsTab() {
                           </button>
                           
                           {/* Pay Now Button */}
-                          {team.payment && team.payment.amount_due > team.payment.amount_paid && (
+                          {team.payment && 
+                           team.payment.amount_due > team.payment.amount_paid && 
+                           team.captain_id === userProfile?.id && (
                             <button
                               onClick={() => handlePayNow(team.payment!.id)}
                               className="bg-green-600 hover:bg-green-700 text-white rounded-lg px-3 py-1.5 text-sm transition-colors flex items-center gap-1 whitespace-nowrap"

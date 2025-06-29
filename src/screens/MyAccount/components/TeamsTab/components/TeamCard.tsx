@@ -7,8 +7,8 @@ interface TeamCardProps {
   team: {
     id: number;
     name: string;
-    league_id: number;
     captain_id: string;
+    league_id: number;
     league?: {
       id: number;
       name: string;
@@ -25,6 +25,9 @@ interface TeamCardProps {
     }>;
     payment?: {
       id: number;
+      amount_due: number;
+      amount_paid: number;
+      status: string;
       amount_due: number;
       amount_paid: number;
       status: string;
@@ -84,7 +87,7 @@ export function TeamCard({ team, currentUserId, onManageTeam, onPayNow }: TeamCa
             </div>
             
             {/* Payment Status */}
-            {team.payment && team.payment.amount_due > team.payment.amount_paid && (
+            {team.payment && team.payment.amount_due > team.payment.amount_paid && team.captain_id === currentUserId && (
               <div className="mt-2 flex items-center gap-2 text-sm">
                 <DollarSign className="h-4 w-4 text-orange-500" />
                 <span className="text-orange-600 font-medium">
@@ -93,7 +96,8 @@ export function TeamCard({ team, currentUserId, onManageTeam, onPayNow }: TeamCa
                 {onPayNow && (
                   <Button
                     onClick={(e) => {
-                      e.stopPropagation();
+                      e.preventDefault();
+                      e.stopPropagation(); 
                       onPayNow(team.payment!.id);
                     }}
                     className="ml-2 bg-green-600 hover:bg-green-700 text-white text-xs py-1 px-2 rounded"

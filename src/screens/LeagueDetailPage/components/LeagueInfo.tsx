@@ -2,10 +2,10 @@ import { useState } from "react";
 import { Button } from "../../../components/ui/button";
 import { MapPin, Calendar, Clock, DollarSign, Users } from "lucide-react";
 import { useAuth } from "../../../contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { TeamRegistrationModal } from "./TeamRegistrationModal";
 import { PaymentButton } from "../../../components/PaymentButton";
-import { products } from "../../../stripe-config";
+import { getProductByLeagueId } from "../../../stripe-config";
 import { supabase } from "../../../lib/supabase";
 import { useEffect } from "react";
 
@@ -33,11 +33,32 @@ export function LeagueInfo({ league, sport, onSpotsUpdate }: LeagueInfoProps) {
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
   const [actualSpotsRemaining, setActualSpotsRemaining] = useState(league.spotsRemaining || 0);
   const { user } = useAuth();
+  const [isTeamCaptain, setIsTeamCaptain] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     loadActualTeamCount();
+    checkIfTeamCaptain();
   }, [league.id]);
+
+  const checkIfTeamCaptain = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('teams')
+        .select('id')
+        .eq('league_id', league.id)
+        .eq('captain_id', user.id)
+        .eq('active', true)
+        .maybeSingle();
+
+      if (error) throw error;
+      setIsTeamCaptain(!!data);
+    } catch (error) {
+      console.error('Error checking team captain status:', error);
+    }
+  };
 
   const loadActualTeamCount = async () => {
     try {
@@ -78,10 +99,7 @@ export function LeagueInfo({ league, sport, onSpotsUpdate }: LeagueInfoProps) {
   };
 
   // Find matching product for this league
-  const matchingProduct = products.find(product => 
-    product.name.toLowerCase().includes(league.name.toLowerCase()) ||
-    league.name.toLowerCase().includes(product.name.toLowerCase())
-  );
+  const matchingProduct = getProductByLeagueId(league.id);
 
   return (
     <>
@@ -150,16 +168,29 @@ export function LeagueInfo({ league, sport, onSpotsUpdate }: LeagueInfoProps) {
         </div>
 
         {/* Register Button or Payment Button */}
-        {matchingProduct ? (
+        {matchingProduct && isTeamCaptain ? (
           <PaymentButton
             priceId={matchingProduct.priceId}
             productName={matchingProduct.name}
             mode={matchingProduct.mode}
+            metadata={{ leagueId: league.id.toString() }}
             className="border-[#B20000] text-[#B20000] hover:bg-[#B20000] hover:text-white rounded-[10px] w-full py-3"
             variant="outline" 
           >
             {actualSpotsRemaining === 0 ? "Join Waitlist" : "Register & Pay Now"}
           </PaymentButton>
+        ) : isTeamCaptain ? (
+          <div className="text-center">
+            <p className="text-sm text-gray-500 mb-2">Payment options not available for this league</p>
+            <Link to="/my-account/teams">
+              <Button
+                variant="outline"
+                className="border-[#B20000] text-[#B20000] hover:bg-[#B20000] hover:text-white rounded-[10px] w-full py-3"
+              >
+                Manage Your Team
+              </Button>
+            </Link>
+          </div>
         ) : (
           <Button
             onClick={handleRegisterClick}
@@ -167,7 +198,7 @@ export function LeagueInfo({ league, sport, onSpotsUpdate }: LeagueInfoProps) {
             className="border-[#B20000] text-[#B20000] hover:bg-[#B20000] hover:text-white rounded-[10px] w-full py-3"
             disabled={actualSpotsRemaining === 0}
           >
-            {actualSpotsRemaining === 0 ? "Join Waitlist" : "Register Now"}
+            {actualSpotsRemaining === 0 ? "Join Waitlist" : "Register Team"}
           </Button>
         )}
       </div>
