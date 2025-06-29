@@ -526,7 +526,7 @@ export function TeamEditPage() {
             className="flex items-center text-[#B20000] hover:underline mb-4"
           >
             <ChevronLeft className="h-5 w-5 mr-1" />
-            Back to League Teams
+            Back to League Details
           </Link>
           
           <h2 className="text-2xl font-bold text-[#6F6F6F]">Edit Team Registration</h2>
