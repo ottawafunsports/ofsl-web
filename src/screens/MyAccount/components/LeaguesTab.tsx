@@ -62,7 +62,6 @@ export function LeaguesTab() {
   const [newLeague, setNewLeague] = useState<NewLeague>({
     name: '',
     description: '',
-    year: '2025',
     sport_id: null,
     skill_id: null,
     day_of_week: null,
@@ -186,7 +185,6 @@ export function LeaguesTab() {
         .insert({
           name: newLeague.name,
           description: newLeague.description,
-          year: newLeague.year,
           sport_id: newLeague.sport_id,
           skill_id: newLeague.skill_id,
           day_of_week: newLeague.day_of_week,
@@ -205,7 +203,6 @@ export function LeaguesTab() {
       setNewLeague({
         name: '',
         description: '',
-        year: '2025',
         sport_id: null,
         skill_id: null,
         day_of_week: null,
@@ -576,15 +573,15 @@ export function LeaguesTab() {
                   </span>
                 </div>
                 
-                <div className="flex gap-2">
+                <div className="flex">
                   <Link to={`/my-account/leagues/edit/${league.id}`}>
-                    <Button className="bg-blue-500 hover:bg-blue-600 text-white rounded-[8px] px-3 py-1 text-sm">
+                    <Button className="bg-transparent hover:bg-blue-50 text-blue-500 rounded-[8px] p-2 transition-colors">
                       <Edit2 className="h-4 w-4" />
                     </Button>
                   </Link>
                   <Button 
                     onClick={() => handleDeleteLeague(league.id)}
-                    className="bg-red-500 hover:bg-red-600 text-white rounded-[8px] px-3 py-1 text-sm"
+                    className="bg-transparent hover:bg-red-50 text-red-500 rounded-[8px] p-2 transition-colors"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>

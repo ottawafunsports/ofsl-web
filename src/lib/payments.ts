@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 
+// Interface for league payment records
 export interface LeaguePayment {
   id: number;
   user_id: string;
@@ -26,8 +27,192 @@ export interface PaymentSummary {
   overdue_payments: number;
 }
 
-// Get all league payments for the current user
+// Get all league payments for the current user, including "virtual" payments for teams without payment records
 export const getUserLeaguePayments = async (): Promise<LeaguePayment[]> => {
+  try {
+    // Get actual payment records from the database
+    const { data, error } = await supabase
+      .from('league_payments')
+      .select(`
+        id,
+        user_id,
+        team_id,
+        league_id,
+        amount_due,
+        amount_paid,
+        status,
+        due_date,
+        payment_method,
+        stripe_order_id,
+        notes,
+        created_at,
+        updated_at,
+        leagues!inner(name),
+        teams(name)
+      `);
+
+    if (error) throw error;
+
+    // Transform the data to match the LeaguePayment interface
+    const actualPayments = (data || []).map(payment => ({
+      id: payment.id,
+      user_id: payment.user_id,
+      team_id: payment.team_id,
+      league_id: payment.league_id,
+      amount_due: payment.amount_due,
+      amount_paid: payment.amount_paid,
+      amount_outstanding: payment.amount_due - payment.amount_paid,
+      status: payment.status,
+      due_date: payment.due_date,
+      payment_method: payment.payment_method,
+      stripe_order_id: payment.stripe_order_id,
+      notes: payment.notes,
+      created_at: payment.created_at,
+      updated_at: payment.updated_at,
+      league_name: payment.leagues?.name || '',
+      team_name: payment.teams?.name || null
+    }));
+
+    // Get user's teams that might not have payment records
+    const { data: userTeams, error: teamsError } = await supabase
+      .from('teams')
+      .select(`
+        id,
+        name,
+        league_id,
+        leagues:league_id(id, name, cost)
+      `)
+      .eq('active', true);
+
+    if (teamsError) {
+      console.error('Error fetching user teams:', teamsError);
+      return actualPayments;
+    }
+
+    // Create a set of team IDs that already have payment records
+    const teamsWithPayments = new Set(
+      actualPayments
+        .filter(payment => payment.team_id !== null)
+        .map(payment => payment.team_id)
+    );
+
+    // Create virtual payment records for teams without payment entries
+    const virtualPayments: LeaguePayment[] = [];
+    
+    for (const team of userTeams || []) {
+      // Skip if team already has a payment record or if league has no cost
+      if (
+        teamsWithPayments.has(team.id) || 
+        !team.leagues?.cost || 
+        team.leagues.cost <= 0
+      ) {
+        continue;
+      }
+
+      // Create a virtual payment record
+      const dueDate = new Date();
+      dueDate.setDate(dueDate.getDate() + 30); // Due in 30 days
+
+      virtualPayments.push({
+        id: -team.id, // Use negative team ID to ensure uniqueness
+        user_id: '', // Will be filled by the current user's ID
+        team_id: team.id,
+        league_id: team.league_id,
+        amount_due: team.leagues.cost,
+        amount_paid: 0,
+        amount_outstanding: team.leagues.cost,
+        status: 'pending',
+        due_date: dueDate.toISOString(),
+        payment_method: null,
+        stripe_order_id: null,
+        notes: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        league_name: team.leagues.name,
+        team_name: team.name
+      });
+    }
+
+    // Combine actual and virtual payments
+    return [...actualPayments, ...virtualPayments];
+  } catch (error) {
+    console.error('Error fetching user league payments:', error);
+    return [];
+  }
+};
+
+// Get payment summary for the current user
+export const getUserPaymentSummary = async (): Promise<PaymentSummary> => {
+  try {
+    // Get user ID
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return {
+        total_outstanding: 0,
+        total_paid: 0,
+        pending_payments: 0,
+        overdue_payments: 0
+      };
+    }
+    
+    // Get all payments for the current user
+    const { data: payments, error } = await supabase
+      .from('user_payment_summary')
+      .select('amount_outstanding, amount_paid, status');
+    
+    if (error) {
+      console.error('Error fetching payment summary:', error);
+      return {
+        total_outstanding: 0,
+        total_paid: 0,
+        pending_payments: 0,
+        overdue_payments: 0
+      };
+    }
+    
+    if (!payments) {
+      return {
+        total_outstanding: 0,
+        total_paid: 0,
+        pending_payments: 0,
+        overdue_payments: 0
+      };
+    }
+
+    // Calculate summary from all payments
+    const summary = payments.reduce((acc, payment) => {
+      acc.total_outstanding += payment.amount_outstanding || 0; 
+      acc.total_paid += payment.amount_paid || 0; 
+      
+      if (payment.status === 'pending' || payment.status === 'partial') {
+        acc.pending_payments++;
+      } else if (payment.status === 'overdue') {
+        acc.overdue_payments++;
+      }
+      
+      return acc;
+    }, {
+      total_outstanding: 0,
+      total_paid: 0,
+      pending_payments: 0,
+      overdue_payments: 0
+    });
+
+    return summary;
+  } catch (error) {
+    console.error('Error fetching user payment summary:', error);
+    return {
+      total_outstanding: 0,
+      total_paid: 0,
+      pending_payments: 0,
+      overdue_payments: 0
+    };
+  }
+};
+
+// Legacy function - kept for backward compatibility
+// Get all league payments for the current user
+export const _getUserLeaguePayments = async (): Promise<LeaguePayment[]> => {
   try {
     const { data, error } = await supabase
       .from('league_payments')
@@ -79,7 +264,7 @@ export const getUserLeaguePayments = async (): Promise<LeaguePayment[]> => {
 };
 
 // Get payment summary for the current user
-export const getUserPaymentSummary = async (): Promise<PaymentSummary> => {
+export const _getUserPaymentSummary = async (): Promise<PaymentSummary> => {
   try {
     const { data: payments, error } = await supabase
       .from('user_payment_summary')

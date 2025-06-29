@@ -4,14 +4,16 @@ import { Card, CardContent } from "../../components/ui/card";
 import { ChevronDown, X, MapPin, Calendar, Clock, Users, DollarSign } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { 
-  fetchLeagues, 
-  fetchSports, 
-  fetchSkills, 
-  getDayName, 
-  formatLeagueDates, 
+  fetchLeagues,
+  fetchSports,
+  fetchSkills,
+  getDayName,
+  formatLeagueDates,
   getPrimaryLocation,
-  type LeagueWithTeamCount 
+  LeagueWithTeamCount 
 } from "../../lib/leagues";
+import { getProductByLeagueId, formatPrice } from "../../stripe-config";
+import { useAuth } from "../../contexts/AuthContext";
 
 // Filter options data
 const filterOptions = {
@@ -21,6 +23,7 @@ const filterOptions = {
 
 export const LeaguesPage = (): JSX.Element => {
   const [searchParams] = useSearchParams();
+  const { userProfile } = useAuth();
   
   // Data state
   const [leagues, setLeagues] = useState<LeagueWithTeamCount[]>([]);
@@ -417,7 +420,10 @@ export const LeaguesPage = (): JSX.Element => {
                       <div className="flex items-center">
                         <DollarSign className="h-4 w-4 text-[#B20000] mr-1.5" />
                         <p className="text-sm font-medium text-[#6F6F6F]">
-                          ${league.cost} {league.sport_name === "Volleyball" ? "per team" : "per player"}
+                          {(() => {
+                            const product = getProductByLeagueId(league.id);
+                            return product ? formatPrice(product.price) : `$${league.cost}`;
+                          })()} {league.sport_name === "Volleyball" ? "per team" : "per player"}
                         </p>
                       </div>
                     </div>
@@ -436,6 +442,7 @@ export const LeaguesPage = (): JSX.Element => {
                       className={`bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] px-4 ${
                         league.spots_remaining === 0 ? 'opacity-90' : ''
                       }`}
+                      variant="default"
                       disabled={league.spots_remaining === 0}
                     >
                       {league.spots_remaining === 0 ? 'Join Waitlist' : 'View Details'}

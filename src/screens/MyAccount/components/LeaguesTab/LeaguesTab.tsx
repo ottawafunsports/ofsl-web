@@ -14,6 +14,10 @@ export function LeaguesTab() {
   const [showNewLeagueForm, setShowNewLeagueForm] = useState(false);
 
   const {
+  const [selectedProductForLeague, setSelectedProductForLeague] = useState<{
+    productId: string | null;
+    league: NewLeague | null;
+  }>({ productId: null, league: null });
     leagues,
     sports,
     skills,
@@ -31,6 +35,17 @@ export function LeaguesTab() {
   useEffect(() => {
     loadData();
   }, []);
+
+  const handleProductSelection = (productId: string, league: NewLeague) => {
+    setSelectedProductForLeague({
+      productId,
+      league
+    });
+    
+    // In a real implementation, we would update a database table here
+    // For now, we'll just show a toast message
+    showToast(`League will be linked to Stripe product ID: ${productId}`, 'info');
+  };
 
   if (!userProfile?.is_admin) {
     return (
@@ -55,10 +70,11 @@ export function LeaguesTab() {
       <LeaguesHeader onCreateNew={() => setShowNewLeagueForm(true)} />
 
       {showNewLeagueForm && (
-        <NewLeagueForm
+        <NewLeagueForm 
           sports={sports}
           skills={skills}
           gyms={gyms}
+          onProductSelect={handleProductSelection}
           saving={saving}
           onClose={() => setShowNewLeagueForm(false)}
           onSubmit={handleCreateLeague}

@@ -144,27 +144,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Handle redirect only for explicit sign-in events (not initial session)
       if (event === 'SIGNED_IN') {
         // Check for redirect after login
-        const redirectPath = localStorage.getItem('redirectAfterLogin');
+        const redirectPath = localStorage.getItem('redirectAfterLogin') || '/my-account/teams';
         if (redirectPath) {
           localStorage.removeItem('redirectAfterLogin');
-          // Use a shorter timeout and more reliable redirect
-          setTimeout(() => {
-            window.location.href = redirectPath;
-          }, 100);
+          // Use window.location.replace for immediate redirect without adding to history
+          window.location.replace(redirectPath);
           return;
         }
         
         // Check if this is a first-time sign in or incomplete profile
-        if (profile) {
+        else if (profile) {
           const isProfileComplete = profile.name && profile.phone && 
             profile.name.trim() !== '' && profile.phone.trim() !== '';
           
           if (!isProfileComplete) {
             // Redirect to account page for profile completion
-            setTimeout(() => {
-              window.location.href = '/my-account/profile?complete=true';
-            }, 100);
+            window.location.replace('/my-account/profile?complete=true');
+          } else {
+            // Redirect to teams page by default
+            window.location.replace('/my-account/teams');
           }
+        } else {
+          // Fallback redirect to teams page
+          window.location.replace('/my-account/teams');
         }
       }
     }
@@ -299,6 +301,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.removeItem('redirectAfterLogin');
       
       console.log('User signed out successfully');
+      
+      // Force page reload to ensure clean state
+      window.location.replace('/');
     } catch (error) {
       console.error('Error in signOut:', error);
       // Even if there's an error, clear the local state

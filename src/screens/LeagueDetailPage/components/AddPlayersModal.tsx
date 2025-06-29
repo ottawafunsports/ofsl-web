@@ -338,7 +338,7 @@ export function AddPlayersModal({
             <h2 className="text-2xl font-bold text-[#6F6F6F]">Add Players</h2>
             <button 
               onClick={handleClose}
-              className="text-gray-500 hover:text-gray-700 bg-transparent hover:bg-transparent border-none shadow-none p-2"
+              className="text-gray-500 hover:text-gray-700 bg-transparent hover:bg-gray-100 rounded-full p-2 transition-colors"
             >
               <X className="h-6 w-6" />
             </button>
@@ -375,7 +375,7 @@ export function AddPlayersModal({
                       <Button
                         type="button"
                         onClick={() => removeEmailField(index)}
-                        className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg"
+                        className="bg-transparent hover:bg-red-50 text-red-500 hover:text-red-600 rounded-lg p-2 transition-colors"
                         disabled={checking[index]}
                       >
                         <Trash2 className="h-4 w-4" />
@@ -426,7 +426,7 @@ export function AddPlayersModal({
               <Button
                 type="submit"
                 disabled={loading || Object.values(checking).some(Boolean)}
-                className="flex-1 bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] px-6 py-2"
+                className="flex-1 border-[#B20000] bg-white hover:bg-[#B20000] text-[#B20000] hover:text-white rounded-[10px] px-6 py-2"
               >
                 {loading ? 'Processing...' : 'Add Players & Send Invites'}
               </Button>

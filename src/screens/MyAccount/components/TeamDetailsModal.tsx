@@ -72,7 +72,7 @@ export function TeamDetailsModal({
               <h2 className="text-2xl font-bold text-[#6F6F6F]">Team Details</h2>
               <button 
                 onClick={closeModal}
-                className="text-gray-500 hover:text-gray-700 bg-transparent hover:bg-transparent border-none shadow-none p-2"
+                className="text-gray-500 hover:text-gray-700 bg-transparent hover:bg-gray-100 rounded-full p-2 transition-colors"
               >
                 <X className="h-6 w-6" />
               </button>
@@ -168,7 +168,7 @@ export function TeamDetailsModal({
                       {isCaptain && player.id !== team.captain_id && (
                         <div className="flex items-center gap-2">
                           <button
-                            className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-colors duration-200"
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-full transition-colors"
                             title="Remove from team"
                           >
                             <Trash2 className="h-4 w-4" />

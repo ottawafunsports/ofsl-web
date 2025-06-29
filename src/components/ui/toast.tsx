@@ -1,15 +1,16 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { X } from 'lucide-react';
+import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { X, CheckCircle, AlertCircle, Info } from 'lucide-react';
+
+type ToastType = 'success' | 'error' | 'info' | 'warning';
 
 interface Toast {
   id: string;
   message: string;
-  type: 'success' | 'error' | 'info';
-  duration?: number;
+  type: ToastType;
 }
 
 interface ToastContextType {
-  showToast: (message: string, type?: 'success' | 'error' | 'info', duration?: number) => void;
+  showToast: (message: string, type: ToastType) => void;
 }
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
@@ -29,58 +30,88 @@ interface ToastProviderProps {
 export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info', duration: number = 3000) => {
-    const id = Math.random().toString(36).substr(2, 9);
-    const newToast: Toast = { id, message, type, duration };
-    
-    setToasts(prev => [...prev, newToast]);
-    
+  const showToast = useCallback((message: string, type: ToastType) => {
+    const id = Math.random().toString(36).substring(2, 9);
+    setToasts((prevToasts) => [...prevToasts, { id, message, type }]);
+
+    // Auto-dismiss after 5 seconds
     setTimeout(() => {
-      setToasts(prev => prev.filter(toast => toast.id !== id));
-    }, duration);
-  };
+      setToasts((prevToasts) => prevToasts.filter((toast) => toast.id !== id));
+    }, 5000);
+  }, []);
 
-  const removeToast = (id: string) => {
-    setToasts(prev => prev.filter(toast => toast.id !== id));
-  };
+  const dismissToast = useCallback((id: string) => {
+    setToasts((prevToasts) => prevToasts.filter((toast) => toast.id !== id));
+  }, []);
 
-  const getToastStyles = (type: string) => {
+  const getToastIcon = (type: ToastType) => {
     switch (type) {
       case 'success':
-        return 'bg-green-500 text-white';
+        return <CheckCircle className="h-5 w-5 text-white" />;
       case 'error':
-        return 'bg-red-500 text-white';
+        return <AlertCircle className="h-5 w-5 text-white" />;
       case 'info':
+        return <Info className="h-5 w-5 text-white" />;
+      case 'warning':
+        return <AlertCircle className="h-5 w-5 text-white" />;
       default:
-        return 'bg-blue-500 text-white';
+        return null;
+    }
+  };
+
+  const getToastColor = (type: ToastType) => {
+    switch (type) {
+      case 'success':
+        return 'bg-green-600';
+      case 'error':
+        return 'bg-red-600';
+      case 'info':
+        return 'bg-blue-600';
+      case 'warning':
+        return 'bg-yellow-600';
+      default:
+        return 'bg-gray-600';
     }
   };
 
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      
-      {/* Toast Container */}
-      <div className="fixed top-4 right-4 z-[9999] space-y-2">
+      <div className="fixed bottom-0 right-0 p-4 z-50 flex flex-col gap-2 max-w-md">
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`
-              flex items-center justify-between min-w-[300px] p-4 rounded-lg shadow-lg
-              transform transition-all duration-300 ease-in-out
-              ${getToastStyles(toast.type)}
-            `}
+            className={`${getToastColor(toast.type)} text-white p-4 rounded-lg shadow-lg flex items-start gap-3 animate-fade-in-up`}
+            style={{
+              animation: 'fadeInUp 0.3s ease-out',
+            }}
           >
-            <span className="text-sm font-medium">{toast.message}</span>
+            {getToastIcon(toast.type)}
+            <div className="flex-1">{toast.message}</div>
             <button
-              onClick={() => removeToast(toast.id)}
-              className="ml-3 text-white hover:text-gray-200 transition-colors"
+              onClick={() => dismissToast(toast.id)}
+              className="text-white hover:text-gray-200 transition-colors"
             >
-              <X size={16} />
+              <X className="h-5 w-5" />
             </button>
           </div>
         ))}
       </div>
+      <style jsx>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-fade-in-up {
+          animation: fadeInUp 0.3s ease-out;
+        }
+      `}</style>
     </ToastContext.Provider>
   );
 };

@@ -185,7 +185,7 @@ export const VolleyballPage = (): JSX.Element => {
                 </li>
               </ul>
               <Link to="/leagues?sport=Volleyball" className="self-start">
-                <Button className="bg-[#b20000] hover:bg-[#8a0000] text-white rounded-[10px] px-6 py-3">
+                <Button variant="outline" className="border-[#B20000] text-[#B20000] hover:bg-[#B20000] hover:text-white rounded-[10px] px-6 py-3">
                   Register now
                 </Button>
               </Link>
@@ -350,6 +350,7 @@ export const VolleyballPage = (): JSX.Element => {
             </p>
             <Link to="/leagues?sport=Volleyball">
               <Button
+                variant="outline"
                 className="bg-white hover:bg-[#0d0d0d42] text-[#b20000] hover:text-white rounded-[10px] border border-white px-[15px] md:px-[25px] py-2.5"
               >
                 <span className="text-base md:text-lg text-[#b20000] hover:text-white">

@@ -4,12 +4,14 @@ import { Card, CardContent } from '../../../../../components/ui/card';
 import { Input } from '../../../../../components/ui/input';
 import { RichTextEditor } from '../../../../../components/ui/rich-text-editor';
 import { X } from 'lucide-react';
+import { StripeProductSelector } from './StripeProductSelector';
 import { NewLeague, Sport, Skill, Gym } from '../types';
 
 interface NewLeagueFormProps {
   sports: Sport[];
   skills: Skill[];
   gyms: Gym[];
+  onProductSelect: (productId: string, league: NewLeague) => void;
   saving: boolean;
   onClose: () => void;
   onSubmit: (league: NewLeague) => Promise<void>;
@@ -19,6 +21,7 @@ export function NewLeagueForm({
   sports, 
   skills, 
   gyms, 
+  onProductSelect,
   saving, 
   onClose, 
   onSubmit 
@@ -26,7 +29,6 @@ export function NewLeagueForm({
   const [newLeague, setNewLeague] = useState<NewLeague>({
     name: '',
     description: '',
-    year: '2025',
     sport_id: null,
     skill_id: null,
     day_of_week: null,
@@ -37,7 +39,13 @@ export function NewLeagueForm({
     gym_ids: []
   });
 
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+
   const handleSubmit = async () => {
+    // Pass the selected product ID to the parent component
+    if (selectedProductId) {
+      onProductSelect(selectedProductId, newLeague);
+    }
     await onSubmit(newLeague);
     setNewLeague({
       name: '',
@@ -61,7 +69,7 @@ export function NewLeagueForm({
           <h3 className="text-xl font-bold text-[#6F6F6F]">Create New League</h3>
           <Button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 bg-transparent hover:bg-transparent border-none shadow-none p-2"
+            className="text-gray-500 hover:text-gray-700 bg-transparent hover:bg-gray-100 rounded-full p-2 transition-colors"
           >
             <X className="h-5 w-5" />
           </Button>
@@ -103,27 +111,6 @@ export function NewLeagueForm({
               {skills.map(skill => (
                 <option key={skill.id} value={skill.id}>{skill.name}</option>
               ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Year</label>
-            <select
-              value={newLeague.year}
-              onChange={(e) => setNewLeague({ ...newLeague, year: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
-            >
-              <option value="2025">2025</option>
-              <option value="2025/26">2025/26</option>
-              <option value="2026">2026</option>
-              <option value="2026/27">2026/27</option>
-              <option value="2027">2027</option>
-              <option value="2027/28">2027/28</option>
-              <option value="2028">2028</option>
-              <option value="2028/29">2028/29</option>
-              <option value="2029">2029</option>
-              <option value="2029/30">2029/30</option>
-              <option value="2030">2030</option>
             </select>
           </div>
 
@@ -208,6 +195,14 @@ export function NewLeagueForm({
               </label>
             ))}
           </div>
+        </div>
+
+        {/* Stripe Product Selector */}
+        <div className="mt-6">
+          <StripeProductSelector
+            selectedProductId={selectedProductId}
+            onChange={setSelectedProductId}
+          />
         </div>
 
         <div className="mt-6 flex gap-4">

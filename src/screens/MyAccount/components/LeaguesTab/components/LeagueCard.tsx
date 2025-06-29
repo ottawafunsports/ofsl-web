@@ -46,7 +46,6 @@ export function LeagueCard({ league, onDelete }: LeagueCardProps) {
         <div className="bg-[#F8F8F8] border-b border-gray-200 p-4 flex justify-between items-start">
           <div>
             <h3 className="text-lg font-bold text-[#6F6F6F] line-clamp-2">{league.name}</h3>
-            <p className="text-sm text-[#6F6F6F]">{league.year || '2025'} Season</p>
           </div>
           <img 
             src={getSportIcon(league.sport_name)} 
@@ -114,20 +113,6 @@ export function LeagueCard({ league, onDelete }: LeagueCardProps) {
             <span className={`text-xs font-medium py-0.5 px-2 rounded-full ${getSpotsBadgeColor(league.spots_remaining)}`}>
               {getSpotsText(league.spots_remaining)}
             </span>
-          </div>
-          
-          <div className="flex gap-2">
-            <Link to={`/my-account/leagues/edit/${league.id}`}>
-              <Button className="bg-blue-500 hover:bg-blue-600 text-white rounded-[8px] px-3 py-1 text-sm">
-                <Edit2 className="h-4 w-4" />
-              </Button>
-            </Link>
-            <Button 
-              onClick={() => onDelete(league.id)}
-              className="bg-red-500 hover:bg-red-600 text-white rounded-[8px] px-3 py-1 text-sm"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
           </div>
         </div>
       </CardContent>
