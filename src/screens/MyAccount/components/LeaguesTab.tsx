@@ -575,13 +575,13 @@ export function LeaguesTab() {
                 
                 <div className="flex gap-2">
                   <Link to={`/my-account/leagues/edit/${league.id}`}>
-                    <Button className="bg-transparent hover:bg-blue-50 text-blue-500 rounded-[8px] py-1 text-sm flex items-center">
+                    <Button className="bg-transparent hover:bg-blue-50 text-blue-500 rounded-[8px] p2 transition-colors">
                       <Edit2 className="h-4 w-4" />
                     </Button>
                   </Link>
                   <Button 
                     onClick={() => handleDeleteLeague(league.id)}
-                    className="bg-transparent hover:bg-red-50 text-red-500 hover:text-red-600 rounded-lg p-2 transition-colors"
+                    className="bg-transparent hover:bg-red-50 text-red-500 rounded-[8px] p-2 transition-colors"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
