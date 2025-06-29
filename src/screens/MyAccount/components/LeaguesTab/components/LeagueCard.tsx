@@ -114,8 +114,6 @@ export function LeagueCard({ league, onDelete }: LeagueCardProps) {
               {getSpotsText(league.spots_remaining)}
             </span>
           </div>
-          
-
         </div>
       </CardContent>
     </Card>
