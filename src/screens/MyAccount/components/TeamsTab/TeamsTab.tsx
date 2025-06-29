@@ -547,7 +547,7 @@ export function TeamsTab() {
                         {/* Payment Info */}
                         <div className="flex items-center gap-2">
                           <DollarSign className="h-5 w-5 text-purple-500" />
-                          <div className="flex-1 flex items-center gap-2">
+                          <div className="flex items-center gap-2">
                             {team.payment ? (
                               <>
                                 <p className="text-[#6F6F6F]">
@@ -561,21 +561,6 @@ export function TeamsTab() {
                                 }`}>
                                   {team.payment.status.charAt(0).toUpperCase() + team.payment.status.slice(1)}
                                 </span>
-                                
-                                {/* Add Pay Now button for captains with outstanding balance */}
-                                {team.captain_id === userProfile?.id && 
-                                 team.payment.amount_due > team.payment.amount_paid && (
-                                  <Button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handlePayNow(team.payment!.id);
-                                    }}
-                                    className="ml-2 bg-green-600 hover:bg-green-700 text-white text-xs py-1 px-2 rounded"
-                                    size="sm"
-                                  >
-                                    Pay Now
-                                  </Button>
-                                )}
                               </>
                             ) : (
                               team.league?.cost ? (
