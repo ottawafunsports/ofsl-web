@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent } from '../../../components/ui/card';
 import { Input } from '../../../components/ui/input';
+import { AlertCircle } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../components/ui/toast';
 import { supabase } from '../../../lib/supabase';
@@ -49,6 +50,63 @@ interface EditPaymentForm {
   notes: string;
 }
 
+interface ConfirmationModalProps {
+  isOpen: boolean;
+  title: string;
+  message: string;
+  confirmText: string;
+  cancelText: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}
+
+// Confirmation Modal Component
+function ConfirmationModal({
+  isOpen,
+  title,
+  message,
+  confirmText,
+  cancelText,
+  onConfirm,
+  onCancel
+}: ConfirmationModalProps) {
+  if (!isOpen) return null;
+  
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg shadow-lg max-w-md w-full">
+        <div className="p-6">
+          <div className="flex items-start mb-4">
+            <div className="flex-shrink-0">
+              <AlertCircle className="h-6 w-6 text-red-600" />
+            </div>
+            <div className="ml-3">
+              <h3 className="text-lg font-medium text-gray-900">{title}</h3>
+              <div className="mt-2">
+                <p className="text-sm text-gray-500">{message}</p>
+              </div>
+            </div>
+          </div>
+          <div className="mt-4 flex justify-end gap-3">
+            <Button
+              onClick={onCancel}
+              className="bg-gray-200 hover:bg-gray-300 text-gray-800"
+            >
+              {cancelText}
+            </Button>
+            <Button
+              onClick={onConfirm}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              {confirmText}
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function TeamEditPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -90,6 +148,17 @@ export function TeamEditPage() {
     notes: ''
   });
   const [editingNoteId, setEditingNoteId] = useState<number | null>(null);
+
+  // Confirmation modal state
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    confirmText: 'Confirm',
+    cancelText: 'Cancel',
+    onConfirm: () => {},
+    onCancel: () => {}
+  });
 
   // Load data on component mount
   useEffect(() => {
@@ -249,12 +318,26 @@ export function TeamEditPage() {
     setPaymentHistory(history);
   };
 
+  // Show confirmation modal for deleting a payment entry
+  const confirmDeletePayment = (entry: PaymentHistoryEntry) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Payment Entry',
+      message: `Are you sure you want to delete this payment entry of $${entry.amount.toFixed(2)}? This action cannot be undone.`,
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      onConfirm: () => {
+        handleDeletePayment(entry);
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+      },
+      onCancel: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
+    });
+  };
+
   // Delete a payment entry
   const handleDeletePayment = async (entry: PaymentHistoryEntry) => {
-    if (!paymentInfo || !confirm('Are you sure you want to delete this payment entry?')) {
-      return;
-    }
-
+    if (!paymentInfo) return;
+    
     try {
       setProcessingPayment(true);
       
@@ -860,14 +943,14 @@ export function TeamEditPage() {
                                   <Button
                                     onClick={() => handleEditPayment(entry)}
                                     className="bg-blue-500 hover:bg-blue-600 text-white rounded-lg p-1 h-7 w-7 flex items-center justify-center"
-                                    title="Edit payment"
+                                    title="Edit Payment"
                                   >
                                     <Edit2 className="h-3 w-3" />
                                   </Button>
                                   <Button
-                                    onClick={() => handleDeletePayment(entry)}
+                                    onClick={() => confirmDeletePayment(entry)}
                                     className="bg-red-500 hover:bg-red-600 text-white rounded-lg p-1 h-7 w-7 flex items-center justify-center"
-                                    title="Delete payment"
+                                    title="Delete Payment"
                                   >
                                     <Trash2 className="h-3 w-3" />
                                   </Button>
@@ -1031,6 +1114,17 @@ export function TeamEditPage() {
           </CardContent>
         </Card>
       </div>
+      
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        confirmText={confirmModal.confirmText}
+        cancelText={confirmModal.cancelText}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={confirmModal.onCancel}
+      />
     </div>
   );
 }
