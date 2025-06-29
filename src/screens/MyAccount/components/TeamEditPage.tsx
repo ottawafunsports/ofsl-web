@@ -158,7 +158,7 @@ export function TeamEditPage() {
             const mockHistory: PaymentHistory[] = [];
             let calculatedTotal = 0;
             const notesLines = paymentData.notes.split('\n').filter(line => line.trim() !== '');
-            
+
             notesLines.forEach((note, index) => {
               // Try to extract payment information from the note
               let amount = 0;
@@ -262,7 +262,7 @@ export function TeamEditPage() {
 
     // Create a new payment history entry
     const today = new Date().toISOString().split('T')[0];
-    const newNote = `$${depositValue.toFixed(2)} ${paymentMethod.toUpperCase()} ${today} ${paymentNotes.trim()}`;
+    const newNote = `$${depositValue.toFixed(2)} ${paymentMethod} ${today} ${paymentNotes.trim()}`;
     
     // Get existing notes
     let updatedNotes = paymentInfo.notes || '';
@@ -691,16 +691,17 @@ export function TeamEditPage() {
                         <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
                           {editingNoteId === entry.id ? (
                             <select
-                              value={editingPayment.payment_method || 'e_transfer'}
+                              value={editingPayment.payment_method || ''}
                               onChange={(e) => setEditingPayment({...editingPayment, payment_method: e.target.value as any})}
                               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
                             >
+                              <option value="">Select method</option>
                               <option value="e_transfer">E-TRANSFER</option>
                               <option value="online">ONLINE</option>
                               <option value="cash">CASH</option>
                             </select>
                           ) : (
-                            entry.payment_method ? entry.payment_method.toUpperCase() : '-'
+                            entry.payment_method ? entry.payment_method.replace('_', '-').toUpperCase() : '-'
                           )}
                         </td>
                         <td className="px-3 py-2 text-sm text-gray-500 max-w-xs">
