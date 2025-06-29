@@ -156,6 +156,7 @@ export function TeamEditPage() {
           // Parse payment history from notes
           if (paymentData.notes) {
             const mockHistory: PaymentHistory[] = [];
+            let calculatedTotal = 0;
             
             const notesLines = paymentData.notes.split('\n').filter(line => line.trim() !== '');
             
@@ -169,6 +170,7 @@ export function TeamEditPage() {
               const amountMatch = note.match(/\$(\d+(\.\d+)?)/);
               if (amountMatch) {
                 amount = parseFloat(amountMatch[1]);
+                calculatedTotal += amount;
               }
               
               // Look for payment method
@@ -199,6 +201,30 @@ export function TeamEditPage() {
             });
             
             setPaymentHistory(mockHistory);
+            
+            // Check if the calculated total matches the stored amount_paid
+            if (Math.abs(calculatedTotal - paymentData.amount_paid) > 0.01) {
+              console.warn('Payment history total does not match amount_paid in database', {
+                calculatedTotal,
+                storedAmountPaid: paymentData.amount_paid
+              });
+              
+              // Update the amount_paid to match the history
+              const { error: updateError } = await supabase
+                .from('league_payments')
+                .update({ amount_paid: calculatedTotal })
+                .eq('id', paymentData.id);
+                
+              if (updateError) {
+                console.error('Error syncing payment amount:', updateError);
+              } else {
+                // Update local state
+                setPaymentInfo({
+                  ...paymentData,
+                  amount_paid: calculatedTotal
+                });
+              }
+            }
           }
         }
     } catch (error) {
@@ -423,7 +449,15 @@ export function TeamEditPage() {
         .update({ 
           notes: updatedNotes, 
           amount_paid: newAmountPaid 
-        }) 
+        })
+        .eq('id', paymentInfo.id);
+
+      if (error) throw error;
+      
+      // Update the payment info in the local state
+      const { error: refreshError } = await supabase
+        .from('league_payments')
+        .select('*')
         .eq('id', paymentInfo.id);
 
       if (error) throw error;
