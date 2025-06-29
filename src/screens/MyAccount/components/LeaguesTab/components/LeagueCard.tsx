@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Button } from '../../../../../components/ui/button';
 import { Card, CardContent } from '../../../../../components/ui/card';
-import { Edit2, Trash2 } from 'lucide-react';
+import { Edit, Trash2 } from 'lucide-react';
 import { LeagueWithTeamCount } from '../types';
 import { getDayName, formatLeagueDates, getPrimaryLocation } from '../../../../../lib/leagues';
 
@@ -121,7 +121,7 @@ export function LeagueCard({ league, onDelete }: LeagueCardProps) {
                 type="button" 
                 className="bg-transparent hover:bg-blue-50 text-blue-500 hover:text-blue-600 rounded-lg p-2 transition-colors"
               >
-                <Edit2 className="h-4 w-4" />
+                <Edit className="h-4 w-4" />
               </button>
             </Link>
             <button 
