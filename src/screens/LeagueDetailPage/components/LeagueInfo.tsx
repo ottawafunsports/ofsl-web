@@ -6,7 +6,6 @@ import { useNavigate, Link } from "react-router-dom";
 import { TeamRegistrationModal } from "./TeamRegistrationModal";
 import { PaymentButton } from "../../../components/PaymentButton";
 import { formatPrice } from "../../../stripe-config";
-import { getStripeProductByLeagueId } from "../../../lib/stripe";
 import { supabase } from "../../../lib/supabase";
 import { useEffect } from "react";
 

@@ -3,7 +3,6 @@ import { getStripeProducts, syncStripeProducts } from '../../../../../lib/stripe
 import { Loader2, RefreshCw } from 'lucide-react';
 import { useToast } from '../../../../../components/ui/toast';
 import { Button } from '../../../../../components/ui/button';
-import { RefreshCw } from 'lucide-react';
 
 interface Product {
   id: string;
