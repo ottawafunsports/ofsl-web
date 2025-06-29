@@ -34,7 +34,7 @@ interface PaymentInfo {
 interface PaymentHistory {
   id: number;
   amount: number;
-  payment_method: string;
+  payment_method: 'stripe' | 'cash' | 'e_transfer' | 'waived' | null;
   date: string;
   notes: string | null;
 }
@@ -139,22 +139,49 @@ export function TeamEditPage() {
           // Set payment info
           setPaymentInfo(paymentData);
           
-          // Create mock payment history based on notes
-          // In a real implementation, this would come from a payment_transactions table
+          // Parse payment history from notes
           if (paymentData.notes) {
             const mockHistory: PaymentHistory[] = [];
             
-            // Simple parsing of notes to extract payment history
-            // Format expected: "Deposit received 6-28 $200 via e-transfer"
             const notesLines = paymentData.notes.split('\n').filter(line => line.trim() !== '');
             
-            notesLines.forEach((note, index) => {
-              // Create a mock payment entry for each note line
+            notesLines.forEach((note, index) => {              
+              // Try to extract payment information from the note
+              let amount = 0;
+              let method: 'stripe' | 'cash' | 'e_transfer' | 'waived' | null = null;
+              let date = new Date().toISOString();
+              
+              // Look for dollar amount pattern like $200
+              const amountMatch = note.match(/\$(\d+(\.\d+)?)/);
+              if (amountMatch) {
+                amount = parseFloat(amountMatch[1]);
+              }
+              
+              // Look for payment method
+              if (note.toLowerCase().includes('e-transfer') || note.toLowerCase().includes('etransfer')) {
+                method = 'e_transfer';
+              } else if (note.toLowerCase().includes('cash')) {
+                method = 'cash';
+              } else if (note.toLowerCase().includes('waived')) {
+                method = 'waived';
+              } else if (note.toLowerCase().includes('stripe')) {
+                method = 'stripe';
+              }
+              
+              // Look for date pattern like 6-28 or 06/28
+              const dateMatch = note.match(/(\d{1,2})[-\/](\d{1,2})/);
+              if (dateMatch) {
+                const month = parseInt(dateMatch[1]) - 1; // JS months are 0-indexed
+                const day = parseInt(dateMatch[2]);
+                const year = new Date().getFullYear();
+                date = new Date(year, month, day).toISOString();
+              }
+              
               mockHistory.push({
                 id: index + 1,
-                amount: 0, // We don't have the exact amount from the note
-                payment_method: 'unknown',
-                date: new Date().toISOString(),
+                amount,
+                payment_method: method,
+                date,
                 notes: note.trim()
               });
             });
@@ -507,27 +534,54 @@ export function TeamEditPage() {
               {paymentInfo.notes && (
                 <div className="mb-6">
                   <div className="flex justify-between items-center mb-2">
-                    <div className="text-sm font-medium text-[#6F6F6F]">Payment History</div>
+                    <div className="text-sm font-medium text-[#6F6F6F] flex items-center gap-2">
+                      <History className="h-4 w-4" />
+                      Payment History
+                    </div>
                   </div>
-                  <div className="space-y-2">
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                          <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                          <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Method</th>
+                          <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Note</th>
+                          <th scope="col" className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
                     {paymentHistory.map((entry) => (
-                      <div key={entry.id} className="bg-gray-50 p-3 rounded-lg flex justify-between items-center">
-                        <div className="text-sm text-[#6F6F6F] whitespace-pre-wrap">
+                      <tr key={entry.id}>
+                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
+                          {new Date(entry.date).toLocaleDateString()}
+                        </td>
+                        <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {entry.amount > 0 ? `$${entry.amount.toFixed(2)}` : '-'}
+                        </td>
+                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
+                          {entry.payment_method ? entry.payment_method.replace('_', ' ').toUpperCase() : '-'}
+                        </td>
+                        <td className="px-3 py-2 text-sm text-gray-500 max-w-xs truncate">
                           {entry.notes}
-                        </div>
-                        <Button
-                          onClick={() => {
-                            setPaymentNotes(entry.notes || '');
-                            setEditingNoteId(entry.id);
-                            document.getElementById('payment-notes-textarea')?.scrollIntoView({ behavior: 'smooth' });
-                          }}
-                          className="bg-blue-500 hover:bg-blue-600 text-white rounded-lg px-3 py-1 text-xs flex items-center gap-1"
-                        >
-                          <Edit2 className="h-3 w-3" />
-                          Edit
-                        </Button>
-                      </div>
+                        </td>
+                        <td className="px-3 py-2 whitespace-nowrap text-right text-sm font-medium">
+                          <Button
+                            onClick={() => {
+                              setPaymentNotes(entry.notes || '');
+                              setEditingNoteId(entry.id);
+                              document.getElementById('payment-notes-textarea')?.scrollIntoView({ behavior: 'smooth' });
+                            }}
+                            className="bg-blue-500 hover:bg-blue-600 text-white rounded-lg px-3 py-1 text-xs flex items-center gap-1 ml-auto"
+                          >
+                            <Edit2 className="h-3 w-3" />
+                            Edit
+                          </Button>
+                        </td>
+                      </tr>
                     ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               )}
@@ -603,7 +657,7 @@ export function TeamEditPage() {
                   <div className="mt-6 flex gap-4">
                     <Button
                       onClick={handleProcessPayment}
-                      disabled={processingPayment || !depositAmount || parseFloat(depositAmount) <= 0}
+                      disabled={processingPayment || (!editingNoteId && (!depositAmount || parseFloat(depositAmount) <= 0))}
                       className="bg-green-600 hover:bg-green-700 text-white rounded-[10px] px-6 py-2 flex items-center gap-2"
                     >
                       {editingNoteId !== null ? (
