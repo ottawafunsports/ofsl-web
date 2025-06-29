@@ -8,7 +8,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../components/ui/toast';
 import { supabase } from '../../../lib/supabase';
 import { fetchSkills } from '../../../lib/leagues';
-import { ChevronLeft, Save, X, Users, Crown, Mail, Trash2, DollarSign, Edit2, History } from 'lucide-react';
+import { ChevronLeft, Save, X, Users, Crown, Mail, Trash2, CreditCard, Edit2, History } from 'lucide-react';
 
 // Type definitions
 interface Skill {
@@ -843,7 +843,7 @@ export function TeamEditPage() {
             <CardContent className="p-6">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-xl font-bold text-[#6F6F6F] flex items-center gap-2">
-                  <DollarSign className="h-5 w-5" />
+                  <CreditCard className="h-5 w-5" />
                   Payment Information
                 </h3>
                 <span className={`px-3 py-1 text-sm rounded-full ${getPaymentStatusColor(paymentInfo.status)}`}>
@@ -1073,7 +1073,7 @@ export function TeamEditPage() {
                       disabled={processingPayment || !depositAmount || parseFloat(depositAmount) <= 0}
                       className="bg-green-600 hover:bg-green-700 text-white rounded-[10px] px-6 py-2 flex items-center gap-2"
                     >
-                      <DollarSign className="h-4 w-4" />
+                      <CreditCard className="h-4 w-4" />
                       {processingPayment ? 'Processing...' : 'Process Payment'}
                     </Button>
                   </div>
