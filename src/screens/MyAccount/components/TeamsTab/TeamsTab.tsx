@@ -4,7 +4,7 @@ import { useToast } from '../../../../components/ui/toast';
 import { supabase } from '../../../../lib/supabase';
 import { getUserSubscription } from '../../../../lib/stripe';
 import { getUserPaymentSummary, getUserLeaguePayments, type LeaguePayment } from '../../../../lib/payments';
-import { Users, Calendar, CheckCircle, AlertCircle } from 'lucide-react';
+import { Users, Calendar, CheckCircle, AlertCircle, DollarSign } from 'lucide-react';
 import { TeamDetailsModal } from '../TeamDetailsModal';
 import { StatsCard } from './components/StatsCard';
 import { TeamCard } from './components/TeamCard';
