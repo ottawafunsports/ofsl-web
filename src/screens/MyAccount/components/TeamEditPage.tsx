@@ -273,49 +273,66 @@ export function TeamEditPage() {
   // Parse payment history from notes
   const parsePaymentHistory = (notes: string | null) => {
     if (!notes) {
-      setPaymentHistory([]); 
+      setPaymentHistory([]);
       return;
     }
     
-    const history: PaymentHistoryEntry[] = [];
-    const notesLines = notes.split('\n').filter(line => line.trim() !== '');
+    try {
+      // First try to parse as JSON (for new format)
+      try {
+        const parsedHistory = JSON.parse(notes);
+        if (Array.isArray(parsedHistory)) {
+          setPaymentHistory(parsedHistory);
+          return;
+        }
+      } catch (e) {
+        // Not JSON, continue with legacy parsing
+      }
+      
+      // Legacy parsing from plain text notes
+      const history: PaymentHistoryEntry[] = [];
+      const notesLines = notes.split('\n').filter(line => line.trim() !== '');
     
-    notesLines.forEach((note, index) => {
-      // Extract payment information from the note
-      const amountMatch = note.match(/\$(\d+(\.\d+)?)/);
-      const amount = amountMatch ? parseFloat(amountMatch[1]) : 0;
+      notesLines.forEach((note, index) => {
+        // Extract payment information from the note
+        const amountMatch = note.match(/\$(\d+(\.\d+)?)/);
+        const amount = amountMatch ? parseFloat(amountMatch[1]) : 0;
       
-      // Determine payment method
-      let method: string | null = null;
-      if (note.toLowerCase().includes('e-transfer') || note.toLowerCase().includes('etransfer') || note.toLowerCase().includes('e_transfer')) {
-        method = 'e_transfer';
-      } else if (note.toLowerCase().includes('cash')) {
-        method = 'cash';
-      } else if (note.toLowerCase().includes('online')) {
-        method = 'online';
-      }
+        // Determine payment method
+        let method: string | null = null;
+        if (note.toLowerCase().includes('e-transfer') || note.toLowerCase().includes('etransfer') || note.toLowerCase().includes('e_transfer')) {
+          method = 'e_transfer';
+        } else if (note.toLowerCase().includes('cash')) {
+          method = 'cash';
+        } else if (note.toLowerCase().includes('online')) {
+          method = 'online';
+        }
       
-      // Extract date if present
-      const dateMatch = note.match(/(\d{1,2})[-\/](\d{1,2})/);
-      let date = new Date().toISOString();
-      if (dateMatch) {
-        const month = parseInt(dateMatch[1]) - 1; // JS months are 0-indexed
-        const day = parseInt(dateMatch[2]);
-        const year = new Date().getFullYear();
-        date = new Date(year, month, day).toISOString();
-      }
+        // Extract date if present
+        const dateMatch = note.match(/(\d{1,2})[-\/](\d{1,2})/);
+        let date = new Date().toISOString();
+        if (dateMatch) {
+          const month = parseInt(dateMatch[1]) - 1; // JS months are 0-indexed
+          const day = parseInt(dateMatch[2]);
+          const year = new Date().getFullYear();
+          date = new Date(year, month, day).toISOString();
+        }
       
-      history.push({
-        id: index + 1,
-        amount,
-        payment_id: paymentInfo?.id,
-        payment_method: method,
-        date,
-        notes: note.trim()
+        history.push({
+          id: index + 1,
+          amount,
+          payment_id: paymentInfo?.id,
+          payment_method: method,
+          date,
+          notes: note.trim()
+        });
       });
-    });
     
-    setPaymentHistory(history);
+      setPaymentHistory(history);
+    } catch (error) {
+      console.error('Error parsing payment history:', error);
+      setPaymentHistory([]);
+    }
   };
 
   // Show confirmation modal for deleting a payment entry
@@ -344,11 +361,8 @@ export function TeamEditPage() {
       // Remove the entry from payment history
       const updatedHistory = paymentHistory.filter(h => h.id !== entry.id);
       
-      // Convert updated history to notes format
-      const updatedNotes = updatedHistory
-        .map(entry => entry.notes)
-        .filter(note => note && note.trim() !== '') 
-        .join('\n');
+      // Store history as JSON in notes field
+      const updatedNotes = JSON.stringify(updatedHistory);
       
       // Calculate the new total amount paid based on remaining entries
       const newAmountPaid = updatedHistory.reduce((total, entry) => total + entry.amount, 0);
@@ -443,26 +457,30 @@ export function TeamEditPage() {
       // Format the current date
       const today = new Date();
       const formattedDate = `${today.getMonth() + 1}/${today.getDate()}/${today.getFullYear()}`;
+
+      // Create a new payment history entry
+      const newHistoryEntry: PaymentHistoryEntry = {
+        id: paymentHistory.length > 0 ? Math.max(...paymentHistory.map(h => h.id)) + 1 : 1,
+        payment_id: paymentInfo.id,
+        amount: depositValue,
+        payment_method: paymentMethod,
+        date: today.toISOString(),
+        notes: paymentNotes.trim() || `Payment of $${depositValue.toFixed(2)} via ${formatPaymentMethod(paymentMethod)}`
+      };
       
-      // Create a new note entry with just the user's notes
-      let newNote = '';
-      
-      if (paymentNotes.trim()) {
-        newNote = paymentNotes.trim();
-      }
-      
-      // Add the new note to existing notes
-      const updatedNotes = paymentInfo.notes 
-        ? `${paymentInfo.notes}\n${newNote}` 
-        : newNote;
+      // Add new entry to payment history
+      const updatedHistory = [...paymentHistory, newHistoryEntry];
+
+      // Store history as JSON in notes field
+      const updatedNotes = JSON.stringify(updatedHistory);
 
       // Update the payment record
       const { data, error } = await supabase
         .from('league_payments')
         .update({
           amount_paid: newAmountPaid,
-          payment_method: paymentMethod,
-          notes: newNote ? updatedNotes : paymentInfo.notes // Only update notes if there's something to add
+          payment_method: paymentMethod, // Update the payment method
+          notes: updatedNotes
         })
         .eq('id', paymentInfo.id)
         .select()
@@ -473,20 +491,8 @@ export function TeamEditPage() {
       // Update local state
       if (data) {
         setPaymentInfo(data);
-        
-        // Add new entry to payment history
-        if (newNote) {
-          const newHistoryEntry: PaymentHistoryEntry = {
-            id: paymentHistory.length + 1,
-            payment_id: paymentInfo.id,
-            amount: depositValue,
-            payment_method: paymentMethod,
-            date: today.toISOString(),
-            notes: newNote
-          };
-          
-          setPaymentHistory([...paymentHistory, newHistoryEntry]);
-        }
+        // Update payment history
+        setPaymentHistory(updatedHistory);
       }
 
       showToast(`Payment of $${depositValue.toFixed(2)} processed successfully!`, 'success');
@@ -597,10 +603,7 @@ export function TeamEditPage() {
       }
       
       // Convert updated history to notes format
-      const updatedNotes = updatedHistory
-        .map(entry => entry.notes)
-        .filter(note => note && note.trim() !== '')
-        .join('\n');
+      const updatedNotes = JSON.stringify(updatedHistory);
       
       // Calculate the new total amount paid based on all entries
       const newAmountPaid = updatedHistory.reduce((total, entry) => total + entry.amount, 0);
@@ -898,11 +901,10 @@ export function TeamEditPage() {
                             <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
                               {editingNoteId === entry.id ? (
                                 <select
-                                  value={editingPayment.payment_method || ''}
+                                  value={editingPayment.payment_method || 'e_transfer'}
                                   onChange={(e) => setEditingPayment({...editingPayment, payment_method: e.target.value || null})}
                                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
                                 >
-                                  <option value="">Select method</option>
                                   <option value="e_transfer">E-Transfer</option>
                                   <option value="online">Online</option>
                                   <option value="cash">Cash</option>
