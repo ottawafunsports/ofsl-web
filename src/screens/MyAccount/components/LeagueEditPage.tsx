@@ -15,6 +15,7 @@ import { StripeProductSelector } from './LeaguesTab/components/StripeProductSele
 export function LeagueEditPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { userProfile } = useAuth();
   const { showToast } = useToast();
   
   const [league, setLeague] = useState<any>(null);
