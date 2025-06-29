@@ -572,7 +572,7 @@ export function TeamEditPage() {
                               setEditingNoteId(entry.id);
                               document.getElementById('payment-notes-textarea')?.scrollIntoView({ behavior: 'smooth' });
                             }}
-                            className="bg-blue-500 hover:bg-blue-600 text-white rounded-lg px-3 py-1 text-xs flex items-center gap-1 ml-auto"
+                            className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-lg px-3 py-1 text-xs flex items-center gap-1 ml-auto"
                           >
                             <Edit2 className="h-3 w-3" />
                             Edit
