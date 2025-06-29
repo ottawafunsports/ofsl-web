@@ -7,7 +7,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../components/ui/toast';
 import { supabase } from '../../../lib/supabase';
 import { fetchSkills } from '../../../lib/leagues';
-import { ChevronLeft, Save, X, Users, Crown, Mail, Trash2, DollarSign, AlertCircle, Edit2 } from 'lucide-react';
+import { ChevronLeft, Save, X, Users, Crown, Mail, Trash2, DollarSign, AlertCircle, Edit2, History } from 'lucide-react';
 
 interface Skill {
   id: number;
@@ -30,6 +30,15 @@ interface PaymentInfo {
   payment_method: 'stripe' | 'cash' | 'e_transfer' | 'waived' | null;
   notes: string | null;
 }
+
+interface PaymentHistory {
+  id: number;
+  amount: number;
+  payment_method: string;
+  date: string;
+  notes: string | null;
+}
+
 export function TeamEditPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -44,6 +53,8 @@ export function TeamEditPage() {
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'e_transfer' | 'waived'>('cash');
   const [paymentNotes, setPaymentNotes] = useState<string>('');
   const [processingPayment, setProcessingPayment] = useState(false);
+  const [paymentHistory, setPaymentHistory] = useState<PaymentHistory[]>([]);
+  const [editingNoteId, setEditingNoteId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   
@@ -125,7 +136,31 @@ export function TeamEditPage() {
         if (paymentError) {
           console.error('Error loading payment information:', paymentError);
         } else if (paymentData) {
+          // Set payment info
           setPaymentInfo(paymentData);
+          
+          // Create mock payment history based on notes
+          // In a real implementation, this would come from a payment_transactions table
+          if (paymentData.notes) {
+            const mockHistory: PaymentHistory[] = [];
+            
+            // Simple parsing of notes to extract payment history
+            // Format expected: "Deposit received 6-28 $200 via e-transfer"
+            const notesLines = paymentData.notes.split('\n').filter(line => line.trim() !== '');
+            
+            notesLines.forEach((note, index) => {
+              // Create a mock payment entry for each note line
+              mockHistory.push({
+                id: index + 1,
+                amount: 0, // We don't have the exact amount from the note
+                payment_method: 'unknown',
+                date: new Date().toISOString(),
+                notes: note.trim()
+              });
+            });
+            
+            setPaymentHistory(mockHistory);
+          }
         }
     } catch (error) {
       console.error('Error loading data:', error);
@@ -182,6 +217,36 @@ export function TeamEditPage() {
       return;
     }
 
+    // Prepare the updated notes
+    let updatedNotes = paymentInfo.notes || '';
+    
+    // If we're editing an existing note
+    if (editingNoteId !== null && paymentHistory.length > 0) {
+      const historyEntry = paymentHistory.find(h => h.id === editingNoteId);
+      if (historyEntry) {
+        // Split notes into lines
+        const notesLines = updatedNotes.split('\n');
+        
+        // Find the line index that matches the history entry
+        const lineIndex = notesLines.findIndex(line => 
+          line.trim() === historyEntry.notes?.trim()
+        );
+        
+        // Replace that line with the new note
+        if (lineIndex !== -1) {
+          notesLines[lineIndex] = paymentNotes.trim();
+          updatedNotes = notesLines.join('\n');
+        }
+      }
+    } else {
+      // Add new note
+      if (paymentNotes.trim()) {
+        updatedNotes = updatedNotes 
+          ? `${updatedNotes}\n${paymentNotes.trim()}`
+          : paymentNotes.trim();
+      }
+    }
+
     try {
       setProcessingPayment(true);
 
@@ -190,7 +255,7 @@ export function TeamEditPage() {
         .update({
           amount_paid: newAmountPaid,
           payment_method: paymentMethod,
-          notes: paymentNotes || null
+          notes: updatedNotes || null
         })
         .eq('id', paymentInfo.id);
 
@@ -204,6 +269,7 @@ export function TeamEditPage() {
       // Reset form
       setDepositAmount('');
       setPaymentNotes('');
+      setEditingNoteId(null);
       setPaymentMethod('cash');
 
     } catch (error) {
@@ -441,20 +507,27 @@ export function TeamEditPage() {
               {paymentInfo.notes && (
                 <div className="mb-6">
                   <div className="flex justify-between items-center mb-2">
-                    <div className="text-sm font-medium text-[#6F6F6F]">Notes</div>
-                    <Button
-                      onClick={() => {
-                        setPaymentNotes(paymentInfo.notes || '');
-                        document.getElementById('payment-notes-textarea')?.scrollIntoView({ behavior: 'smooth' });
-                      }}
-                      className="bg-blue-500 hover:bg-blue-600 text-white rounded-lg px-3 py-1 text-xs flex items-center gap-1"
-                    >
-                      <Edit2 className="h-3 w-3" />
-                      Edit Notes
-                    </Button>
+                    <div className="text-sm font-medium text-[#6F6F6F]">Payment History</div>
                   </div>
-                  <div className="bg-gray-50 p-3 rounded-lg text-sm text-[#6F6F6F] whitespace-pre-wrap">
-                    {paymentInfo.notes}
+                  <div className="space-y-2">
+                    {paymentHistory.map((entry) => (
+                      <div key={entry.id} className="bg-gray-50 p-3 rounded-lg flex justify-between items-center">
+                        <div className="text-sm text-[#6F6F6F] whitespace-pre-wrap">
+                          {entry.notes}
+                        </div>
+                        <Button
+                          onClick={() => {
+                            setPaymentNotes(entry.notes || '');
+                            setEditingNoteId(entry.id);
+                            document.getElementById('payment-notes-textarea')?.scrollIntoView({ behavior: 'smooth' });
+                          }}
+                          className="bg-blue-500 hover:bg-blue-600 text-white rounded-lg px-3 py-1 text-xs flex items-center gap-1"
+                        >
+                          <Edit2 className="h-3 w-3" />
+                          Edit
+                        </Button>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
@@ -502,16 +575,29 @@ export function TeamEditPage() {
 
                   <div className="mt-4">
                     <label className="block text-sm font-medium text-[#6F6F6F] mb-2">
-                      Payment Notes (Optional)
+                      {editingNoteId !== null ? 'Edit Payment Note' : 'Payment Notes (Optional)'}
                     </label>
                     <textarea
                       id="payment-notes-textarea"
                       value={paymentNotes}
                       onChange={(e) => setPaymentNotes(e.target.value)}
-                      placeholder="Add any notes about this payment..."
+                      placeholder={editingNoteId !== null ? "Edit the selected payment note..." : "Add any notes about this payment..."}
                       rows={3}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
                     />
+                    {editingNoteId !== null && (
+                      <div className="flex justify-end mt-2">
+                        <Button
+                          onClick={() => {
+                            setEditingNoteId(null);
+                            setPaymentNotes('');
+                          }}
+                          className="bg-gray-500 hover:bg-gray-600 text-white rounded-lg px-3 py-1 text-xs"
+                        >
+                          Cancel Edit
+                        </Button>
+                      </div>
+                    )}
                   </div>
 
                   <div className="mt-6 flex gap-4">
@@ -520,8 +606,17 @@ export function TeamEditPage() {
                       disabled={processingPayment || !depositAmount || parseFloat(depositAmount) <= 0}
                       className="bg-green-600 hover:bg-green-700 text-white rounded-[10px] px-6 py-2 flex items-center gap-2"
                     >
-                      <DollarSign className="h-4 w-4" />
-                      {processingPayment ? 'Processing...' : 'Process Payment'}
+                      {editingNoteId !== null ? (
+                        <>
+                          <Edit2 className="h-4 w-4" />
+                          {processingPayment ? 'Saving...' : 'Save Note & Process Payment'}
+                        </>
+                      ) : (
+                        <>
+                          <DollarSign className="h-4 w-4" />
+                          {processingPayment ? 'Processing...' : 'Process Payment'}
+                        </>
+                      )}
                     </Button>
                   </div>
                 </div>
