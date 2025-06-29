@@ -419,7 +419,7 @@ export function TeamEditPage() {
       if (data) {
         setPaymentInfo({
           ...paymentInfo,
-          amount_paid: totalPaid,
+          amount_paid: newAmountPaid,
           payment_method: paymentMethod,
           notes: updatedNotes
         });
