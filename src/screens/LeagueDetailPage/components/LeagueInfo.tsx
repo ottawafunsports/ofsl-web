@@ -155,8 +155,8 @@ export function LeagueInfo({ league, sport, onSpotsUpdate }: LeagueInfoProps) {
             priceId={matchingProduct.priceId}
             productName={matchingProduct.name}
             mode={matchingProduct.mode}
-            className="w-full py-3"
-            variant="outline"
+            className="border-[#B20000] text-[#B20000] hover:bg-[#B20000] hover:text-white rounded-[10px] w-full py-3"
+            variant="outline" 
           >
             {actualSpotsRemaining === 0 ? "Join Waitlist" : "Register & Pay Now"}
           </PaymentButton>

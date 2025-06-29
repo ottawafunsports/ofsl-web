@@ -111,7 +111,8 @@ export function PaymentModal({
               <Button
                 onClick={handleInitiatePayment}
                 disabled={loading || amountOutstanding <= 0}
-                className="w-full bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] px-6 py-3 flex items-center justify-center gap-2"
+                className="w-full border-[#B20000] bg-white hover:bg-[#B20000] text-[#B20000] hover:text-white rounded-[10px] px-6 py-3 flex items-center justify-center gap-2"
+                variant="outline"
               >
                 {loading ? (
                   <>

@@ -570,7 +570,7 @@ export function TeamsTab() {
                     </div>
 
                     <div className="flex flex-col items-end gap-2 ml-4">
-                      <div className="flex flex-col items-end">
+                      <div className="flex flex-col items-end w-full">
                         {/* Skill Level */}
                         {team.skill?.name && (
                           <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full mb-3">
@@ -579,10 +579,10 @@ export function TeamsTab() {
                         )}
                         
                         {/* Action Buttons - Horizontal layout */}
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 mt-2 justify-end">
                           <button
                             onClick={() => handleManageTeam(team)}
-                            className="border border-[#B20000] bg-white hover:bg-gray-50 text-[#B20000] rounded-lg px-3 py-1.5 text-sm transition-colors flex items-center gap-1"
+                            className="border border-[#B20000] bg-white hover:bg-[#B20000] hover:text-white text-[#B20000] rounded-lg px-3 py-1.5 text-sm transition-colors flex items-center gap-1"
                           >
                             <Users className="h-3 w-3" />
                             {team.captain_id === userProfile?.id ? 'Manage' : 'View'}
@@ -592,7 +592,7 @@ export function TeamsTab() {
                           {team.payment && team.payment.amount_due > team.payment.amount_paid && (
                             <button
                               onClick={() => handlePayNow(team.payment!.id)}
-                              className="bg-green-600 hover:bg-green-700 text-white rounded-lg px-3 py-1.5 text-sm transition-colors flex items-center gap-1"
+                              className="bg-green-600 hover:bg-green-700 text-white rounded-lg px-3 py-1.5 text-sm transition-colors flex items-center gap-1 whitespace-nowrap"
                             >
                               <DollarSign className="h-3 w-3" />
                               Pay
@@ -603,7 +603,7 @@ export function TeamsTab() {
                             <button
                               onClick={() => handleDeleteTeam(team)}
                               disabled={deletingTeam === team.id}
-                              className="border border-red-600 bg-white hover:bg-red-50 text-red-600 rounded-lg px-3 py-1.5 text-sm transition-colors flex items-center gap-1"
+                              className="bg-red-600 hover:bg-red-700 text-white rounded-lg px-3 py-1.5 text-sm transition-colors flex items-center gap-1"
                             >
                               {deletingTeam === team.id ? (
                                 'Deleting...'
@@ -619,7 +619,7 @@ export function TeamsTab() {
                               <button
                                 onClick={() => handleUnregister(team.payment!.id, team.league?.name || 'league')}
                                 disabled={unregisteringPayment === team.payment?.id}
-                                className="border border-red-600 bg-white hover:bg-red-50 text-red-600 rounded-lg px-3 py-1.5 text-sm transition-colors flex items-center gap-1"
+                                className="bg-red-600 hover:bg-red-700 text-white rounded-lg px-3 py-1.5 text-sm transition-colors flex items-center gap-1"
                               >
                                 {unregisteringPayment === team.payment?.id ? (
                                   'Removing...'
