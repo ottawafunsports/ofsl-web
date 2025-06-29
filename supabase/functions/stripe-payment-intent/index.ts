@@ -94,6 +94,23 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Payment is already paid in full' }, 400);
     }
 
+    // Calculate amount in cents and validate
+    const amountInCents = Math.round(amountOutstanding * 100);
+    
+    // Stripe requires minimum 50 cents for CAD transactions
+    if (amountInCents < 50) {
+      return corsResponse({ 
+        error: `Payment amount ($${amountOutstanding.toFixed(2)} CAD) is below the minimum transaction amount of $0.50 CAD` 
+      }, 400);
+    }
+
+    // Stripe has a maximum transaction limit
+    if (amountInCents > 99999999) { // $999,999.99 CAD
+      return corsResponse({ 
+        error: `Payment amount ($${amountOutstanding.toFixed(2)} CAD) exceeds the maximum transaction amount` 
+      }, 400);
+    }
+
     // Get or create a Stripe customer for the user
     let customerId: string;
     const { data: customer, error: getCustomerError } = await supabase
@@ -136,7 +153,7 @@ Deno.serve(async (req) => {
 
     // Create a payment intent
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(amountOutstanding * 100), // Convert to cents
+      amount: amountInCents,
       currency: 'cad',
       customer: customerId,
       metadata: {
@@ -157,6 +174,8 @@ Deno.serve(async (req) => {
 
   } catch (error: any) {
     console.error(`Payment intent error: ${error.message}`);
-    return corsResponse({ error: error.message }, 500);
+    return corsResponse({ 
+      error: `Failed to create payment intent: ${error.message}` 
+    }, 500);
   }
 });
