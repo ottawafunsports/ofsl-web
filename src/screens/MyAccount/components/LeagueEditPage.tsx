@@ -187,14 +187,13 @@ export function LeagueEditPage() {
             Back to League Detail
           </Link>
           
-          <h2 className="text-2xl font-bold text-[#6F6F6F]">Edit League</h2>
+          <h2 className="text-2xl font-bold text-[#6F6F6F]">Edit League Details</h2>
         </div>
 
         {/* Edit League Form - Using same Card structure as Add New League */}
         <Card>
           <CardContent className="p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-[#6F6F6F]">Edit League Details</h3>
+            <div className="flex justify-between items-center mb-4">
               <Button
                 onClick={() => navigate('/my-account/leagues')}
                 className="text-gray-500 hover:text-gray-700 bg-transparent hover:bg-transparent border-none shadow-none p-2"
@@ -323,7 +322,7 @@ export function LeagueEditPage() {
               </div>
             </div>
 
-            <div className="mt-6">
+            <div className="mt-8">
               <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Description</label>
               <RichTextEditor
                 value={editLeague.description}
@@ -333,7 +332,7 @@ export function LeagueEditPage() {
               />
             </div>
 
-            <div className="mt-6">
+            <div className="mt-8">
               <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Gyms/Schools</label>
               <div className="space-y-2 max-h-40 overflow-y-auto border border-gray-300 rounded-lg p-3">
                 {gyms.map(gym => (
@@ -356,7 +355,7 @@ export function LeagueEditPage() {
               </div>
             </div>
 
-            <div className="mt-6 flex gap-4">
+            <div className="mt-8 flex gap-4">
               <Button
                 onClick={handleUpdateLeague}
                 disabled={saving || !editLeague.name || !editLeague.sport_id}
