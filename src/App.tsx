@@ -26,6 +26,7 @@ import {
 import { LeagueEditPage } from "./screens/MyAccount/components/LeagueEditPage";
 import { TeamEditPage } from "./screens/MyAccount/components/TeamEditPage";
 import { Navigate } from "react-router-dom";
+import { LeagueNewPage } from "./screens/MyAccount/components/LeagueNewPage";
 
 export function App() {
   return (
@@ -75,6 +76,13 @@ export function App() {
                 </ProtectedRoute>
               } />
             </Route>
+
+            {/* League New Page - separate route */}
+            <Route path="/my-account/leagues/new" element={
+              <ProtectedRoute requireAdmin>
+                <LeagueNewPage />
+              </ProtectedRoute>
+            } />
 
             {/* League Edit Page - separate route */}
             <Route path="/my-account/leagues/edit/:id" element={
