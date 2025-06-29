@@ -13,8 +13,6 @@ interface PaymentButtonProps {
   children?: React.ReactNode;
   variant?: 'default' | 'outline' | 'secondary';
   icon?: React.ReactNode;
-  variant?: 'default' | 'outline' | 'secondary';
-  icon?: React.ReactNode;
 }
 
 export function PaymentButton({ 
@@ -22,11 +20,8 @@ export function PaymentButton({
   productName, 
   mode, 
   metadata = {},
-  metadata = {},
   className,
   children,
-  variant = 'outline',
-  icon = <CreditCard className="h-4 w-4 mr-2" />
   variant = 'default',
   icon = <CreditCard className="h-4 w-4 mr-2" />
 }: PaymentButtonProps) {
@@ -40,7 +35,6 @@ export function PaymentButton({
       const { url } = await createCheckoutSession({
         priceId,
         mode,
-        metadata,
         metadata,
         successUrl: `${window.location.origin}/success?product=${encodeURIComponent(productName)}`,
         cancelUrl: window.location.href
@@ -60,7 +54,6 @@ export function PaymentButton({
     <Button
       onClick={handlePayment}
       disabled={loading}
-      variant={variant}
       variant={variant}
       className={className}
     >
