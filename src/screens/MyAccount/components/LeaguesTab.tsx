@@ -62,7 +62,6 @@ export function LeaguesTab() {
   const [newLeague, setNewLeague] = useState<NewLeague>({
     name: '',
     description: '',
-    year: '2025',
     sport_id: null,
     skill_id: null,
     day_of_week: null,
@@ -186,7 +185,6 @@ export function LeaguesTab() {
         .insert({
           name: newLeague.name,
           description: newLeague.description,
-          year: newLeague.year,
           sport_id: newLeague.sport_id,
           skill_id: newLeague.skill_id,
           day_of_week: newLeague.day_of_week,
@@ -205,7 +203,6 @@ export function LeaguesTab() {
       setNewLeague({
         name: '',
         description: '',
-        year: '2025',
         sport_id: null,
         skill_id: null,
         day_of_week: null,
