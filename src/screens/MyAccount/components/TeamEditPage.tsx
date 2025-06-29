@@ -591,7 +591,7 @@ export function TeamEditPage() {
           ...updatedHistory[entryIndex],
           amount: parseFloat(editingPayment.amount) || 0,
           payment_method: editingPayment.payment_method,
-          date: new Date(editingPayment.date).toISOString(),
+          date: editingPayment.date ? new Date(editingPayment.date).toISOString() : new Date().toISOString(),
           notes: editingPayment.notes
         };
       }
@@ -599,7 +599,7 @@ export function TeamEditPage() {
       // Convert updated history to notes format
       const updatedNotes = updatedHistory
         .map(entry => entry.notes)
-        .filter(note => note && note.trim() !== '') 
+        .filter(note => note && note.trim() !== '')
         .join('\n');
       
       // Calculate the new total amount paid based on all entries
@@ -609,9 +609,9 @@ export function TeamEditPage() {
       const { data, error } = await supabase
         .from('league_payments')
         .update({ 
-          notes: updatedNotes, 
+          notes: updatedNotes,
           amount_paid: newAmountPaid,
-          payment_method: editingPayment.payment_method
+          payment_method: editingPayment.payment_method || paymentInfo.payment_method
         })
         .eq('id', paymentInfo.id)
         .select()
@@ -871,7 +871,10 @@ export function TeamEditPage() {
                                 <Input
                                   type="date"
                                   value={editingPayment.date}
-                                  onChange={(e) => setEditingPayment({...editingPayment, date: e.target.value})}
+                                  onChange={(e) => {
+                                    const newDate = e.target.value;
+                                    setEditingPayment({...editingPayment, date: newDate});
+                                  }}
                                   className="w-full"
                                 />
                               ) : (
@@ -896,7 +899,7 @@ export function TeamEditPage() {
                               {editingNoteId === entry.id ? (
                                 <select
                                   value={editingPayment.payment_method || ''}
-                                  onChange={(e) => setEditingPayment({...editingPayment, payment_method: e.target.value})}
+                                  onChange={(e) => setEditingPayment({...editingPayment, payment_method: e.target.value || null})}
                                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
                                 >
                                   <option value="">Select method</option>
@@ -912,7 +915,7 @@ export function TeamEditPage() {
                               {editingNoteId === entry.id ? (
                                 <textarea
                                   value={editingPayment.notes}
-                                  onChange={(e) => setEditingPayment({...editingPayment, notes: e.target.value})}
+                                  onChange={(e) => setEditingPayment({...editingPayment, notes: e.target.value || ''})}
                                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
                                   rows={2}
                                 />
