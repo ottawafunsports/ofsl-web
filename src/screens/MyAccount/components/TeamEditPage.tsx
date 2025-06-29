@@ -35,6 +35,7 @@ interface PaymentInfo {
 interface PaymentHistoryEntry {
   id: number;
   amount: number;
+  payment_id?: number;
   payment_method: string | null;
   date: string; 
   notes: string | null;
@@ -203,7 +204,7 @@ export function TeamEditPage() {
   // Parse payment history from notes
   const parsePaymentHistory = (notes: string | null) => {
     if (!notes) {
-      setPaymentHistory([]);
+      setPaymentHistory([]); 
       return;
     }
     
@@ -238,6 +239,7 @@ export function TeamEditPage() {
       history.push({
         id: index + 1,
         amount,
+        payment_id: paymentInfo?.id,
         payment_method: method,
         date,
         notes: note.trim()
@@ -245,6 +247,62 @@ export function TeamEditPage() {
     });
     
     setPaymentHistory(history);
+  };
+
+  // Delete a payment entry
+  const handleDeletePayment = async (entry: PaymentHistoryEntry) => {
+    if (!paymentInfo || !confirm('Are you sure you want to delete this payment entry?')) {
+      return;
+    }
+
+    try {
+      setProcessingPayment(true);
+      
+      // Remove the entry from payment history
+      const updatedHistory = paymentHistory.filter(h => h.id !== entry.id);
+      
+      // Convert updated history to notes format
+      const updatedNotes = updatedHistory
+        .map(entry => entry.notes)
+        .filter(note => note && note.trim() !== '') 
+        .join('\n');
+      
+      // Calculate the new total amount paid based on remaining entries
+      const newAmountPaid = updatedHistory.reduce((total, entry) => total + entry.amount, 0);
+      
+      // Update in database
+      const { data, error } = await supabase
+        .from('league_payments')
+        .update({ 
+          notes: updatedNotes, 
+          amount_paid: newAmountPaid
+        })
+        .eq('id', paymentInfo.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      // Update local state with the returned data
+      if (data) {
+        setPaymentInfo({
+          ...paymentInfo,
+          ...data,
+          amount_paid: newAmountPaid
+        });
+        
+        // Update payment history
+        setPaymentHistory(updatedHistory);
+      }
+
+      showToast('Payment entry deleted successfully!', 'success');
+
+    } catch (error) {
+      console.error('Error deleting payment entry:', error);
+      showToast('Failed to delete payment entry', 'error');
+    } finally {
+      setProcessingPayment(false);
+    }
   };
 
   // Update team information
@@ -337,6 +395,7 @@ export function TeamEditPage() {
         if (newNote) {
           const newHistoryEntry: PaymentHistoryEntry = {
             id: paymentHistory.length + 1,
+            payment_id: paymentInfo.id,
             amount: depositValue,
             payment_method: paymentMethod,
             date: today.toISOString(),
@@ -778,7 +837,7 @@ export function TeamEditPage() {
                                 <span className="truncate block">{entry.notes}</span>
                               )}
                             </td>
-                            <td className="px-3 py-2 whitespace-nowrap text-right text-sm font-medium">
+                            <td className="px-3 py-2 whitespace-nowrap text-right text-sm font-medium flex justify-end gap-2">
                               {editingNoteId === entry.id ? (
                                 <div className="flex gap-2 justify-end">
                                   <Button
@@ -797,13 +856,22 @@ export function TeamEditPage() {
                                   </Button>
                                 </div>
                               ) : (
-                                <Button
-                                  onClick={() => handleEditPayment(entry)}
-                                  className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-lg px-3 py-1 text-xs flex items-center gap-1 ml-auto"
-                                >
-                                  <Edit2 className="h-3 w-3" />
-                                  Edit
-                                </Button>
+                                <div className="flex gap-2">
+                                  <Button
+                                    onClick={() => handleEditPayment(entry)}
+                                    className="bg-blue-500 hover:bg-blue-600 text-white rounded-lg p-1 h-7 w-7 flex items-center justify-center"
+                                    title="Edit payment"
+                                  >
+                                    <Edit2 className="h-3 w-3" />
+                                  </Button>
+                                  <Button
+                                    onClick={() => handleDeletePayment(entry)}
+                                    className="bg-red-500 hover:bg-red-600 text-white rounded-lg p-1 h-7 w-7 flex items-center justify-center"
+                                    title="Delete payment"
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                </div>
                               )}
                             </td>
                           </tr>
