@@ -110,7 +110,7 @@ export function PaymentModal({
               
               <Button
                 onClick={handleInitiatePayment}
-                disabled={loading || amountOutstanding < 0.50}
+                disabled={loading || amountOutstanding < 0.50 || amountOutstanding <= 0}
                 className="w-full border-[#B20000] bg-white hover:bg-[#B20000] text-[#B20000] hover:text-white rounded-[10px] px-6 py-3 flex items-center justify-center gap-2"
                 variant="outline"
               >
@@ -126,6 +126,13 @@ export function PaymentModal({
                   </>
                 )}
               </Button>
+              
+              {amountOutstanding > 0 && amountOutstanding < 0.50 && (
+                <div className="mt-2 text-xs text-orange-600 text-center">
+                  <p>Amount is below Stripe's minimum transaction of $0.50.</p>
+                  <p>Please contact us for alternative payment methods.</p>
+                </div>
+              )}
               
               <div className="text-center">
                 <p className="text-sm text-[#6F6F6F]">
