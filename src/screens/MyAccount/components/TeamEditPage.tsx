@@ -620,9 +620,9 @@ export function TeamEditPage() {
                         onChange={(e) => setPaymentMethod(e.target.value as 'cash' | 'e_transfer' | 'online')}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
                       >
-                        <option value="cash">Cash</option>
                         <option value="e_transfer">E-Transfer</option>
                         <option value="online">Online</option>
+                        <option value="cash">Cash</option>
                       </select>
                     </div>
                   </div>
