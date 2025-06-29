@@ -261,18 +261,17 @@ export function TeamEditPage() {
       return;
     }
 
+    // Create a new payment history entry
+    const today = new Date().toISOString().split('T')[0];
+    const newNote = `$${depositValue.toFixed(2)} ${paymentMethod.replace('_', ' ').toUpperCase()} ${today} ${paymentNotes.trim()}`;
+    
     // Get existing notes
     let updatedNotes = paymentInfo.notes || '';
     
-    // Use only the notes entered by the user without adding any formatting
-    const formattedNote = paymentNotes.trim();
-    
     // Add new note
-    if (formattedNote) {
-      updatedNotes = updatedNotes 
-        ? `${updatedNotes}\n${formattedNote}`
-        : formattedNote;
-    }
+    updatedNotes = updatedNotes 
+      ? `${updatedNotes}\n${newNote}`
+      : newNote;
 
     try {
       setProcessingPayment(true);
@@ -395,11 +394,9 @@ export function TeamEditPage() {
           amount: newAmount,
           payment_method: editingPayment.payment_method,
           date: new Date(editingPayment.date).toISOString(),
-          notes: editingPayment.notes
+          notes: `$${newAmount.toFixed(2)} ${editingPayment.payment_method?.replace('_', ' ').toUpperCase() || ''} ${editingPayment.date} ${editingPayment.notes}`
         };
         
-        // Use the notes exactly as entered by the user without adding any formatting
-        updatedHistory[entryIndex].notes = editingPayment.notes.trim();
       }
       
       // Convert updated history to notes format
@@ -419,7 +416,8 @@ export function TeamEditPage() {
         .from('league_payments')
         .update({ 
           notes: updatedNotes, 
-          amount_paid: newAmountPaid 
+          amount_paid: newAmountPaid,
+          payment_method: editingPayment.payment_method
         })
         .eq('id', paymentInfo.id)
         .select()
