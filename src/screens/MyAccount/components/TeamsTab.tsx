@@ -486,7 +486,7 @@ export function TeamsTab() {
                     <Button
                       onClick={() => handleUnregister(payment.id, payment.league_name)}
                       disabled={unregisteringPayment === payment.id}
-                      className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-lg px-4 py-2 text-sm flex items-center gap-1"
+                      className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-lg px-4 py-2 text-sm transition-colors"
                     >
                       {unregisteringPayment === payment.id ? (
                         'Unregistering...'
