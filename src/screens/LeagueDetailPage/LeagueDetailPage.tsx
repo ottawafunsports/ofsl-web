@@ -170,15 +170,11 @@ export function LeagueDetailPage() {
                 <div>
                   <h2 className="text-2xl font-bold text-[#6F6F6F] mb-4">League Description</h2>
                   <div 
-                    className="text-[#6F6F6F] league-description prose prose-ul:pl-0 prose-li:pl-0 max-w-none" 
+                    className="text-[#6F6F6F] league-description prose prose-ul:pl-0 prose-li:pl-0 max-w-none prose-headings:text-[#6F6F6F] prose-headings:font-bold" 
                     dangerouslySetInnerHTML={{ __html: league.description || 'No description available.' }}
                   />
                 </div>
                 
-                {league.skill_name && (
-                  <SkillLevelRequirements />
-                )}
-                <AdditionalLeagueInfo />
               </div>
             )}
 
