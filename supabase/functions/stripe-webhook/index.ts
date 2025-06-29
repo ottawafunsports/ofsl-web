@@ -1,6 +1,7 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import Stripe from 'npm:stripe@17.7.0';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
+import { Database } from '../types/database.ts';
 
 const stripeSecret = Deno.env.get('STRIPE_SECRET_KEY')!;
 const stripeWebhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET')!;
@@ -11,7 +12,10 @@ const stripe = new Stripe(stripeSecret, {
   },
 });
 
-const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+const supabase = createClient<Database>(
+  Deno.env.get('SUPABASE_URL')!,
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+);
 
 Deno.serve(async (req) => {
   try {
@@ -49,7 +53,10 @@ Deno.serve(async (req) => {
     return Response.json({ received: true });
   } catch (error: any) {
     console.error('Error processing webhook:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return new Response(JSON.stringify({ error: error.message }), { 
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 });
 
@@ -57,10 +64,12 @@ async function handleEvent(event: Stripe.Event) {
   const stripeData = event?.data?.object ?? {};
 
   if (!stripeData) {
+    console.error('No data object in Stripe event');
     return;
   }
 
   if (!('customer' in stripeData)) {
+    console.error('No customer in Stripe event data object');
     return;
   }
 
@@ -131,7 +140,7 @@ async function handleEvent(event: Stripe.Event) {
 
 async function processLeaguePayments(customerId: string, orderData: any, amountTotal: number) {
   try {
-    // Get the user ID from the customer
+    // Get the user ID from the stripe_customers table
     const { data: customerData, error: customerError } = await supabase
       .from('stripe_customers')
       .select('user_id')
@@ -144,6 +153,7 @@ async function processLeaguePayments(customerId: string, orderData: any, amountT
     }
 
     const userId = customerData.user_id;
+    console.log(`Processing payments for user ${userId} with amount ${amountTotal/100}`);
 
     // Get pending league payments for this user
     const { data: pendingPayments, error: paymentsError } = await supabase
@@ -158,10 +168,12 @@ async function processLeaguePayments(customerId: string, orderData: any, amountT
       return;
     }
 
-    if (!pendingPayments || pendingPayments.length === 0) {
+    const paymentCount = pendingPayments?.length || 0;
+    if (!pendingPayments || paymentCount === 0) {
       console.info('No pending payments found for user');
       return;
     }
+    console.log(`Found ${paymentCount} pending payments to process`);
 
     // Convert cents to dollars
     const paymentAmount = amountTotal / 100;
@@ -176,12 +188,14 @@ async function processLeaguePayments(customerId: string, orderData: any, amountT
 
       if (paymentToApply > 0) {
         const newAmountPaid = payment.amount_paid + paymentToApply;
+        const newStatus = newAmountPaid >= payment.amount_due ? 'paid' : 'partial';
 
         // Update the league payment record
         const { error: updateError } = await supabase
           .from('league_payments')
           .update({
             amount_paid: newAmountPaid,
+            status: newStatus,
             payment_method: 'stripe',
             stripe_order_id: orderData.id
           })
@@ -190,7 +204,7 @@ async function processLeaguePayments(customerId: string, orderData: any, amountT
         if (updateError) {
           console.error('Error updating league payment:', updateError);
         } else {
-          console.info(`Applied $${paymentToApply} to league payment ${payment.id}`);
+          console.info(`Applied $${paymentToApply.toFixed(2)} to league payment ${payment.id}, new status: ${newStatus}`);
           remainingAmount -= paymentToApply;
         }
       }
@@ -198,7 +212,7 @@ async function processLeaguePayments(customerId: string, orderData: any, amountT
 
     // If there's still remaining amount, create a credit/prepayment record
     if (remainingAmount > 0) {
-      console.info(`Creating credit record for remaining amount: $${remainingAmount}`);
+      console.info(`Creating credit record for remaining amount: $${remainingAmount.toFixed(2)}`);
       // You could create a credit record here if needed
     }
 
@@ -210,7 +224,7 @@ async function processLeaguePayments(customerId: string, orderData: any, amountT
 // based on the excellent https://github.com/t3dotgg/stripe-recommendations
 async function syncCustomerFromStripe(customerId: string) {
   try {
-    // fetch latest subscription data from Stripe
+    // Fetch latest subscription data from Stripe
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
       limit: 1,
@@ -219,7 +233,8 @@ async function syncCustomerFromStripe(customerId: string) {
     });
 
     // TODO verify if needed
-    if (subscriptions.data.length === 0) {
+    const hasSubscriptions = subscriptions.data.length > 0;
+    if (!hasSubscriptions) {
       console.info(`No active subscriptions found for customer: ${customerId}`);
       const { error: noSubError } = await supabase.from('stripe_subscriptions').upsert(
         {
@@ -238,35 +253,37 @@ async function syncCustomerFromStripe(customerId: string) {
     }
 
     // assumes that a customer can only have a single subscription
-    const subscription = subscriptions.data[0];
+    if (hasSubscriptions) {
+      const subscription = subscriptions.data[0];
 
-    // store subscription state
-    const { error: subError } = await supabase.from('stripe_subscriptions').upsert(
-      {
-        customer_id: customerId,
-        subscription_id: subscription.id,
-        price_id: subscription.items.data[0].price.id,
-        current_period_start: subscription.current_period_start,
-        current_period_end: subscription.current_period_end,
-        cancel_at_period_end: subscription.cancel_at_period_end,
-        ...(subscription.default_payment_method && typeof subscription.default_payment_method !== 'string'
-          ? {
-              payment_method_brand: subscription.default_payment_method.card?.brand ?? null,
-              payment_method_last4: subscription.default_payment_method.card?.last4 ?? null,
-            }
-          : {}),
-        status: subscription.status,
-      },
-      {
-        onConflict: 'customer_id',
-      },
-    );
+      // store subscription state
+      const { error: subError } = await supabase.from('stripe_subscriptions').upsert(
+        {
+          customer_id: customerId,
+          subscription_id: subscription.id,
+          price_id: subscription.items.data[0].price.id,
+          current_period_start: subscription.current_period_start,
+          current_period_end: subscription.current_period_end,
+          cancel_at_period_end: subscription.cancel_at_period_end,
+          ...(subscription.default_payment_method && typeof subscription.default_payment_method !== 'string'
+            ? {
+                payment_method_brand: subscription.default_payment_method.card?.brand ?? null,
+                payment_method_last4: subscription.default_payment_method.card?.last4 ?? null,
+              }
+            : {}),
+          status: subscription.status,
+        },
+        {
+          onConflict: 'customer_id',
+        },
+      );
 
-    if (subError) {
-      console.error('Error syncing subscription:', subError);
-      throw new Error('Failed to sync subscription in database');
+      if (subError) {
+        console.error('Error syncing subscription:', subError);
+        throw new Error('Failed to sync subscription in database');
+      }
+      console.info(`Successfully synced subscription for customer: ${customerId}`);
     }
-    console.info(`Successfully synced subscription for customer: ${customerId}`);
   } catch (error) {
     console.error(`Failed to sync subscription for customer ${customerId}:`, error);
     throw error;

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { useToast } from '../../../../components/ui/toast';
 import { supabase } from '../../../../lib/supabase'; 
-import { getUserSubscription } from '../../../../lib/stripe';
+import { getUserSubscription, createPaymentIntent } from '../../../../lib/stripe';
 import { getUserPaymentSummary, getUserLeaguePayments, type LeaguePayment } from '../../../../lib/payments';
 import { Users, Calendar, CheckCircle, AlertCircle, CreditCard, AlertTriangle, Crown, DollarSign, Trash2, User } from 'lucide-react';
 import { TeamDetailsModal } from '../TeamDetailsModal';
@@ -12,6 +12,7 @@ import { TeamCard } from './components/TeamCard';
 import { PaymentCard } from './components/PaymentCard';
 import { BalanceNotice } from './components/BalanceNotice';
 import { SubscriptionBanner } from './components/SubscriptionBanner';
+import { PaymentModal } from '../../../../components/PaymentModal';
 
 interface Team {
   id: number;
@@ -71,6 +72,10 @@ export function TeamsTab() {
   const [paymentSummary, setPaymentSummary] = useState<any>(null);
   const [leaguePayments, setLeaguePayments] = useState<LeaguePayment[]>([]);
   const [paymentsLoading, setPaymentsLoading] = useState(false);
+
+  // Payment modal state
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState<LeaguePayment | null>(null);
 
   // Add state for unregistering
   const [unregisteringPayment, setUnregisteringPayment] = useState<number | null>(null);
@@ -398,6 +403,20 @@ export function TeamsTab() {
     loadUserTeams();
   };
 
+  const handlePayNow = (paymentId: number) => {
+    const payment = leaguePayments.find(p => p.id === paymentId);
+    if (payment) {
+      setSelectedPayment(payment);
+      setShowPaymentModal(true);
+    }
+  };
+
+  const handlePaymentSuccess = () => {
+    // Reload payment data and teams
+    loadPaymentData();
+    loadUserTeams();
+  };
+
   if (teamsLoading) {
     return (
       <div className="flex justify-center items-center py-12">
@@ -562,10 +581,22 @@ export function TeamsTab() {
                       <div className="flex flex-col gap-2 mt-2">
                         <button
                           onClick={() => handleManageTeam(team)}
-                          className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-lg px-4 py-2 text-sm transition-colors"
+                          className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-lg px-4 py-2 text-sm transition-colors flex items-center gap-1"
                         >
+                          <Users className="h-3 w-3" />
                           {team.captain_id === userProfile?.id ? 'Manage Players' : 'View Team'}
                         </button>
+                        
+                        {/* Pay Now Button */}
+                        {team.payment && team.payment.amount_due > team.payment.amount_paid && (
+                          <button
+                            onClick={() => handlePayNow(team.payment!.id)}
+                            className="bg-green-600 hover:bg-green-700 text-white rounded-lg px-4 py-2 text-sm transition-colors flex items-center gap-1"
+                          >
+                            <DollarSign className="h-3 w-3" />
+                            Pay Now
+                          </button>
+                        )}
                         
                         {team.captain_id === userProfile?.id ? (
                           <button
@@ -618,6 +649,20 @@ export function TeamsTab() {
           team={selectedTeam}
           currentUserId={userProfile?.id || ''}
           onPlayersUpdated={handlePlayersUpdated}
+        />
+      )}
+      
+      {/* Payment Modal */}
+      {selectedPayment && (
+        <PaymentModal
+          showModal={showPaymentModal}
+          closeModal={() => setShowPaymentModal(false)}
+          paymentId={selectedPayment.id}
+          leagueName={selectedPayment.league_name}
+          teamName={selectedPayment.team_name}
+          amountDue={selectedPayment.amount_due}
+          amountPaid={selectedPayment.amount_paid}
+          onPaymentSuccess={handlePaymentSuccess}
         />
       )}
     </div>

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Button } from '../../../../../components/ui/button';
-import { Calendar, Crown, CreditCard, Users } from 'lucide-react';
+import { Calendar, Crown, CreditCard, Users, DollarSign } from 'lucide-react';
 import { getDayName } from '../../../../../lib/leagues';
 
 interface TeamCardProps {
@@ -23,12 +23,19 @@ interface TeamCardProps {
       gym: string | null;
       address: string | null;
     }>;
+    payment?: {
+      id: number;
+      amount_due: number;
+      amount_paid: number;
+      status: string;
+    };
   };
   currentUserId: string;
   onManageTeam: () => void;
+  onPayNow?: (paymentId: number) => void;
 }
 
-export function TeamCard({ team, currentUserId, onManageTeam }: TeamCardProps) {
+export function TeamCard({ team, currentUserId, onManageTeam, onPayNow }: TeamCardProps) {
   const isCaptain = currentUserId === team.captain_id;
   
   // Helper function to get primary gym location
@@ -75,6 +82,27 @@ export function TeamCard({ team, currentUserId, onManageTeam }: TeamCardProps) {
             <div>
               <span>Record: TBD</span>
             </div>
+            
+            {/* Payment Status */}
+            {team.payment && team.payment.amount_due > team.payment.amount_paid && (
+              <div className="mt-2 flex items-center gap-2 text-sm">
+                <DollarSign className="h-4 w-4 text-orange-500" />
+                <span className="text-orange-600 font-medium">
+                  Payment due: ${(team.payment.amount_due - team.payment.amount_paid).toFixed(2)}
+                </span>
+                {onPayNow && (
+                  <Button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onPayNow(team.payment!.id);
+                    }}
+                    className="ml-2 bg-green-600 hover:bg-green-700 text-white text-xs py-1 px-2 rounded"
+                  >
+                    Pay Now
+                  </Button>
+                )}
+              </div>
+            )}
           </div>
           
           <div className="text-sm text-[#6F6F6F]">
