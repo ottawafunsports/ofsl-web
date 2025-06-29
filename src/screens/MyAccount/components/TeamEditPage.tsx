@@ -562,21 +562,53 @@ export function TeamEditPage() {
                         <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
                           {entry.payment_method ? entry.payment_method.replace('_', ' ').toUpperCase() : '-'}
                         </td>
-                        <td className="px-3 py-2 text-sm text-gray-500 max-w-xs truncate">
-                          {entry.notes}
+                        <td className="px-3 py-2 text-sm text-gray-500 max-w-xs">
+                          {editingNoteId === entry.id ? (
+                            <textarea
+                              value={paymentNotes}
+                              onChange={(e) => setPaymentNotes(e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
+                              rows={2}
+                            />
+                          ) : (
+                            <span className="truncate block">{entry.notes}</span>
+                          )}
                         </td>
                         <td className="px-3 py-2 whitespace-nowrap text-right text-sm font-medium">
-                          <Button
-                            onClick={() => {
-                              setPaymentNotes(entry.notes || '');
-                              setEditingNoteId(entry.id);
-                              document.getElementById('payment-notes-textarea')?.scrollIntoView({ behavior: 'smooth' });
-                            }}
-                            className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-lg px-3 py-1 text-xs flex items-center gap-1 ml-auto"
-                          >
-                            <Edit2 className="h-3 w-3" />
-                            Edit
-                          </Button>
+                          {editingNoteId === entry.id ? (
+                            <div className="flex gap-2 justify-end">
+                              <Button
+                                onClick={() => {
+                                  handleProcessPayment();
+                                }}
+                                className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-lg px-3 py-1 text-xs flex items-center gap-1"
+                              >
+                                <Save className="h-3 w-3" />
+                                Save
+                              </Button>
+                              <Button
+                                onClick={() => {
+                                  setEditingNoteId(null);
+                                  setPaymentNotes('');
+                                }}
+                                className="bg-gray-500 hover:bg-gray-600 text-white rounded-lg px-3 py-1 text-xs flex items-center gap-1"
+                              >
+                                <X className="h-3 w-3" />
+                                Cancel
+                              </Button>
+                            </div>
+                          ) : (
+                            <Button
+                              onClick={() => {
+                                setPaymentNotes(entry.notes || '');
+                                setEditingNoteId(entry.id);
+                              }}
+                              className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-lg px-3 py-1 text-xs flex items-center gap-1 ml-auto"
+                            >
+                              <Edit2 className="h-3 w-3" />
+                              Edit
+                            </Button>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -629,28 +661,17 @@ export function TeamEditPage() {
 
                   <div className="mt-4">
                     <label className="block text-sm font-medium text-[#6F6F6F] mb-2">
-                      {editingNoteId !== null ? 'Edit Payment Note' : 'Payment Notes (Optional)'}
+                      {editingNoteId === null ? 'Payment Notes (Optional)' : 'Edit Payment Note'}
                     </label>
-                    <textarea
-                      id="payment-notes-textarea"
-                      value={paymentNotes}
-                      onChange={(e) => setPaymentNotes(e.target.value)}
-                      placeholder={editingNoteId !== null ? "Edit the selected payment note..." : "Add any notes about this payment..."}
-                      rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
-                    />
-                    {editingNoteId !== null && (
-                      <div className="flex justify-end mt-2">
-                        <Button
-                          onClick={() => {
-                            setEditingNoteId(null);
-                            setPaymentNotes('');
-                          }}
-                          className="bg-gray-500 hover:bg-gray-600 text-white rounded-lg px-3 py-1 text-xs"
-                        >
-                          Cancel Edit
-                        </Button>
-                      </div>
+                    {editingNoteId === null && (
+                      <textarea
+                        id="payment-notes-textarea"
+                        value={paymentNotes}
+                        onChange={(e) => setPaymentNotes(e.target.value)}
+                        placeholder="Add any notes about this payment..."
+                        rows={3}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
+                      />
                     )}
                   </div>
 
@@ -661,10 +682,7 @@ export function TeamEditPage() {
                       className="bg-green-600 hover:bg-green-700 text-white rounded-[10px] px-6 py-2 flex items-center gap-2"
                     >
                       {editingNoteId !== null ? (
-                        <>
-                          <Edit2 className="h-4 w-4" />
-                          {processingPayment ? 'Saving...' : 'Save Note & Process Payment'}
-                        </>
+                        null
                       ) : (
                         <>
                           <DollarSign className="h-4 w-4" />
