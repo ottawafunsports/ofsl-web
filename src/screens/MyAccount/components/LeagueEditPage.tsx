@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getStripeProductByLeagueId, updateStripeProductLeagueId } from '../../../lib/stripe';
-import { getStripeProductByLeagueId, updateStripeProductLeagueId } from '../../../lib/stripe';
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent } from '../../../components/ui/card';
 import { Input } from '../../../components/ui/input';
