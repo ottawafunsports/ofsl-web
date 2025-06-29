@@ -1,0 +1,29 @@
+User-agent: *
+Disallow: /
+
+# Disallow all crawlers from accessing the site
+# This prevents search engines from indexing the site until it's ready for production
+
+User-agent: Googlebot
+Disallow: /
+
+User-agent: Bingbot
+Disallow: /
+
+User-agent: Slurp
+Disallow: /
+
+User-agent: DuckDuckBot
+Disallow: /
+
+User-agent: Baiduspider
+Disallow: /
+
+User-agent: YandexBot
+Disallow: /
+
+# Disallow API routes
+Disallow: /api/
+Disallow: /.netlify/functions/
+
+# Sitemap: https://ofsl.ca/sitemap.xml
