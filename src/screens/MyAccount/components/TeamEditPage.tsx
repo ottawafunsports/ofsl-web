@@ -306,7 +306,7 @@ export function TeamEditPage() {
         } else if (note.toLowerCase().includes('cash')) {
           method = 'cash';
         } else if (note.toLowerCase().includes('online')) {
-          method = 'online';
+          method = 'stripe';
         }
       
         // Extract date if present
@@ -725,6 +725,9 @@ export function TeamEditPage() {
   const formatPaymentMethod = (method: string | null) => {
     if (!method) return '-';
     
+    // Handle stripe as Online for display
+    if (method === 'stripe') return 'ONLINE';
+    
     // Convert e_transfer to E-TRANSFER, etc.
     return method.replace('_', '-').toUpperCase();
   };
@@ -946,7 +949,7 @@ export function TeamEditPage() {
                                   className="w-full px-2 py-1 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
                                 >
                                   <option value="e_transfer">E-Transfer</option>
-                                  <option value="online">Online</option>
+                                  <option value="stripe">Online</option>
                                   <option value="cash">Cash</option>
                                 </select>
                               ) : (
@@ -1045,7 +1048,7 @@ export function TeamEditPage() {
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
                       >
                         <option value="e_transfer">E-Transfer</option>
-                        <option value="online">Online</option>
+                        <option value="stripe">Online</option>
                         <option value="cash">Cash</option>
                       </select>
                     </div>
