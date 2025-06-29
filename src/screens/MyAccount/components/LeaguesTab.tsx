@@ -573,7 +573,7 @@ export function LeaguesTab() {
                   </span>
                 </div>
                 
-                <div className="flex gap-2">
+                <div className="flex">
                   <Link to={`/my-account/leagues/edit/${league.id}`}>
                     <Button className="bg-transparent hover:bg-blue-50 text-blue-500 rounded-[8px] p2 transition-colors">
                       <Edit2 className="h-4 w-4" />
