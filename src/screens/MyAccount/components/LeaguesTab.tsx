@@ -575,7 +575,7 @@ export function LeaguesTab() {
                 
                 <div className="flex gap-2">
                   <Link to={`/my-account/leagues/edit/${league.id}`}>
-                    <Button className="bg-blue-500 hover:bg-blue-600 text-white rounded-[8px] px-3 py-1 text-sm flex items-center gap-1">
+                    <Button className="bg-transparent hover:bg-blue-50 text-blue-500 rounded-[8px] px-3 py-1 text-sm flex items-center gap-1">
                       <Edit2 className="h-4 w-4" />
                       Edit
                     </Button>
