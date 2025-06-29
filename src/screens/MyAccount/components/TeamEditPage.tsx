@@ -50,7 +50,7 @@ export function TeamEditPage() {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [paymentInfo, setPaymentInfo] = useState<PaymentInfo | null>(null);
   const [depositAmount, setDepositAmount] = useState<string>('');
-  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'e_transfer' | 'online'>('cash');
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'e_transfer' | 'online'>('e_transfer');
   const [paymentNotes, setPaymentNotes] = useState<string>('');
   const [processingPayment, setProcessingPayment] = useState(false);
   const [paymentHistory, setPaymentHistory] = useState<PaymentHistory[]>([]);
