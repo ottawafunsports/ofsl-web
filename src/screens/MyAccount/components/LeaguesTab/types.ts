@@ -24,9 +24,11 @@ export interface LeagueWithTeamCount extends League {
 
 export interface NewLeague {
   name: string;
+  description: string;
   sport_id: number | null;
   skill_id: number | null;
   day_of_week: number | null;
+  year: string;
   start_date: string;
   end_date: string;
   cost: number | null;

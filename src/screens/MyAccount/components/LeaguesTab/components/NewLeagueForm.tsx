@@ -32,6 +32,7 @@ export function NewLeagueForm({
     sport_id: null,
     skill_id: null,
     day_of_week: null,
+    year: '2025',
     start_date: '',
     end_date: '',
     cost: null,
@@ -175,6 +176,16 @@ export function NewLeagueForm({
         </div>
 
         <div className="mt-6">
+          <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Description</label>
+          <RichTextEditor
+            value={newLeague.description || ''}
+            onChange={(value) => setNewLeague({ ...newLeague, description: value })}
+            placeholder="Enter league description"
+            rows={6}
+          />
+        </div>
+
+        <div className="mt-6">
           <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Gyms/Schools</label>
           <div className="space-y-2 max-h-40 overflow-y-auto border border-gray-300 rounded-lg p-3">
             {gyms.map(gym => (
@@ -200,6 +211,7 @@ export function NewLeagueForm({
         {/* Stripe Product Selector */}
         <div className="mt-6">
           <StripeProductSelector
+            leagueId={null}
             selectedProductId={selectedProductId}
             onChange={setSelectedProductId}
           />

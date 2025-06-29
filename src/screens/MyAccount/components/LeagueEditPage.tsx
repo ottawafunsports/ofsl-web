@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { getStripeProductByLeagueId, updateStripeProductLeagueId } from '../../../lib/stripe';
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent } from '../../../components/ui/card';
 import { Input } from '../../../components/ui/input';
@@ -10,7 +11,6 @@ import { fetchSports, fetchSkills, fetchLeagueById, type League } from '../../..
 import { ChevronLeft, Save, X } from 'lucide-react';
 import { RichTextEditor } from '../../../components/ui/rich-text-editor';
 import { StripeProductSelector } from './LeaguesTab/components/StripeProductSelector';
-import { products, getProductById } from '../../../stripe-config';
 
 export function LeagueEditPage() {
   const { id } = useParams<{ id: string }>();
@@ -91,8 +91,8 @@ export function LeagueEditPage() {
       if (!leagueData) {
         throw new Error('League not found');
       } else {
-        // Check if this league is linked to a Stripe product
-        const linkedProduct = products.find(p => p.leagueId === parseInt(id));
+        // Get the Stripe product linked to this league
+        const linkedProduct = await getStripeProductByLeagueId(parseInt(id));
         if (linkedProduct) {
           setSelectedProductId(linkedProduct.id);
         }
@@ -147,13 +147,22 @@ export function LeagueEditPage() {
       if (error) throw error;
       
       // Update the Stripe product mapping if changed
-      if (selectedProductId) {
-        const product = getProductById(selectedProductId);
-        if (product) {
-          // In a real implementation, we would update a database table here
-          // For now, we'll just show a toast message
-          showToast(`League linked to Stripe product: ${product.name}`, 'success');
+      try {
+        // If we have a previous product linked to this league, unlink it
+        const currentProduct = await getStripeProductByLeagueId(parseInt(id));
+        if (currentProduct && currentProduct.id !== selectedProductId) {
+          await updateStripeProductLeagueId(currentProduct.id, null);
         }
+        
+        // Link the new product to this league
+        if (selectedProductId) {
+          await updateStripeProductLeagueId(selectedProductId, parseInt(id));
+        }
+
+      } catch (productError) {
+        console.error('Error updating product association:', productError);
+        // Don't fail the whole operation if just the product linking fails
+        showToast('League updated but product linking failed', 'warning');
       }
 
       showToast('League updated successfully!', 'success');
@@ -350,6 +359,7 @@ export function LeagueEditPage() {
             <div className="mt-8">
               <StripeProductSelector
                 selectedProductId={selectedProductId}
+                leagueId={parseInt(id)}
                 onChange={setSelectedProductId}
               />
             </div>

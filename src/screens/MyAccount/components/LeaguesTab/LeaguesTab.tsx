@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { useToast } from '../../../../components/ui/toast';
+import { updateStripeProductLeagueId } from '../../../../lib/stripe';
 import { Card, CardContent } from '../../../../components/ui/card';
 import { LeaguesHeader } from './components/LeaguesHeader';
 import { NewLeagueForm } from './components/NewLeagueForm';
@@ -13,11 +14,12 @@ export function LeaguesTab() {
   const { showToast } = useToast();
   const [showNewLeagueForm, setShowNewLeagueForm] = useState(false);
 
-  const {
   const [selectedProductForLeague, setSelectedProductForLeague] = useState<{
     productId: string | null;
     league: NewLeague | null;
   }>({ productId: null, league: null });
+  
+  const {
     leagues,
     sports,
     skills,
@@ -32,20 +34,50 @@ export function LeaguesTab() {
     handleDeleteLeague
   } = useLeagueActions({ loadData, showToast });
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const handleProductSelection = (productId: string, league: NewLeague) => {
+  // Function to handle product selection for a new league
+  const handleProductSelection = async (productId: string, league: NewLeague) => {
     setSelectedProductForLeague({
       productId,
       league
     });
-    
-    // In a real implementation, we would update a database table here
-    // For now, we'll just show a toast message
-    showToast(`League will be linked to Stripe product ID: ${productId}`, 'info');
   };
+
+  // Function to handle creating a league and linking it to a product
+  const handleCreateLeagueWithProduct = async (league: NewLeague) => {
+    try {
+      // First create the league
+      const newLeague = await handleCreateLeague(league);
+      
+      // If we have a product ID and the league was created successfully
+      if (selectedProductForLeague.productId && newLeague?.id) {
+        try {
+          // Link the product to the league
+          await updateStripeProductLeagueId(
+            selectedProductForLeague.productId,
+            newLeague.id
+          );
+          showToast(`League linked to Stripe product successfully`, 'success');
+        } catch (error) {
+          console.error('Error linking product to league:', error);
+          showToast('League created but product linking failed', 'warning');
+        }
+      }
+      
+      // Reset the selected product
+      setSelectedProductForLeague({ productId: null, league: null });
+      
+      // Close the form
+      setShowNewLeagueForm(false);
+      
+    } catch (error) {
+      console.error('Error creating league with product:', error);
+      showToast('Failed to create league', 'error');
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
 
   if (!userProfile?.is_admin) {
     return (
@@ -74,10 +106,10 @@ export function LeaguesTab() {
           sports={sports}
           skills={skills}
           gyms={gyms}
-          onProductSelect={handleProductSelection}
+          onProductSelect={handleProductSelection} 
           saving={saving}
           onClose={() => setShowNewLeagueForm(false)}
-          onSubmit={handleCreateLeague}
+          onSubmit={handleCreateLeagueWithProduct}
         />
       )}
 

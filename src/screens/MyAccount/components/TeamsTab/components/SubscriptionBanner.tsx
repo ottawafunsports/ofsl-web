@@ -1,14 +1,26 @@
+import { useState, useEffect } from 'react';
 import { CheckCircle, AlertCircle } from 'lucide-react';
-import { getProductByPriceId } from '../../../../../stripe-config';
+import { getStripeProductByPriceId } from '../../../../../lib/stripe';
 
 interface SubscriptionBannerProps {
   subscription: any;
 }
 
 export function SubscriptionBanner({ subscription }: SubscriptionBannerProps) {
+  const [product, setProduct] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (subscription?.price_id) {
+      setLoading(true);
+      getStripeProductByPriceId(subscription.price_id)
+        .then(setProduct)
+        .finally(() => setLoading(false));
+    }
+  }, [subscription?.price_id]);
+
   if (!subscription) return null;
   
-  const product = getProductByPriceId(subscription.price_id);
   const isActive = subscription.subscription_status === 'active';
   
   return (
@@ -32,7 +44,7 @@ export function SubscriptionBanner({ subscription }: SubscriptionBannerProps) {
           <p className={`text-sm ${
             isActive ? 'text-green-700' : 'text-orange-700'
           }`}>
-            {product?.name || 'Unknown Product'} - {subscription.subscription_status}
+            {loading ? 'Loading...' : (product?.name || 'Unknown Product')} - {subscription.subscription_status}
           </p>
         </div>
       </div>

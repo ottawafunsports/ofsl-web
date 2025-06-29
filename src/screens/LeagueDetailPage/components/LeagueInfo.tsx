@@ -5,9 +5,10 @@ import { useAuth } from "../../../contexts/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import { TeamRegistrationModal } from "./TeamRegistrationModal";
 import { PaymentButton } from "../../../components/PaymentButton";
-import { getProductByLeagueId, formatPrice } from "../../../stripe-config";
+import { formatPrice } from "../../../stripe-config";
 import { supabase } from "../../../lib/supabase";
 import { useEffect } from "react";
+import { getStripeProductByLeagueId } from "../../../lib/stripe";
 
 // Function to get spots badge color
 const getSpotsBadgeColor = (spots: number) => {
@@ -32,14 +33,38 @@ interface LeagueInfoProps {
 export function LeagueInfo({ league, sport, onSpotsUpdate }: LeagueInfoProps) {
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
   const [actualSpotsRemaining, setActualSpotsRemaining] = useState(league.spotsRemaining || 0);
+  const [stripeProduct, setStripeProduct] = useState<any>(null);
   const { user } = useAuth();
   const [isTeamCaptain, setIsTeamCaptain] = useState(false);
+  const [matchingProduct, setMatchingProduct] = useState<any>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     loadActualTeamCount();
     checkIfTeamCaptain();
+    loadStripeProduct();
+    loadProductInfo();
   }, [league.id]);
+
+  const loadStripeProduct = async () => {
+    try {
+      const product = await getStripeProductByLeagueId(league.id);
+      setStripeProduct(product);
+    } catch (error) {
+      console.error('Error loading Stripe product:', error);
+    }
+  };
+
+  const loadProductInfo = async () => {
+    try {
+      const product = await getStripeProductByLeagueId(league.id);
+      if (product) {
+        setMatchingProduct(product);
+      }
+    } catch (error) {
+      console.error('Error loading product info:', error);
+    }
+  };
 
   const checkIfTeamCaptain = async () => {
     if (!user) return;
@@ -98,9 +123,6 @@ export function LeagueInfo({ league, sport, onSpotsUpdate }: LeagueInfoProps) {
     setShowRegistrationModal(true);
   };
 
-  // Find matching product for this league
-  const matchingProduct = getProductByLeagueId(league.id);
-
   // Only show payment button if there's a valid product and the user is the team captain
   return (
     <>
@@ -148,7 +170,7 @@ export function LeagueInfo({ league, sport, onSpotsUpdate }: LeagueInfoProps) {
             <div>
               <p className="font-medium text-[#6F6F6F]">League Fee</p>
               <p className="text-sm text-[#6F6F6F]">
-                {matchingProduct ? formatPrice(matchingProduct.price) : `$${league.price}`}{" "}
+                {stripeProduct ? formatPrice(stripeProduct.price) : `$${league.price}`}{" "}
                 {sport === "Volleyball" ? "per team" : "per player"}
               </p>
             </div>
@@ -169,12 +191,12 @@ export function LeagueInfo({ league, sport, onSpotsUpdate }: LeagueInfoProps) {
         </div>
 
         {/* Register Button or Payment Button */}
-        {matchingProduct && isTeamCaptain ? (
+        {stripeProduct && isTeamCaptain ? (
           <PaymentButton
-            priceId={matchingProduct.priceId} 
-            productName={matchingProduct.name}
-            price={matchingProduct.price}
-            mode={matchingProduct.mode}
+            priceId={stripeProduct.price_id} 
+            productName={stripeProduct.name}
+            price={stripeProduct.price}
+            mode={stripeProduct.mode}
             metadata={{ leagueId: league.id.toString() }}
             className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] w-full py-3"
             variant="default"
