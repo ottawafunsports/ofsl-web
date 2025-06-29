@@ -193,15 +193,6 @@ export function LeagueEditPage() {
         {/* Edit League Form - Using same Card structure as Add New League */}
         <Card>
           <CardContent className="p-6">
-            <div className="flex justify-between items-center mb-4">
-              <Button
-                onClick={() => navigate('/my-account/leagues')}
-                className="text-gray-500 hover:text-gray-700 bg-transparent hover:bg-transparent border-none shadow-none p-2"
-              >
-                <X className="h-5 w-5" />
-              </Button>
-            </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-[#6F6F6F] mb-2">League Name</label>
@@ -322,7 +313,7 @@ export function LeagueEditPage() {
               </div>
             </div>
 
-            <div className="mt-8">
+            <div className="mt-8 pb-4">
               <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Description</label>
               <RichTextEditor
                 value={editLeague.description}
