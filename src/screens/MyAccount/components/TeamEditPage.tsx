@@ -427,40 +427,39 @@ export function TeamEditPage() {
       const newAmountPaid = paymentInfo.amount_paid + amountDifference;
       
       // Create updated entry
-      const updatedEntry = {
-        ...originalEntry,
-        amount: newAmount,
-        payment_method: editingPayment.payment_method,
-        date: new Date(editingPayment.date).toISOString(),
-        notes: editingPayment.notes
-      };
+      let updatedHistory = [...paymentHistory];
+      const entryIndex = updatedHistory.findIndex(h => h.id === editingNoteId);
       
-      // Update the payment history array
-      const updatedHistory = paymentHistory.map(entry => 
-        entry.id === editingNoteId ? updatedEntry : entry
-      );
+      if (entryIndex !== -1) {
+        updatedHistory[entryIndex] = {
+          ...originalEntry,
+          amount: newAmount,
+          payment_method: editingPayment.payment_method,
+          date: new Date(editingPayment.date).toISOString(),
+          notes: editingPayment.notes
+        };
+      }
       
       // Convert updated history to notes format
       const updatedNotes = updatedHistory.map(entry => entry.notes).join('\n');
       
       // Update in database
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('league_payments')
         .update({ 
           notes: updatedNotes, 
           amount_paid: newAmountPaid 
         })
-        .eq('id', paymentInfo.id);
+        .eq('id', paymentInfo.id)
+        .select()
+        .single();
 
       if (error) throw error;
       
-      // Update the payment info in the local state
-      const { error: refreshError } = await supabase
-        .from('league_payments')
-        .select('*')
-        .eq('id', paymentInfo.id);
-
-      if (error) throw error;
+      // Update local state with the returned data
+      if (data) {
+        setPaymentInfo(data);
+      }
 
       showToast(`Payment record updated successfully! Amount paid adjusted by $${amountDifference.toFixed(2)}`, 'success');
       
@@ -724,9 +723,9 @@ export function TeamEditPage() {
                               onChange={(e) => setEditingPayment({...editingPayment, payment_method: e.target.value as any})}
                               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
                             >
-                              <option value="e_transfer">E-Transfer</option>
-                              <option value="online">Online</option>
-                              <option value="cash">Cash</option>
+                              <option value="e_transfer">E-TRANSFER</option>
+                              <option value="online">ONLINE</option>
+                              <option value="cash">CASH</option>
                             </select>
                           ) : (
                             entry.payment_method ? entry.payment_method.replace('_', ' ').toUpperCase() : '-'
@@ -814,9 +813,9 @@ export function TeamEditPage() {
                         onChange={(e) => setPaymentMethod(e.target.value as 'cash' | 'e_transfer' | 'online')}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
                       >
-                        <option value="e_transfer">E-Transfer</option>
-                        <option value="online">Online</option>
-                        <option value="cash">Cash</option>
+                        <option value="e_transfer">E-TRANSFER</option>
+                        <option value="online">ONLINE</option>
+                        <option value="cash">CASH</option>
                       </select>
                     </div>
                   </div>
