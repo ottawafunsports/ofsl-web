@@ -8,6 +8,7 @@ import { PaymentButton } from "../../../components/PaymentButton";
 import { formatPrice } from "../../../stripe-config";
 import { supabase } from "../../../lib/supabase";
 import { useEffect } from "react";
+import { getStripeProductByLeagueId } from "../../../lib/stripe";
 
 // Function to get spots badge color
 const getSpotsBadgeColor = (spots: number) => {
