@@ -55,7 +55,7 @@ export function LeaguesTab() {
       <LeaguesHeader onCreateNew={() => setShowNewLeagueForm(true)} />
 
       {showNewLeagueForm && (
-        <NewLeagueForm
+        <NewLeagueForm 
           sports={sports}
           skills={skills}
           gyms={gyms}

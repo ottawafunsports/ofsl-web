@@ -77,7 +77,8 @@ export function AccountLayout() {
                 }`}
               >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"/>
+                  <path d="M19,4H5C3.89,4 3,4.9 3,6V18A2,2 0 0,0 5,20H19A2,2 0 0,0 21,18V6A2,2 0 0,0 19,4M19,18H5V8H19V18Z"/>
+                  <path d="M12,9H7V11H12V9M17,9H14V11H17V9M7,12V14H10V12H7M11,12V14H14V12H11M15,12V14H17V12H15Z"/>
                 </svg>
                 Manage Leagues
                 {isActive('/my-account/leagues') && (

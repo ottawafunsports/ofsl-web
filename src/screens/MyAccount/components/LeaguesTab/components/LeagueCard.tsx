@@ -45,7 +45,6 @@ export function LeagueCard({ league, onDelete }: LeagueCardProps) {
         {/* Card Header */}
         <div className="bg-[#F8F8F8] border-b border-gray-200 p-4 flex justify-between items-start">
           <div>
-            <h3 className="text-lg font-bold text-[#6F6F6F] line-clamp-2">{league.name}</h3>
           </div>
           <img 
             src={getSportIcon(league.sport_name)} 
@@ -117,13 +116,13 @@ export function LeagueCard({ league, onDelete }: LeagueCardProps) {
           
           <div className="flex gap-2">
             <Link to={`/my-account/leagues/edit/${league.id}`}>
-              <Button className="bg-transparent hover:bg-blue-50 text-blue-500 hover:text-blue-600 rounded-[8px] p-2 transition-colors">
+              <Button className="bg-transparent hover:bg-blue-50 text-blue-500 hover:text-blue-600 rounded-lg p-2 transition-colors">
                 <Edit2 className="h-4 w-4" />
               </Button>
             </Link>
             <Button 
               onClick={() => onDelete(league.id)}
-              className="bg-transparent hover:bg-red-50 text-red-500 hover:text-red-600 rounded-[8px] p-2 transition-colors"
+              className="bg-transparent hover:bg-red-50 text-red-500 hover:text-red-600 rounded-lg p-2 transition-colors"
             >
               <Trash2 className="h-4 w-4" />
             </Button>
