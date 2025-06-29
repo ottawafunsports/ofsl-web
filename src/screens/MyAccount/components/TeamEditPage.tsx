@@ -423,16 +423,13 @@ export function TeamEditPage() {
       // Calculate the difference in amount
       const amountDifference = newAmount - originalEntry.amount;
       
-      // Update the total amount paid
-      const newAmountPaid = paymentInfo.amount_paid + amountDifference;
-      
-      // Create updated entry
-      let updatedHistory = [...paymentHistory];
+      // Create a deep copy of the payment history
+      const updatedHistory = JSON.parse(JSON.stringify(paymentHistory));
       const entryIndex = updatedHistory.findIndex(h => h.id === editingNoteId);
       
       if (entryIndex !== -1) {
         updatedHistory[entryIndex] = {
-          ...originalEntry,
+          ...updatedHistory[entryIndex],
           amount: newAmount,
           payment_method: editingPayment.payment_method,
           date: new Date(editingPayment.date).toISOString(),
@@ -441,7 +438,13 @@ export function TeamEditPage() {
       }
       
       // Convert updated history to notes format
-      const updatedNotes = updatedHistory.map(entry => entry.notes).join('\n');
+      const updatedNotes = updatedHistory
+        .map(entry => entry.notes)
+        .filter(note => note && note.trim() !== '')
+        .join('\n');
+      
+      // Calculate the new total amount paid based on all entries
+      const newAmountPaid = updatedHistory.reduce((total, entry) => total + entry.amount, 0);
       
       // Update in database
       const { data, error } = await supabase
@@ -458,13 +461,16 @@ export function TeamEditPage() {
       
       // Update local state with the returned data
       if (data) {
-        setPaymentInfo(data);
+        setPaymentInfo({
+          ...data,
+          amount_paid: newAmountPaid
+        });
+        
+        // Update payment history with the new values
+        setPaymentHistory(updatedHistory);
       }
 
       showToast(`Payment record updated successfully! Amount paid adjusted by $${amountDifference.toFixed(2)}`, 'success');
-      
-      // Reload payment data
-      await loadData();
       
       // Reset form
       setEditingNoteId(null);
