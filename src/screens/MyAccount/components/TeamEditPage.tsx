@@ -262,15 +262,17 @@ export function TeamEditPage() {
 
     // Create a new payment history entry
     const today = new Date().toISOString().split('T')[0];
-    const newNote = `$${depositValue.toFixed(2)} ${paymentMethod} ${today} ${paymentNotes.trim()}`;
+    const newNote = paymentNotes.trim();
     
     // Get existing notes
     let updatedNotes = paymentInfo.notes || '';
     
     // Add new note
-    updatedNotes = updatedNotes 
-      ? `${updatedNotes}\n${newNote}`
-      : newNote;
+    if (newNote) {
+      updatedNotes = updatedNotes 
+        ? `${updatedNotes}\n${newNote}`
+        : newNote;
+    }
 
     try {
       setProcessingPayment(true);
@@ -382,6 +384,11 @@ export function TeamEditPage() {
       
       // Calculate the difference in amount
       const amountDifference = newAmount - originalEntry.amount;
+
+      // Format the payment method for display
+      const formattedMethod = editingPayment.payment_method 
+        ? editingPayment.payment_method.replace('_', '-')
+        : '';
       
       // Create a deep copy of the payment history
       const updatedHistory = JSON.parse(JSON.stringify(paymentHistory));
@@ -393,7 +400,7 @@ export function TeamEditPage() {
           amount: newAmount,
           payment_method: editingPayment.payment_method,
           date: new Date(editingPayment.date).toISOString(),
-          notes: `$${newAmount.toFixed(2)} ${editingPayment.payment_method?.toUpperCase() || ''} ${editingPayment.date} ${editingPayment.notes}`
+          notes: editingPayment.notes
         };
         
       }
@@ -678,7 +685,7 @@ export function TeamEditPage() {
                           {editingNoteId === entry.id ? (
                             <Input
                               type="number"
-                              step="0.01"
+                              step="any"
                               min="0"
                               value={editingPayment.amount}
                               onChange={(e) => setEditingPayment({...editingPayment, amount: e.target.value})}
@@ -696,9 +703,9 @@ export function TeamEditPage() {
                               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
                             >
                               <option value="">Select method</option>
-                              <option value="e_transfer">E-TRANSFER</option>
-                              <option value="online">ONLINE</option>
-                              <option value="cash">CASH</option>
+                              <option value="e_transfer">E-Transfer</option>
+                              <option value="online">Online</option>
+                              <option value="cash">Cash</option>
                             </select>
                           ) : (
                             entry.payment_method ? entry.payment_method.replace('_', '-').toUpperCase() : '-'
