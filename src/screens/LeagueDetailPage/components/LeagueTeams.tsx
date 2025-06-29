@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '../../../components/ui/card';
 import { supabase } from '../../../lib/supabase';
-import { Crown, Users, Calendar, DollarSign } from 'lucide-react';
+import { Crown, Users, Calendar, DollarSign, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useToast } from '../../../components/ui/toast';
 
 interface TeamData {
   id: number;
@@ -26,7 +27,9 @@ interface LeagueTeamsProps {
 export function LeagueTeams({ leagueId, onTeamsUpdate }: LeagueTeamsProps) {
   const [teams, setTeams] = useState<TeamData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { showToast } = useToast();
 
   useEffect(() => {
     loadTeams();
@@ -104,6 +107,77 @@ export function LeagueTeams({ leagueId, onTeamsUpdate }: LeagueTeamsProps) {
       setError('Failed to load teams data');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteTeam = async (teamId: number, teamName: string) => {
+    const confirmDelete = confirm(`Are you sure you want to delete the team "${teamName}"? This action cannot be undone and will remove all team data including registrations and payment records.`);
+    
+    if (!confirmDelete) return;
+    
+    try {
+      setDeleting(teamId);
+      
+      // 1. Update team_ids for all users in the roster
+      const { data: teamData, error: teamFetchError } = await supabase
+        .from('teams')
+        .select('roster')
+        .eq('id', teamId)
+        .single();
+        
+      if (teamFetchError) {
+        console.error(`Error fetching team ${teamId}:`, teamFetchError);
+      } else if (teamData.roster && teamData.roster.length > 0) {
+        for (const userId of teamData.roster) {
+          const { data: userData, error: fetchError } = await supabase
+            .from('users')
+            .select('team_ids')
+            .eq('id', userId)
+            .single();
+            
+          if (fetchError) {
+            console.error(`Error fetching user ${userId}:`, fetchError);
+            continue;
+          }
+          
+          if (userData) {
+            const updatedTeamIds = (userData.team_ids || []).filter((id: number) => id !== teamId);
+            
+            const { error: updateError } = await supabase
+              .from('users')
+              .update({ team_ids: updatedTeamIds })
+              .eq('id', userId);
+              
+            if (updateError) {
+              console.error(`Error updating user ${userId}:`, updateError);
+            }
+          }
+        }
+      }
+      
+      // 2. Delete the team (league_payments will be deleted via ON DELETE CASCADE)
+      const { error: deleteError } = await supabase
+        .from('teams')
+        .delete()
+        .eq('id', teamId);
+        
+      if (deleteError) throw deleteError;
+      
+      showToast('Team deleted successfully', 'success');
+      
+      // Reload teams to update the UI
+      await loadTeams();
+      
+      // Notify parent component about the update
+      if (onTeamsUpdate) {
+        onTeamsUpdate();
+      }
+      
+    } catch (error: any) {
+      console.error('Error deleting team:', error);
+      showToast(error.message || 'Failed to delete team', 'error');
+    } finally {
+      setDeleting(null);
     }
   };
 
@@ -242,6 +316,14 @@ export function LeagueTeams({ leagueId, onTeamsUpdate }: LeagueTeamsProps) {
                   >
                     Edit registration
                   </Link>
+                  <button
+                    onClick={() => handleDeleteTeam(team.id, team.name)}
+                    disabled={deleting === team.id}
+                    className="text-red-600 hover:text-red-800 text-sm hover:underline flex items-center gap-1 mt-2"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                    {deleting === team.id ? 'Deleting...' : 'Delete team'}
+                  </button>
                 </div>
               </div>
             </CardContent>
