@@ -10,7 +10,6 @@ import { fetchSports, fetchSkills, fetchLeagueById, type League } from '../../..
 import { ChevronLeft, Save, X } from 'lucide-react';
 import { RichTextEditor } from '../../../components/ui/rich-text-editor';
 import { StripeProductSelector } from './LeaguesTab/components/StripeProductSelector';
-import { products, getProductById } from '../../../stripe-config';
 
 export function LeagueEditPage() {
   const { id } = useParams<{ id: string }>();
@@ -92,9 +91,14 @@ export function LeagueEditPage() {
         throw new Error('League not found');
       } else {
         // Check if this league is linked to a Stripe product
-        const linkedProduct = products.find(p => p.leagueId === parseInt(id));
-        if (linkedProduct) {
-          setSelectedProductId(linkedProduct.id);
+        const { data: productData, error: productError } = await supabase
+          .from('stripe_products')
+          .select('id')
+          .eq('league_id', parseInt(id))
+          .maybeSingle();
+          
+        if (!productError && productData) {
+          setSelectedProductId(productData.id);
         }
         
         setLeague(leagueData);
@@ -148,11 +152,17 @@ export function LeagueEditPage() {
       
       // Update the Stripe product mapping if changed
       if (selectedProductId) {
-        const product = getProductById(selectedProductId);
-        if (product) {
-          // In a real implementation, we would update a database table here
-          // For now, we'll just show a toast message
-          showToast(`League linked to Stripe product: ${product.name}`, 'success');
+        // Update the stripe_products table to link this product to the league
+        const { error: updateProductError } = await supabase
+          .from('stripe_products')
+          .update({ league_id: parseInt(id) })
+          .eq('id', selectedProductId);
+
+        if (updateProductError) {
+          console.error('Error updating product mapping:', updateProductError);
+          showToast('Failed to link Stripe product', 'error');
+        } else {
+          showToast('League linked to Stripe product successfully', 'success');
         }
       }
 

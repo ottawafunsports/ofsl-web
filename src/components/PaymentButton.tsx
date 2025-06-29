@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Button } from './ui/button';
-import { createCheckoutSession, getUserSubscription } from '../lib/stripe';
+import { createCheckoutSession, getUserSubscription, getStripeProductByPriceId } from '../lib/stripe';
 import { useToast } from './ui/toast';
 import { CreditCard, Loader2 } from 'lucide-react';
-import { getProductByPriceId, formatPrice } from '../stripe-config';
+import { formatPrice } from '../stripe-config';
 
 interface PaymentButtonProps {
   priceId: string;
@@ -32,15 +32,26 @@ export function PaymentButton({
   const { showToast } = useToast();
 
   const handlePayment = async () => {
-    const product = getProductByPriceId(priceId);
+    let productName = productName;
+    let productPrice = price;
+    
     try {
       setLoading(true);
+      
+      // If we don't have a product name or price, try to fetch it from the database
+      if (!productName || !price) {
+        const product = await getStripeProductByPriceId(priceId);
+        if (product) {
+          productName = product.name;
+          productPrice = product.price;
+        }
+      }
       
       const { url } = await createCheckoutSession({
         priceId,
         mode,
         metadata,
-        successUrl: `${window.location.origin}/success?product=${encodeURIComponent(productName)}&price=${price || (product?.price || 0)}`,
+        successUrl: `${window.location.origin}/success?product=${encodeURIComponent(productName)}&price=${productPrice || 0}`,
         cancelUrl: window.location.href
       });
 
@@ -68,10 +79,10 @@ export function PaymentButton({
         </>
       ) : (
         children || (
-          <>
-            {icon}
-            {mode === 'subscription' ? 'Subscribe' : 'Purchase'} - {productName}
-          </>
+          <div className="flex items-center">
+            <span className="mr-2">{icon}</span>
+            <span>{mode === 'subscription' ? 'Subscribe' : 'Purchase'} - {productName}</span>
+          </div>
         )
       )}
     </Button>

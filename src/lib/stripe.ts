@@ -1,6 +1,20 @@
 import { supabase } from './supabase';
 
 /**
+ * Interface for a Stripe product
+ */
+export interface StripeProduct {
+  id: string;
+  priceId: string;
+  name: string;
+  description: string;
+  mode: 'payment' | 'subscription';
+  price?: number;
+  currency?: string;
+  leagueId?: number | null;
+}
+
+/**
  * Interface for checkout session request parameters
  */
 export interface CheckoutSessionRequest {
@@ -134,4 +148,82 @@ export async function createPaymentIntent(paymentId: number) {
   }
 
   return response.json();
+}
+
+/**
+ * Gets all available Stripe products
+ * @returns Promise with array of products
+ */
+export async function getStripeProducts(): Promise<StripeProduct[]> {
+  const { data, error } = await supabase
+    .from('stripe_products')
+    .select('*')
+    .order('name');
+
+  if (error) {
+    console.error('Error fetching Stripe products:', error);
+    return [];
+  }
+
+  return data || [];
+}
+
+/**
+ * Gets a Stripe product by ID
+ * @param id The product ID
+ * @returns Promise with product or null
+ */
+export async function getStripeProductById(id: string): Promise<StripeProduct | null> {
+  const { data, error } = await supabase
+    .from('stripe_products')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error) {
+    console.error('Error fetching Stripe product:', error);
+    return null;
+  }
+
+  return data;
+}
+
+/**
+ * Gets a Stripe product by price ID
+ * @param priceId The price ID
+ * @returns Promise with product or null
+ */
+export async function getStripeProductByPriceId(priceId: string): Promise<StripeProduct | null> {
+  const { data, error } = await supabase
+    .from('stripe_products')
+    .select('*')
+    .eq('price_id', priceId)
+    .single();
+
+  if (error) {
+    console.error('Error fetching Stripe product by price ID:', error);
+    return null;
+  }
+
+  return data;
+}
+
+/**
+ * Gets a Stripe product by league ID
+ * @param leagueId The league ID
+ * @returns Promise with product or null
+ */
+export async function getStripeProductByLeagueId(leagueId: number): Promise<StripeProduct | null> {
+  const { data, error } = await supabase
+    .from('stripe_products')
+    .select('*')
+    .eq('league_id', leagueId)
+    .single();
+
+  if (error) {
+    console.error('Error fetching Stripe product by league ID:', error);
+    return null;
+  }
+
+  return data;
 }
