@@ -116,9 +116,9 @@ export function LeagueCard({ league, onDelete }: LeagueCardProps) {
           
           <div className="flex gap-2">
             <Link to={`/my-account/leagues/edit/${league.id}`}>
-              <Button className="bg-transparent hover:bg-blue-50 text-blue-500 hover:text-blue-600 rounded-lg p-2 transition-colors">
+              <button className="bg-transparent hover:bg-blue-50 text-blue-500 hover:text-blue-600 rounded-lg p-2 transition-colors flex items-center justify-center">
                 <Edit2 className="h-4 w-4" />
-              </Button>
+              </button>
             </Link>
             <Button 
               onClick={() => onDelete(league.id)}
