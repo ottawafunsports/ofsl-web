@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent } from '../../../components/ui/card';
 import { Input } from '../../../components/ui/input';
+import { Calendar as CalendarIcon } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../components/ui/toast';
 import { supabase } from '../../../lib/supabase';
@@ -35,7 +36,7 @@ interface PaymentHistory {
   id: number;
   amount: number;
   payment_method: 'stripe' | 'cash' | 'e_transfer' | 'waived' | null;
-  date: string;
+  date: string; 
   notes: string | null;
 }
 
@@ -54,6 +55,19 @@ export function TeamEditPage() {
   const [paymentNotes, setPaymentNotes] = useState<string>('');
   const [processingPayment, setProcessingPayment] = useState(false);
   const [paymentHistory, setPaymentHistory] = useState<PaymentHistory[]>([]);
+  const [editingPayment, setEditingPayment] = useState<{
+    id: number | null;
+    amount: string;
+    payment_method: 'stripe' | 'cash' | 'e_transfer' | 'waived' | null;
+    date: string;
+    notes: string;
+  }>({
+    id: null,
+    amount: '',
+    payment_method: null,
+    date: '',
+    notes: ''
+  });
   const [editingNoteId, setEditingNoteId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -360,6 +374,88 @@ export function TeamEditPage() {
     }
   };
 
+  const handleEditPayment = (entry: PaymentHistory) => {
+    setEditingNoteId(entry.id);
+    setEditingPayment({
+      id: entry.id,
+      amount: entry.amount.toString(),
+      payment_method: entry.payment_method,
+      date: entry.date.split('T')[0], // Format date for input
+      notes: entry.notes || ''
+    });
+  };
+
+  const handleSavePaymentEdit = async () => {
+    if (!paymentInfo || editingNoteId === null) return;
+    
+    try {
+      setProcessingPayment(true);
+      
+      // Find the original entry
+      const originalEntry = paymentHistory.find(h => h.id === editingNoteId);
+      if (!originalEntry) return;
+      
+      // Create updated entry
+      const updatedEntry = {
+        ...originalEntry,
+        amount: parseFloat(editingPayment.amount) || 0,
+        payment_method: editingPayment.payment_method,
+        date: new Date(editingPayment.date).toISOString(),
+        notes: editingPayment.notes
+      };
+      
+      // Update the payment history array
+      const updatedHistory = paymentHistory.map(entry => 
+        entry.id === editingNoteId ? updatedEntry : entry
+      );
+      
+      // Convert updated history to notes format
+      const updatedNotes = updatedHistory.map(entry => entry.notes).join('\n');
+      
+      // Update in database
+      const { error } = await supabase
+        .from('league_payments')
+        .update({
+          notes: updatedNotes
+        })
+        .eq('id', paymentInfo.id);
+
+      if (error) throw error;
+
+      showToast('Payment record updated successfully!', 'success');
+      
+      // Reload payment data
+      await loadData();
+      
+      // Reset form
+      setEditingNoteId(null);
+      setEditingPayment({
+        id: null,
+        amount: '',
+        payment_method: null,
+        date: '',
+        notes: ''
+      });
+
+    } catch (error) {
+      console.error('Error updating payment record:', error);
+      showToast('Failed to update payment record', 'error');
+    } finally {
+      setProcessingPayment(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingNoteId(null);
+    setEditingPayment({
+      id: null,
+      amount: '',
+      payment_method: null,
+      date: '',
+      notes: ''
+    });
+  };
+
   const getPaymentStatusColor = (status: string) => {
     switch (status) {
       case 'paid':
@@ -554,19 +650,55 @@ export function TeamEditPage() {
                     {paymentHistory.map((entry) => (
                       <tr key={entry.id}>
                         <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
-                          {new Date(entry.date).toLocaleDateString()}
+                          {editingNoteId === entry.id ? (
+                            <div className="relative">
+                              <Input
+                                type="date"
+                                value={editingPayment.date}
+                                onChange={(e) => setEditingPayment({...editingPayment, date: e.target.value})}
+                                className="w-full"
+                              />
+                            </div>
+                          ) : (
+                            new Date(entry.date).toLocaleDateString()
+                          )}
                         </td>
                         <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {entry.amount > 0 ? `$${entry.amount.toFixed(2)}` : '-'}
+                          {editingNoteId === entry.id ? (
+                            <Input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              value={editingPayment.amount}
+                              onChange={(e) => setEditingPayment({...editingPayment, amount: e.target.value})}
+                              className="w-full"
+                            />
+                          ) : (
+                            entry.amount > 0 ? `$${entry.amount.toFixed(2)}` : '-'
+                          )}
                         </td>
                         <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
-                          {entry.payment_method ? entry.payment_method.replace('_', ' ').toUpperCase() : '-'}
+                          {editingNoteId === entry.id ? (
+                            <select
+                              value={editingPayment.payment_method || ''}
+                              onChange={(e) => setEditingPayment({...editingPayment, payment_method: e.target.value as any})}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
+                            >
+                              <option value="e_transfer">E-TRANSFER</option>
+                              <option value="online">ONLINE</option>
+                              <option value="cash">CASH</option>
+                              <option value="waived">WAIVED</option>
+                              <option value="stripe">STRIPE</option>
+                            </select>
+                          ) : (
+                            entry.payment_method ? entry.payment_method.replace('_', ' ').toUpperCase() : '-'
+                          )}
                         </td>
                         <td className="px-3 py-2 text-sm text-gray-500 max-w-xs">
                           {editingNoteId === entry.id ? (
                             <textarea
-                              value={paymentNotes}
-                              onChange={(e) => setPaymentNotes(e.target.value)}
+                              value={editingPayment.notes}
+                              onChange={(e) => setEditingPayment({...editingPayment, notes: e.target.value})}
                               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
                               rows={2}
                             />
@@ -578,19 +710,14 @@ export function TeamEditPage() {
                           {editingNoteId === entry.id ? (
                             <div className="flex gap-2 justify-end">
                               <Button
-                                onClick={() => {
-                                  handleProcessPayment();
-                                }}
+                                onClick={handleSavePaymentEdit}
                                 className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-lg px-3 py-1 text-xs flex items-center gap-1"
                               >
                                 <Save className="h-3 w-3" />
                                 Save
                               </Button>
                               <Button
-                                onClick={() => {
-                                  setEditingNoteId(null);
-                                  setPaymentNotes('');
-                                }}
+                                onClick={handleCancelEdit}
                                 className="bg-gray-500 hover:bg-gray-600 text-white rounded-lg px-3 py-1 text-xs flex items-center gap-1"
                               >
                                 <X className="h-3 w-3" />
@@ -599,10 +726,7 @@ export function TeamEditPage() {
                             </div>
                           ) : (
                             <Button
-                              onClick={() => {
-                                setPaymentNotes(entry.notes || '');
-                                setEditingNoteId(entry.id);
-                              }}
+                              onClick={() => handleEditPayment(entry)}
                               className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-lg px-3 py-1 text-xs flex items-center gap-1 ml-auto"
                             >
                               <Edit2 className="h-3 w-3" />
