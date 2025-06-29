@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { useToast } from '../../../../components/ui/toast';
 import { supabase } from '../../../../lib/supabase'; 
@@ -47,6 +48,13 @@ interface Team {
 interface TeamWithPayment extends Team {
   payment?: LeaguePayment;
 }
+
+// Helper function to get day name
+const getDayName = (dayNumber: number | null | undefined): string => {
+  if (dayNumber === null || dayNumber === undefined) return 'Day TBD';
+  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  return days[dayNumber] || 'Day TBD';
+};
 
 export function TeamsTab() {
   const { userProfile } = useAuth();
@@ -531,23 +539,23 @@ export function TeamsTab() {
 
                     <div className="flex flex-col items-end gap-2 ml-4">
                       {/* Skill Level */}
-                      {team.skill_name && (
+                      {team.skill?.name && (
                         <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
-                          {team.skill_name}
+                          {team.skill.name}
                         </span>
                       )}
                       
                       {/* Action Buttons */}
                       <div className="flex flex-col gap-2 mt-2">
-                        <Button
+                        <button
                           onClick={() => handleManageTeam(team)}
                           className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-lg px-4 py-2 text-sm transition-colors"
                         >
                           {team.captain_id === userProfile?.id ? 'Manage Players' : 'View Team'}
-                        </Button>
+                        </button>
                         
                         {team.captain_id === userProfile?.id ? (
-                          <Button
+                          <button
                             onClick={() => handleDeleteTeam(team)}
                             disabled={deletingTeam === team.id}
                             className="bg-red-600 hover:bg-red-700 text-white rounded-lg px-4 py-2 text-sm transition-colors flex items-center justify-center gap-1"
@@ -560,10 +568,10 @@ export function TeamsTab() {
                                 Delete Team
                               </>
                             )}
-                          </Button>
+                          </button>
                         ) : (
                           team.payment && (
-                            <Button
+                            <button
                               onClick={() => handleUnregister(team.payment!.id, team.league?.name || 'league')}
                               disabled={unregisteringPayment === team.payment?.id}
                               className="bg-red-600 hover:bg-red-700 text-white rounded-lg px-4 py-2 text-sm transition-colors flex items-center justify-center gap-1"
@@ -576,7 +584,7 @@ export function TeamsTab() {
                                   Leave Team
                                 </>
                               )}
-                            </Button>
+                            </button>
                           )
                         )}
                       </div>
