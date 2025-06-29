@@ -50,7 +50,7 @@ export function TeamEditPage() {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [paymentInfo, setPaymentInfo] = useState<PaymentInfo | null>(null);
   const [depositAmount, setDepositAmount] = useState<string>('');
-  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'e_transfer' | 'waived'>('cash');
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'e_transfer' | 'online'>('cash');
   const [paymentNotes, setPaymentNotes] = useState<string>('');
   const [processingPayment, setProcessingPayment] = useState(false);
   const [paymentHistory, setPaymentHistory] = useState<PaymentHistory[]>([]);
@@ -617,12 +617,12 @@ export function TeamEditPage() {
                       </label>
                       <select
                         value={paymentMethod}
-                        onChange={(e) => setPaymentMethod(e.target.value as 'cash' | 'e_transfer' | 'waived')}
+                        onChange={(e) => setPaymentMethod(e.target.value as 'cash' | 'e_transfer' | 'online')}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
                       >
                         <option value="cash">Cash</option>
                         <option value="e_transfer">E-Transfer</option>
-                        <option value="waived">Waived</option>
+                        <option value="online">Online</option>
                       </select>
                     </div>
                   </div>
