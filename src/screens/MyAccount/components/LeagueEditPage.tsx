@@ -9,6 +9,7 @@ import { supabase } from '../../../lib/supabase';
 import { fetchSports, fetchSkills, fetchLeagueById, type League } from '../../../lib/leagues';
 import { ChevronLeft, Save, X } from 'lucide-react';
 import { RichTextEditor } from '../../../components/ui/rich-text-editor';
+import { RichTextEditor } from '../../../components/ui/rich-text-editor';
 export function LeagueEditPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -321,6 +322,16 @@ export function LeagueEditPage() {
                   className="w-full"
                 />
               </div>
+            </div>
+
+            <div className="mt-6">
+              <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Description</label>
+              <RichTextEditor
+                value={editLeague.description}
+                onChange={(value) => setEditLeague({ ...editLeague, description: value })}
+                placeholder="Enter league description"
+                rows={6}
+              />
             </div>
 
             <div className="mt-6">
