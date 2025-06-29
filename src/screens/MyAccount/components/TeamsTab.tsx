@@ -5,7 +5,7 @@ import { useToast } from '../../../components/ui/toast';
 import { supabase } from '../../../lib/supabase';
 import { getUserSubscription } from '../../../lib/stripe';
 import { getUserPaymentSummary, getUserLeaguePayments, type LeaguePayment } from '../../../lib/payments';
-import { Users, Calendar, CheckCircle, CreditCard, AlertCircle, Crown, DollarSign, Clock, X } from 'lucide-react';
+import { Users, Calendar, CheckCircle, CreditCard, AlertCircle, Crown, DollarSign, Clock, Trash2, AlertTriangle } from 'lucide-react';
 import { TeamDetailsModal } from './TeamDetailsModal';
 import { getDayName } from '../../../lib/leagues';
 import { getProductByPriceId } from '../../../stripe-config';
@@ -111,7 +111,7 @@ export function TeamsTab() {
   };
 
   const handleUnregister = async (paymentId: number, leagueName: string) => {
-    const confirmUnregister = confirm(`Are you sure you want to unregister from ${leagueName}? This action cannot be undone and you may lose your spot in the league.`);
+    const confirmUnregister = confirm(`Are you sure you want to delete your registration for ${leagueName}? This action cannot be undone and you will lose your spot in the league.`);
     
     if (!confirmUnregister) return;
 
@@ -191,7 +191,7 @@ export function TeamsTab() {
 
       if (deleteError) throw deleteError;
 
-      showToast('Successfully unregistered from league', 'success');
+      showToast('Successfully deleted league registration', 'success');
       
       // Reload all data to update the UI and amounts
       await loadPaymentData();
@@ -201,8 +201,8 @@ export function TeamsTab() {
       window.location.reload();
       
     } catch (error: any) {
-      console.error('Error unregistering from league:', error);
-      showToast(error.message || 'Failed to unregister from league', 'error');
+      console.error('Error deleting league registration:', error);
+      showToast(error.message || 'Failed to delete league registration', 'error');
     } finally {
       setUnregisteringPayment(null);
     }
@@ -443,9 +443,23 @@ export function TeamsTab() {
       {leaguePayments.length > 0 && (
         <div className="mb-8">
           <h3 className="text-lg font-bold text-[#6F6F6F] mb-4 flex items-center gap-2">
-            <DollarSign className="h-5 w-5" />
-            League Payments
+            <CreditCard className="h-5 w-5 text-[#B20000]" />
+            <span>League Registrations</span>
           </h3>
+          
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <div className="flex items-start gap-2">
+              <AlertTriangle className="h-5 w-5 text-blue-600 mt-0.5" />
+              <div>
+                <p className="text-blue-800 text-sm">
+                  This section shows all your league registrations. You can delete a registration if you no longer wish to participate.
+                </p>
+                <p className="text-blue-800 text-sm mt-1">
+                  <strong>Note:</strong> Deleting a registration will remove you from the team and you may lose your spot in the league.
+                </p>
+              </div>
+            </div>
+          </div>
           
           <div className="space-y-3">
             {leaguePayments.map(payment => (
@@ -486,14 +500,14 @@ export function TeamsTab() {
                     <Button
                       onClick={() => handleUnregister(payment.id, payment.league_name)}
                       disabled={unregisteringPayment === payment.id}
-                      className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-lg px-4 py-2 text-sm transition-colors"
+                      className="bg-red-600 hover:bg-red-700 text-white rounded-lg px-4 py-2 text-sm transition-colors flex items-center gap-1"
                     >
                       {unregisteringPayment === payment.id ? (
                         'Unregistering...'
                       ) : (
                         <>
-                          <X className="h-3 w-3" />
-                          Unregister
+                          <Trash2 className="h-4 w-4" />
+                          <span>Delete</span>
                         </>
                       )}
                     </Button>

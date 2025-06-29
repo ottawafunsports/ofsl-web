@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { useToast } from '../../../../components/ui/toast';
-import { supabase } from '../../../../lib/supabase';
+import { supabase } from '../../../../lib/supabase'; 
 import { getUserSubscription } from '../../../../lib/stripe';
 import { getUserPaymentSummary, getUserLeaguePayments, type LeaguePayment } from '../../../../lib/payments';
-import { Users, Calendar, CheckCircle, AlertCircle, CreditCard } from 'lucide-react';
+import { Users, Calendar, CheckCircle, AlertCircle, CreditCard, AlertTriangle } from 'lucide-react';
 import { TeamDetailsModal } from '../TeamDetailsModal';
 import { StatsCard } from './components/StatsCard';
 import { TeamCard } from './components/TeamCard';
@@ -109,7 +109,7 @@ export function TeamsTab() {
   };
 
   const handleUnregister = async (paymentId: number, leagueName: string) => {
-    const confirmUnregister = confirm(`Are you sure you want to unregister from ${leagueName}? This action cannot be undone and you may lose your spot in the league.`);
+    const confirmUnregister = confirm(`Are you sure you want to delete your registration for ${leagueName}? This action cannot be undone and you will lose your spot in the league.`);
     
     if (!confirmUnregister) return;
 
@@ -189,7 +189,7 @@ export function TeamsTab() {
 
       if (deleteError) throw deleteError;
 
-      showToast('Successfully unregistered from league', 'success');
+      showToast('Successfully deleted league registration', 'success');
       
       // Reload all data to update the UI and amounts
       await loadPaymentData();
@@ -199,8 +199,8 @@ export function TeamsTab() {
       window.location.reload();
       
     } catch (error: any) {
-      console.error('Error unregistering from league:', error);
-      showToast(error.message || 'Failed to unregister from league', 'error');
+      console.error('Error deleting league registration:', error);
+      showToast(error.message || 'Failed to delete league registration', 'error');
     } finally {
       setUnregisteringPayment(null);
     }
@@ -360,9 +360,23 @@ export function TeamsTab() {
       {leaguePayments.length > 0 && (
         <div className="mb-8">
           <h3 className="text-lg font-bold text-[#6F6F6F] mb-4 flex items-center gap-2">
-            <CreditCard className="h-5 w-5" />
-            League Payments
+            <CreditCard className="h-5 w-5 text-[#B20000]" />
+            <span>League Registrations</span>
           </h3>
+          
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <div className="flex items-start gap-2">
+              <AlertTriangle className="h-5 w-5 text-blue-600 mt-0.5" />
+              <div>
+                <p className="text-blue-800 text-sm">
+                  This section shows all your league registrations. You can delete a registration if you no longer wish to participate.
+                </p>
+                <p className="text-blue-800 text-sm mt-1">
+                  <strong>Note:</strong> Deleting a registration will remove you from the team and you may lose your spot in the league.
+                </p>
+              </div>
+            </div>
+          </div>
           
           <div className="space-y-4">
             {leaguePayments.map(payment => (

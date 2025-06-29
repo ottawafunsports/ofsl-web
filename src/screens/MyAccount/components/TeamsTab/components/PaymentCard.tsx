@@ -1,5 +1,5 @@
 import { Button } from '../../../../../components/ui/button';
-import { Clock, X } from 'lucide-react';
+import { Clock, Trash2 } from 'lucide-react';
 import { LeaguePayment } from '../../../../../lib/payments';
 
 interface PaymentCardProps {
@@ -51,14 +51,14 @@ export function PaymentCard({ payment, onUnregister, unregisteringPayment }: Pay
           <Button
             onClick={() => onUnregister(payment.id, payment.league_name)}
             disabled={unregisteringPayment === payment.id}
-            className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-lg px-4 py-2 text-sm transition-colors"
+            className="bg-red-600 hover:bg-red-700 text-white rounded-lg px-4 py-2 text-sm transition-colors flex items-center gap-1"
           >
             {unregisteringPayment === payment.id ? (
               'Unregistering...'
             ) : (
               <>
-                <X className="h-4 w-4 mr-1" />
-                Unregister
+                <Trash2 className="h-4 w-4" />
+                <span>Delete</span>
               </>
             )}
           </Button>
