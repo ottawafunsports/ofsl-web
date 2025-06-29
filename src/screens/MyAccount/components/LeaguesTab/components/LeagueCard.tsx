@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Button } from '../../../../../components/ui/button';
 import { Card, CardContent } from '../../../../../components/ui/card';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit2, Trash2 } from 'lucide-react';
 import { LeagueWithTeamCount } from '../types';
 import { getDayName, formatLeagueDates, getPrimaryLocation } from '../../../../../lib/leagues';
 
@@ -115,15 +115,7 @@ export function LeagueCard({ league, onDelete }: LeagueCardProps) {
             </span>
           </div>
           
-          <div className="flex gap-2">
-            <button 
-              type="button"
-              onClick={() => onDelete(league.id)}
-              className="bg-transparent hover:bg-red-50 text-red-500 hover:text-red-600 rounded-lg p-2 transition-colors"
-            >
-              <Trash2 className="h-4 w-4" aria-hidden="true" />
-            </button>
-          </div>
+
         </div>
       </CardContent>
     </Card>
