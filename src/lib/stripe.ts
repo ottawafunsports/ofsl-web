@@ -246,3 +246,23 @@ export async function createPaymentIntent(paymentId: number) {
  * Gets all available Stripe products
  * @returns Promise with array of products
  */
+
+/**
+ * Gets a Stripe product by price ID
+ * @param priceId The price ID
+ * @returns Promise with product or null
+ */
+export async function getStripeProductByPriceId(priceId: string) {
+  const { data, error } = await supabase
+    .from('stripe_products')
+    .select('*')
+    .eq('price_id', priceId)
+    .maybeSingle();
+
+  if (error) {
+    console.error('Error fetching Stripe product by price ID:', error);
+    return null;
+  }
+
+  return data;
+}
