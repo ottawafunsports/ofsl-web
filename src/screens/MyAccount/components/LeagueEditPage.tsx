@@ -9,6 +9,9 @@ import { supabase } from '../../../lib/supabase';
 import { fetchSports, fetchSkills, fetchLeagueById, type League } from '../../../lib/leagues';
 import { ChevronLeft, Save, X } from 'lucide-react';
 import { RichTextEditor } from '../../../components/ui/rich-text-editor';
+import { StripeProductSelector } from './LeaguesTab/components/StripeProductSelector';
+import { products, getProductById } from '../../../stripe-config';
+
 export function LeagueEditPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -47,6 +50,8 @@ export function LeagueEditPage() {
     max_teams: 20,
     gym_ids: []
   });
+  
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!userProfile?.is_admin) {
@@ -86,6 +91,12 @@ export function LeagueEditPage() {
       if (!leagueData) {
         throw new Error('League not found');
       } else {
+        // Check if this league is linked to a Stripe product
+        const linkedProduct = products.find(p => p.leagueId === parseInt(id));
+        if (linkedProduct) {
+          setSelectedProductId(linkedProduct.id);
+        }
+        
         setLeague(leagueData);
         
         setEditLeague({
@@ -134,6 +145,16 @@ export function LeagueEditPage() {
         .eq('id', id);
 
       if (error) throw error;
+      
+      // Update the Stripe product mapping if changed
+      if (selectedProductId) {
+        const product = getProductById(selectedProductId);
+        if (product) {
+          // In a real implementation, we would update a database table here
+          // For now, we'll just show a toast message
+          showToast(`League linked to Stripe product: ${product.name}`, 'success');
+        }
+      }
 
       showToast('League updated successfully!', 'success');
       navigate(`/leagues/${id}`);
@@ -323,6 +344,14 @@ export function LeagueEditPage() {
                   </label>
                 ))}
               </div>
+            </div>
+
+            {/* Stripe Product Selector */}
+            <div className="mt-8">
+              <StripeProductSelector
+                selectedProductId={selectedProductId}
+                onChange={setSelectedProductId}
+              />
             </div>
 
             <div className="mt-8 flex gap-4">

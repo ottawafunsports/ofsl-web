@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 interface RichTextEditorProps {
   value: string;
-  onChange: (content: string) => void;
+  onChange: (value: string) => void;
   placeholder?: string;
   rows?: number;
 }
@@ -14,22 +15,18 @@ export function RichTextEditor({
   placeholder = 'Enter content here...', 
   rows = 6 
 }: RichTextEditorProps) {
-  const [editorValue, setEditorValue] = useState(value || '');
+  const [mounted, setMounted] = useState(false);
   
+  // This is needed because ReactQuill is a client-side only component
   useEffect(() => {
-    setEditorValue(value || '');
-  }, [value]);
-
-  const handleChange = (content: string) => {
-    setEditorValue(content);
-    onChange(content);
-  };
+    setMounted(true);
+  }, []);
 
   const modules = {
     toolbar: [
-      [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+      [{ 'header': [1, 2, 3, false] }],
       ['bold', 'italic', 'underline', 'strike'],
-      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
       ['link'],
       ['clean']
     ],
@@ -42,17 +39,27 @@ export function RichTextEditor({
     'link'
   ];
 
-  return (
-    <div className="rich-text-editor">
-      <ReactQuill
-        theme="snow"
-        value={editorValue}
-        onChange={handleChange}
-        modules={modules}
-        formats={formats}
+  if (!mounted) {
+    return (
+      <textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        style={{ height: `${Math.max(rows * 24, 150)}px` }}
+        rows={rows}
+        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
       />
-    </div>
+    );
+  }
+
+  return (
+    <ReactQuill
+      theme="snow"
+      value={value}
+      onChange={onChange}
+      placeholder={placeholder}
+      modules={modules}
+      formats={formats}
+      style={{ height: `${rows * 24}px` }}
+    />
   );
 }

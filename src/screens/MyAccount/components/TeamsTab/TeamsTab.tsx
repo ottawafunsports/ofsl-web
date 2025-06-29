@@ -566,7 +566,6 @@ export function TeamsTab() {
                                 {team.captain_id === userProfile?.id && 
                                  team.payment.amount_due > team.payment.amount_paid && (
                                   <Button
-                                    onClick={(e) => {
                                       e.stopPropagation();
                                       handlePayNow(team.payment!.id);
                                     }}
@@ -628,20 +627,6 @@ export function TeamsTab() {
                             </button>
                           )}
                           
-                          {team.captain_id === userProfile?.id ? (
-                            <button
-                              onClick={() => handleDeleteTeam(team)}
-                              disabled={deletingTeam === team.id}
-                              className="bg-red-600 hover:bg-red-700 text-white rounded-lg px-3 py-1.5 text-sm transition-colors flex items-center gap-1"
-                            >
-                              {deletingTeam === team.id ? (
-                                'Deleting...'
-                              ) : (
-                                <>
-                                  <Trash2 className="h-3 w-3" />
-                                  Delete
-                                </>
-                              )}
                             </button>
                           ) : (
                             team.payment && (

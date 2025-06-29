@@ -4,12 +4,14 @@ import { Card, CardContent } from '../../../../../components/ui/card';
 import { Input } from '../../../../../components/ui/input';
 import { RichTextEditor } from '../../../../../components/ui/rich-text-editor';
 import { X } from 'lucide-react';
+import { StripeProductSelector } from './StripeProductSelector';
 import { NewLeague, Sport, Skill, Gym } from '../types';
 
 interface NewLeagueFormProps {
   sports: Sport[];
   skills: Skill[];
   gyms: Gym[];
+  onProductSelect: (productId: string, league: NewLeague) => void;
   saving: boolean;
   onClose: () => void;
   onSubmit: (league: NewLeague) => Promise<void>;
@@ -19,6 +21,7 @@ export function NewLeagueForm({
   sports, 
   skills, 
   gyms, 
+  onProductSelect,
   saving, 
   onClose, 
   onSubmit 
@@ -36,7 +39,13 @@ export function NewLeagueForm({
     gym_ids: []
   });
 
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+
   const handleSubmit = async () => {
+    // Pass the selected product ID to the parent component
+    if (selectedProductId) {
+      onProductSelect(selectedProductId, newLeague);
+    }
     await onSubmit(newLeague);
     setNewLeague({
       name: '',
@@ -186,6 +195,14 @@ export function NewLeagueForm({
               </label>
             ))}
           </div>
+        </div>
+
+        {/* Stripe Product Selector */}
+        <div className="mt-6">
+          <StripeProductSelector
+            selectedProductId={selectedProductId}
+            onChange={setSelectedProductId}
+          />
         </div>
 
         <div className="mt-6 flex gap-4">
