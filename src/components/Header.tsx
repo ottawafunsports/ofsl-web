@@ -198,12 +198,12 @@ export function Header({ isCompact = false }: HeaderProps) {
         {/* Mobile Navigation */}
         <div 
           ref={mobileMenuRef}
-          className={`lg:hidden fixed inset-0 top-[108px] md:top-[135px] bg-[#B20000] z-50 transform transition-transform duration-300 ease-in-out ${
+          className={`lg:hidden fixed inset-0 top-[108px] md:top-[135px] bg-[#B20000] z-50 transform transition-transform duration-300 ease-in-out overflow-y-auto ${
             isMenuOpen ? 'translate-x-0' : 'translate-x-full'
           }`}
         >
-          <div className="container mx-auto px-4 py-6">
-            <nav className="flex flex-col space-y-4">
+          <div className="container mx-auto px-4 py-6 pb-24">
+            <nav className="flex flex-col space-y-4 min-h-[calc(100vh-200px)]">
               <Link 
                 to="/volleyball" 
                 className={getMobileLinkClasses("/volleyball")}
@@ -250,7 +250,7 @@ export function Header({ isCompact = false }: HeaderProps) {
               {user ? (
                 <>
                   <div className="px-4 py-2 text-white font-medium">
-                    MyOFSL
+                    <span className="text-lg">MyOFSL</span>
                   </div>
                   <Link 
                     to="/my-account/teams" 
@@ -259,6 +259,30 @@ export function Header({ isCompact = false }: HeaderProps) {
                   >
                     <User className="h-4 w-4 mr-2" />
                     My Teams
+                  </Link>
+                  <Link 
+                    to="/my-account/leagues" 
+                    className={getMobileLinkClasses("/my-account/leagues")}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <User className="h-4 w-4 mr-2" />
+                    Manage Leagues
+                  </Link>
+                  <Link 
+                    to="/my-account/schools" 
+                    className={getMobileLinkClasses("/my-account/schools")}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <User className="h-4 w-4 mr-2" />
+                    Manage Schools
+                  </Link>
+                  <Link 
+                    to="/my-account/users" 
+                    className={getMobileLinkClasses("/my-account/users")}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <User className="h-4 w-4 mr-2" />
+                    Manage Users
                   </Link>
                   <Link 
                     to="/my-account/profile" 
@@ -277,7 +301,7 @@ export function Header({ isCompact = false }: HeaderProps) {
                   >
                     <LogOut className="h-4 w-4 mr-2" />
                     Logout
-                  </button>
+                  </button> 
                 </>
               ) : (
                 <Link 
