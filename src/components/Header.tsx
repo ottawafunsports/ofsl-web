@@ -198,8 +198,8 @@ export function Header({ isCompact = false }: HeaderProps) {
         {/* Mobile Navigation */}
         <div 
           ref={mobileMenuRef}
-          className={`lg:hidden fixed inset-0 top-[108px] md:top-[135px] bg-[#B20000] z-50 transform transition-transform duration-300 ease-in-out overflow-y-auto ${
-            isMenuOpen ? 'translate-x-0' : 'translate-x-full'
+          className={`lg:hidden fixed inset-x-0 bottom-0 top-[108px] md:top-[135px] bg-[#B20000] z-50 transform transition-transform duration-300 ease-in-out overflow-y-auto ${
+            isMenuOpen ? 'translate-y-0' : 'translate-y-full'
           }`}
         >
           <div className="container mx-auto px-4 py-6 pb-24">
