@@ -14,6 +14,7 @@ export function Header({ isCompact = false }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
@@ -196,6 +197,7 @@ export function Header({ isCompact = false }: HeaderProps) {
 
         {/* Mobile Navigation */}
         <div 
+          ref={mobileMenuRef}
           className={`lg:hidden fixed inset-0 top-[108px] md:top-[135px] bg-[#B20000] z-50 transform transition-transform duration-300 ease-in-out ${
             isMenuOpen ? 'translate-x-0' : 'translate-x-full'
           }`}
