@@ -211,23 +211,6 @@ export function Header({ isCompact = false }: HeaderProps) {
               </Link>
               <Link 
                 to="/badminton" 
-        <div 
-          ref={mobileMenuRef}
-          className={`lg:hidden fixed inset-0 top-[108px] md:top-[135px] bg-[#B20000] z-50 transform transition-transform duration-300 ease-in-out ${
-            isMenuOpen ? 'translate-x-0' : 'translate-x-full'
-          }`}
-        >
-          <div className="container mx-auto px-4 py-6">
-            <nav className="flex flex-col space-y-4">
-              <Link 
-                to="/volleyball" 
-                className={getMobileLinkClasses("/volleyball")}
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Volleyball
-              </Link>
-              <Link 
-                to="/badminton" 
                 className={getMobileLinkClasses("/badminton")}
                 onClick={() => setIsMenuOpen(false)}
               >
@@ -283,31 +266,6 @@ export function Header({ isCompact = false }: HeaderProps) {
                     <User className="h-4 w-4 mr-2" />
                     Account Settings
                   </Link>
-                  {userProfile?.is_admin && (
-                    <>
-                      <Link 
-                        to="/my-account/leagues" 
-                        className={getMobileLinkClasses("/my-account/leagues")}
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        Manage Leagues
-                      </Link>
-                      <Link 
-                        to="/my-account/schools" 
-                        className={getMobileLinkClasses("/my-account/schools")}
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        Manage Schools
-                      </Link>
-                      <Link 
-                        to="/my-account/users" 
-                        className={getMobileLinkClasses("/my-account/users")}
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        Manage Users
-                      </Link>
-                    </>
-                  )}
                   <button 
                     onClick={() => {
                       handleLogout();
