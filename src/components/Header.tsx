@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
-import { Menu, X, ChevronDown } from "lucide-react";
+import { Menu, X, ChevronDown, User, LogOut } from "lucide-react";
 import { NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList } from "./ui/navigation-menu";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "./ui/toast";
@@ -14,6 +14,7 @@ export function Header({ isCompact = false }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
@@ -77,12 +78,15 @@ export function Header({ isCompact = false }: HeaderProps) {
         </Link>
 
         {/* Mobile menu button */}
-        <button
-          className="lg:hidden text-white"
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-        >
-          {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+        <div className="lg:hidden">
+          <button
+            className="text-white"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label="Toggle mobile menu"
+          >
+            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
 
         {/* Desktop Navigation - Moved to the right */}
         <div className="hidden lg:flex items-center">
@@ -192,71 +196,91 @@ export function Header({ isCompact = false }: HeaderProps) {
         </div>
 
         {/* Mobile Navigation */}
-        {isMenuOpen && (
-          <div className="lg:hidden fixed inset-0 top-[108px] md:top-[135px] bg-[#B20000] z-50">
-            <div className="container mx-auto px-4 py-6">
-              <nav className="flex flex-col space-y-4">
+        <div 
+          ref={mobileMenuRef}
+          className={`lg:hidden fixed inset-x-0 bottom-0 top-[108px] md:top-[135px] bg-[#B20000] z-50 transform transition-transform duration-300 ease-in-out overflow-y-auto ${
+            isMenuOpen ? 'translate-y-0' : 'translate-y-full'
+          }`}
+        >
+          <div className="container mx-auto px-4 py-6 pb-24">
+            <nav className="flex flex-col space-y-4 min-h-[calc(100vh-200px)]">
+              <Link 
+                to="/volleyball" 
+                className={getMobileLinkClasses("/volleyball")}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Volleyball
+              </Link>
+              <Link 
+                to="/badminton" 
+                className={getMobileLinkClasses("/badminton")}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Badminton
+              </Link>
+              <Link 
+                to="https://hoops.ofsl.ca" 
+                className={getMobileLinkClasses("/basketball")}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Basketball
+              </Link>
+              <div className="flex flex-col">
+                <span className="text-[10px] text-[#ffeae5] font-medium px-4 whitespace-nowrap">Coming Soon!</span>
                 <Link 
-                  to="/volleyball" 
-                  className={getMobileLinkClasses("/volleyball")}
+                  to="/pickleball" 
+                  className={getMobileLinkClasses("/pickleball")}
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  Volleyball
+                  Pickleball
                 </Link>
-                <Link 
-                  to="/badminton" 
-                  className={getMobileLinkClasses("/badminton")}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Badminton
-                </Link>
-                <Link 
-                  to="https://hoops.ofsl.ca" 
-                  className={getMobileLinkClasses("/basketball")}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Basketball
-                </Link>
-                <div className="flex flex-col">
-                  <span className="text-[10px] text-[#ffeae5] font-medium px-4 whitespace-nowrap">Coming Soon!</span>
-                  <Link 
-                    to="/pickleball" 
-                    className={getMobileLinkClasses("/pickleball")}
+              </div>
+              <Link 
+                to="/leagues" 
+                className={getMobileLinkClasses("/leagues")}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Leagues
+              </Link>
+              
+              {/* Divider for mobile menu */}
+              <div className="h-px w-full bg-white/20 my-2"></div>
+              
+              {/* Account navigation for mobile */}
+              {user ? (
+                <>
+                  <Link
+                    to="/my-account"
+                    className={`${getMobileLinkClasses("/my-account")} flex items-center`}
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    Pickleball
+                    <User className="h-4 w-4 mr-2" />
+                    My Account
                   </Link>
-                </div>
-                <Link 
-                  to="/leagues" 
-                  className={getMobileLinkClasses("/leagues")}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Leagues
-                </Link>
-                {user ? (
                   <button 
                     onClick={() => {
                       handleLogout();
                       setIsMenuOpen(false);
                     }}
-                    className={getMobileLinkClasses("/logout")}
+                    className={`${getMobileLinkClasses("/logout")} flex items-center`}
                   >
+                    <LogOut className="h-4 w-4 mr-2" />
                     Logout
-                  </button>
-                ) : (
-                  <Link 
-                    to="/login" 
-                    className={getMobileLinkClasses("/login")}
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Login
-                  </Link>
-                )}
-              </nav>
-            </div>
+                  </button> 
+                </>
+              ) : (
+                <Link 
+                  to="/login" 
+                  className={`${getMobileLinkClasses("/login")} flex items-center`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <User className="h-4 w-4 mr-2" />
+                  Login
+                </Link>
+              )}
+            </nav>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
