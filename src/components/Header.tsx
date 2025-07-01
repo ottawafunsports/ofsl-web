@@ -249,48 +249,13 @@ export function Header({ isCompact = false }: HeaderProps) {
               {/* Account navigation for mobile */}
               {user ? (
                 <>
-                  <div className="px-4 py-2 text-white font-medium">
-                    <span className="text-lg">MyOFSL</span>
-                  </div>
-                  <Link 
-                    to="/my-account/teams" 
-                    className={getMobileLinkClasses("/my-account/teams")}
+                  <Link
+                    to="/my-account"
+                    className={getMobileLinkClasses("/my-account")}
                     onClick={() => setIsMenuOpen(false)}
                   >
                     <User className="h-4 w-4 mr-2" />
-                    My Teams
-                  </Link>
-                  <Link 
-                    to="/my-account/leagues" 
-                    className={getMobileLinkClasses("/my-account/leagues")}
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <User className="h-4 w-4 mr-2" />
-                    Manage Leagues
-                  </Link>
-                  <Link 
-                    to="/my-account/schools" 
-                    className={getMobileLinkClasses("/my-account/schools")}
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <User className="h-4 w-4 mr-2" />
-                    Manage Schools
-                  </Link>
-                  <Link 
-                    to="/my-account/users" 
-                    className={getMobileLinkClasses("/my-account/users")}
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <User className="h-4 w-4 mr-2" />
-                    Manage Users
-                  </Link>
-                  <Link 
-                    to="/my-account/profile" 
-                    className={getMobileLinkClasses("/my-account/profile")}
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <User className="h-4 w-4 mr-2" />
-                    Account Settings
+                    MyOFSL
                   </Link>
                   <button 
                     onClick={() => {
