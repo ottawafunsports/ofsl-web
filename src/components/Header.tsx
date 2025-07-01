@@ -130,56 +130,6 @@ export function Header({ isCompact = false }: HeaderProps) {
               <NavigationMenuItem className="flex items-center">
                 <Link 
                   to="/leagues" 
-              
-              {/* Divider for mobile menu */}
-              <div className="h-px w-full bg-white/20 my-2"></div>
-              
-              {/* Account navigation for mobile */}
-              {user ? (
-                <>
-                  <Link 
-                    to="/my-account/teams" 
-                    className={getMobileLinkClasses("/my-account/teams")}
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    My Teams
-                  </Link>
-                  <Link 
-                    to="/my-account/profile" 
-                    className={getMobileLinkClasses("/my-account/profile")}
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Account Settings
-                  </Link>
-                  {userProfile?.is_admin && (
-                    <>
-                      <Link 
-                        to="/my-account/leagues" 
-                        className={getMobileLinkClasses("/my-account/leagues")}
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        Manage Leagues
-                      </Link>
-                      <Link 
-                        to="/my-account/schools" 
-                        className={getMobileLinkClasses("/my-account/schools")}
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        Manage Schools
-                      </Link>
-                      <Link 
-                        to="/my-account/users" 
-                        className={getMobileLinkClasses("/my-account/users")}
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        Manage Users
-                      </Link>
-                    </>
-                  )}
-                  <div className="h-px w-full bg-white/20 my-2"></div>
-                </>
-              ) : null}
-              
                   className={getLinkClasses("/leagues")}
                 >
                   Leagues
