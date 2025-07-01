@@ -251,18 +251,18 @@ export function Header({ isCompact = false }: HeaderProps) {
                 <>
                   <Link
                     to="/my-account"
-                    className={getMobileLinkClasses("/my-account")}
+                    className={`${getMobileLinkClasses("/my-account")} flex items-center`}
                     onClick={() => setIsMenuOpen(false)}
                   >
                     <User className="h-4 w-4 mr-2" />
-                    MyOFSL
+                    My Account
                   </Link>
                   <button 
                     onClick={() => {
                       handleLogout();
                       setIsMenuOpen(false);
                     }}
-                    className={getMobileLinkClasses("/logout")}
+                    className={`${getMobileLinkClasses("/logout")} flex items-center`}
                   >
                     <LogOut className="h-4 w-4 mr-2" />
                     Logout
@@ -271,7 +271,7 @@ export function Header({ isCompact = false }: HeaderProps) {
               ) : (
                 <Link 
                   to="/login" 
-                  className={getMobileLinkClasses("/login")}
+                  className={`${getMobileLinkClasses("/login")} flex items-center`}
                   onClick={() => setIsMenuOpen(false)}
                 >
                   <User className="h-4 w-4 mr-2" />
