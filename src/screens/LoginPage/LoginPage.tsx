@@ -70,7 +70,7 @@ export function LoginPage() {
   const handleGoogleSignIn = async () => {
     setError(null);
     setSuccessMessage(null);
-    setGoogleLoading(true);
+    setGoogleLoading(true); 
     
     try {
       const { error } = await signInWithGoogle();
@@ -78,6 +78,14 @@ export function LoginPage() {
       if (error) {
         setError(error.message);
         setGoogleLoading(false);
+      } else {
+        // Add a fallback redirect in case the auth context redirect fails
+        setTimeout(() => {
+          if (document.visibilityState === 'visible') {
+            const redirectPath = localStorage.getItem('redirectAfterLogin') || '/my-account/profile';
+            window.location.replace(redirectPath);
+          }
+        }, 3000);
       }
       // Note: Don't set loading to false here as the user will be redirected
       // The loading state will be reset when the component unmounts

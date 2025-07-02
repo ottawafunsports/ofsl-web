@@ -62,7 +62,7 @@ export function SignupPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     
-    // Basic validation
+    // Form validation
     if (!name || !email || !phone || !password) {
       setError("All fields are required");
       return;
@@ -93,6 +93,13 @@ export function SignupPage() {
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            full_name: name,
+            phone: phone
+          },
+          emailRedirectTo: `${window.location.origin}/my-account/profile`
+        }
       });
       
       if (authError) {
@@ -123,7 +130,7 @@ export function SignupPage() {
       if (sessionData.session) {
         // User is signed in immediately, create their profile
         const now = new Date().toISOString();
-        const { error: userError } = await supabase
+        const { data: userData, error: userError } = await supabase
           .from('users')
           .insert({
             id: authData.user.id,
@@ -137,7 +144,7 @@ export function SignupPage() {
           });
         
         if (userError) {
-          console.error("Error inserting user data:", userError);
+          console.error("Error creating user profile:", userError);
           setError(`Failed to create user profile: ${userError.message}`);
           return;
         }
@@ -148,7 +155,7 @@ export function SignupPage() {
         // User needs to confirm email first OR email confirmation is disabled but session hasn't updated yet
         // Try to create the profile anyway since the auth user was created
         const now = new Date().toISOString();
-        const { error: userError } = await supabase
+        const { data: userData, error: userError } = await supabase
           .from('users')
           .insert({
             id: authData.user.id,
@@ -162,7 +169,7 @@ export function SignupPage() {
           });
         
         if (userError) {
-          console.error("Error inserting user data:", userError);
+          console.error("Error creating user profile:", userError);
           // If profile creation fails, provide helpful message
           navigate('/login', { 
             state: { 
