@@ -301,6 +301,18 @@ export function LeagueEditPage() {
                   onChange={(e) => setEditLeague({ ...editLeague, end_date: e.target.value })}
                   className="w-full"
                 />
+                <div className="flex items-center mt-2">
+                  <input
+                    type="checkbox"
+                    checked={editLeague.hide_day || false}
+                    onChange={(e) => setEditLeague({ ...editLeague, hide_day: e.target.checked })}
+                    className="rounded border-gray-300 text-[#B20000] focus:ring-[#B20000]"
+                    id="hide-day"
+                  />
+                  <label htmlFor="hide-day" className="ml-2 text-sm font-medium text-[#6F6F6F]">
+                    Hide day of week
+                  </label>
+                </div>
               </div>
 
               <div>
@@ -323,21 +335,6 @@ export function LeagueEditPage() {
                   className="w-full"
                 />
               </div>
-            </div>
-
-            <div className="mt-4">
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={editLeague.hide_day || false}
-                  onChange={(e) => setEditLeague({ ...editLeague, hide_day: e.target.checked })}
-                  className="rounded border-gray-300 text-[#B20000] focus:ring-[#B20000]"
-                />
-                <span className="text-sm font-medium text-[#6F6F6F]">Hide day of week</span>
-              </label>
-              <p className="text-xs text-gray-500 mt-1 ml-6">
-                When checked, the day of week won't be displayed on the league listing
-              </p>
             </div>
 
             <div className="mt-8 pb-16">
