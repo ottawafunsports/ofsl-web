@@ -507,7 +507,11 @@ export function TeamsTab() {
                       <div className="flex flex-wrap items-center gap-4 text-sm text-[#6F6F6F] mb-2">
                         <div className="flex items-center gap-1">
                           <Calendar className="h-4 w-4" />
-                          <span>{getDayName(team.league?.day_of_week) || 'Day TBD'}</span>
+                          {!team.league?.hide_day ? (
+                            <span>{getDayName(team.league?.day_of_week) || 'Day TBD'}</span>
+                          ) : (
+                            <span>Times vary</span>
+                          )}
                         </div>
                         <div className="flex items-center gap-1">
                           <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
