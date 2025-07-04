@@ -433,7 +433,7 @@ export const LeaguesPage = (): JSX.Element => {
                     <div className="space-y-1">
                       <div className="flex items-center">
                         <Calendar className="h-4 w-4 text-[#B20000] mr-1.5" />
-                        <p className="text-sm font-medium text-[#6F6F6F]">{formatLeagueDates(league.start_date, league.end_date)}</p>
+                        <p className="text-sm font-medium text-[#6F6F6F]">{formatLeagueDates(league.start_date, league.end_date, league.hide_day)}</p>
                       </div>
                     </div>
                     

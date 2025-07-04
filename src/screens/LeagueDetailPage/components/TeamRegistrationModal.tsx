@@ -180,7 +180,7 @@ export function TeamRegistrationModal({
                 )}
                 {(league.start_date || league.end_date) && (
                   <p className="text-sm text-[#6F6F6F] mt-1">
-                    <span className="font-medium">Season:</span> {formatLeagueDates(league.start_date, league.end_date)}
+                    <span className="font-medium">Season:</span> {formatLeagueDates(league.start_date, league.end_date, league.hide_day)}
                   </p>
                 )}
               </>

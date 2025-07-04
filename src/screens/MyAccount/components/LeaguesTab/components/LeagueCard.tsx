@@ -77,7 +77,7 @@ export function LeagueCard({ league, onDelete }: LeagueCardProps) {
               <svg className="h-4 w-4 text-[#B20000] mr-1.5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M19,3H18V1H16V3H8V1H6V3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M19,19H5V8H19V19Z"/>
               </svg>
-              <p className="text-sm font-medium text-[#6F6F6F]">{formatLeagueDates(league.start_date, league.end_date)}</p>
+              <p className="text-sm font-medium text-[#6F6F6F]">{formatLeagueDates(league.start_date, league.end_date, league.hide_day)}</p>
             </div>
           </div>
           
