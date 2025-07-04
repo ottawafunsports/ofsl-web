@@ -87,7 +87,7 @@ export function TeamCard({ team, currentUserId, onManageTeam, onPayNow }: TeamCa
             </div>
             <div className="flex items-center gap-1">
               <CreditCard className="h-4 w-4" />
-              <span>{formatCostWithIcon(team.league?.cost)}</span>
+              <span>{formatCostWithIcon(team.league?.cost)} + HST</span>
             </div>
             <div>
               <span>Record: TBD</span>

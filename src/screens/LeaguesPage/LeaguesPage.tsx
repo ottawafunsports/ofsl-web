@@ -453,7 +453,7 @@ export const LeaguesPage = (): JSX.Element => {
                       <div className="flex items-center">
                         <DollarSign className="h-4 w-4 text-[#B20000] mr-1.5" />
                         <p className="text-sm font-medium text-[#6F6F6F]">
-                          ${league.cost} {league.sport_name === "Volleyball" ? "per team" : "per player"}
+                          ${league.cost} + HST {league.sport_name === "Volleyball" ? "per team" : "per player"}
                         </p>
                       </div>
                     </div>

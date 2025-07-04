@@ -174,7 +174,7 @@ export function LeagueInfo({ league, sport, onSpotsUpdate }: LeagueInfoProps) {
             <div>
               <p className="font-medium text-[#6F6F6F]">League Fee</p>
               <p className="text-sm text-[#6F6F6F]">
-                {stripeProduct ? formatPrice(stripeProduct.price) : `$${league.price}`}{" "}
+                {stripeProduct ? formatPrice(stripeProduct.price) : `$${league.price}`} + HST{" "}
                 {sport === "Volleyball" ? "per team" : "per player"}
               </p>
             </div>
