@@ -91,7 +91,7 @@ export function LeagueCard({ league, onDelete }: LeagueCardProps) {
               <p className="text-sm font-medium text-[#6F6F6F]">Location</p>
             </div>
             <p className="text-xs text-gray-500 ml-6">
-              {league.location || getPrimaryLocation(league.gyms) || 'TBD'}
+              {league.location || 'TBD'}
             </p>
           </div>
           

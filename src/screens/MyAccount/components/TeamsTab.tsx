@@ -64,7 +64,7 @@ Here's the fixed version with all missing closing brackets and parentheses added
                           <span>Location</span>
                          </div>
                         <div className="text-xs text-gray-500 ml-6">
-                          {team.league?.location || (team.gyms && team.gyms.length > 0 ? team.gyms[0]?.gym : 'TBD')}
+                          {team.league?.location || 'TBD'}
                         </div>
                          <div className="flex items-center gap-1">
                            <User className="h-4 w-4" />
