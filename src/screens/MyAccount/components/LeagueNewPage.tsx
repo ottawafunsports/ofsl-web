@@ -26,6 +26,7 @@ export function LeagueNewPage() {
   const [newLeague, setNewLeague] = useState<{
     name: string;
     description: string;
+    location: string;
     sport_id: number | null;
     skill_id: number | null;
     day_of_week: number | null;
@@ -39,6 +40,7 @@ export function LeagueNewPage() {
   }>({
     name: '',
     description: '',
+    location: '',
     sport_id: null,
     skill_id: null,
     day_of_week: null,
@@ -99,6 +101,7 @@ export function LeagueNewPage() {
         .insert({
           name: newLeague.name,
           description: newLeague.description,
+          location: newLeague.location,
           sport_id: newLeague.sport_id,
           skill_id: newLeague.skill_id,
           day_of_week: newLeague.day_of_week,

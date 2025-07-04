@@ -28,6 +28,7 @@ export function LeagueEditPage() {
   const [editLeague, setEditLeague] = useState<{
     name: string;
     description: string;
+    location: string;
     sport_id: number | null;
     skill_id: number | null;
     day_of_week: number | null;
@@ -103,6 +104,7 @@ export function LeagueEditPage() {
         setEditLeague({
           name: leagueData.name,
           description: leagueData.description || '',
+          location: leagueData.location || '',
           sport_id: leagueData.sport_id,
           skill_id: leagueData.skill_id,
           day_of_week: leagueData.day_of_week,
@@ -134,6 +136,7 @@ export function LeagueEditPage() {
         .update({
           name: editLeague.name,
           description: editLeague.description,
+          location: editLeague.location,
           sport_id: editLeague.sport_id,
           skill_id: editLeague.skill_id,
           day_of_week: editLeague.day_of_week,
