@@ -70,27 +70,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Helper function to create user profile if it doesn't exist
   const handleUserProfileCreation = async (user: User) => {
     try {
-      // Check if user profile already exists
-      const { data: existingUser, error: fetchError } = await supabase
+      // First check if user profile already exists
+      const { data: existingProfile, error: fetchError } = await supabase
         .from('users')
         .select('*')
         .eq('auth_id', user.id)
         .single();
 
       if (fetchError && fetchError.code !== 'PGRST116') {
-        // Error other than "not found"
         console.error('Error checking existing user:', fetchError);
         return null;
       }
 
-      if (!existingUser) {
-        // User profile doesn't exist, create it
+      if (!existingProfile) {
+        console.log('Creating new user profile for:', user.email);
+        
         const now = new Date().toISOString();
         const newProfile = {
           id: user.id,
           auth_id: user.id,
           name: user.user_metadata?.full_name || user.user_metadata?.name || '',
-          phone: '', // Will be empty for Google sign-ups, user can update later
+          phone: user.user_metadata?.phone || '', // Will be empty for Google sign-ups
           email: user.email || '',
           date_created: now,
           date_modified: now,
@@ -103,7 +103,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           .select()
           .single();
 
-        if (insertError) {
+        if (insertError && insertError.code !== '23505') { // Skip unique violation errors
           console.error('Error creating user profile:', insertError);
           return null;
         }
@@ -111,7 +111,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return insertedUser;
       }
 
-      return existingUser;
+      return existingProfile;
     } catch (error) {
       console.error('Error in handleUserProfileCreation:', error);
       return null;
@@ -144,27 +144,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Handle redirect only for explicit sign-in events (not initial session)
       if (event === 'SIGNED_IN') {
         // Check for redirect after login
-        const redirectPath = localStorage.getItem('redirectAfterLogin');
+        const redirectPath = localStorage.getItem('redirectAfterLogin') || '/my-account/teams';
         if (redirectPath) {
           localStorage.removeItem('redirectAfterLogin');
-          // Use a shorter timeout and more reliable redirect
-          setTimeout(() => {
-            window.location.href = redirectPath;
-          }, 100);
+          // Use window.location.replace for immediate redirect without adding to history
+          window.location.replace(redirectPath);
           return;
         }
         
         // Check if this is a first-time sign in or incomplete profile
-        if (profile) {
+        else if (profile) {
           const isProfileComplete = profile.name && profile.phone && 
             profile.name.trim() !== '' && profile.phone.trim() !== '';
           
           if (!isProfileComplete) {
             // Redirect to account page for profile completion
-            setTimeout(() => {
-              window.location.href = '/my-account/profile?complete=true';
-            }, 100);
+            window.location.replace('/my-account/profile?complete=true');
+          } else {
+            // Redirect to teams page by default
+            window.location.replace('/my-account/teams');
           }
+        } else {
+          // Fallback redirect to teams page
+          window.location.replace('/my-account/teams');
         }
       }
     }
@@ -243,10 +245,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signInWithGoogle = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}`,
+          redirectTo: `${window.location.origin}/my-account/profile`,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
@@ -264,13 +266,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signUp = async (email: string, password: string) => {
     try {
       setLoading(true);
-      const { data, error } = await supabase.auth.signUp({ 
+      const { data, error } = await supabase.auth.signUp({
         email, 
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}`
+          emailRedirectTo: `${window.location.origin}/my-account/profile`
         }
       });
+      
+      if (!error && data.user) {
+        // Create user profile manually if needed
+        const now = new Date().toISOString();
+        const { error: profileError } = await supabase
+          .from('users')
+          .insert({
+            id: data.user.id,
+            auth_id: data.user.id,
+            name: data.user.user_metadata?.full_name || data.user.user_metadata?.name || '',
+            email: data.user.email || '',
+            phone: '',
+            date_created: now,
+            date_modified: now,
+            is_admin: false,
+          })
+          .select()
+          .single();
+          
+        if (profileError && profileError.code !== 'PGRST116') {
+          console.error('Error creating user profile:', profileError);
+        }
+      }
+      
       return { user: data?.user || null, error };
     } catch (error) {
       console.error('Error in signUp:', error);
@@ -299,6 +325,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.removeItem('redirectAfterLogin');
       
       console.log('User signed out successfully');
+      
+      // Force page reload to ensure clean state
+      window.location.replace('/');
     } catch (error) {
       console.error('Error in signOut:', error);
       // Even if there's an error, clear the local state

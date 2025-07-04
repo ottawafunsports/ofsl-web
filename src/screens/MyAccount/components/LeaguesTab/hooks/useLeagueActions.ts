@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '../../../../../lib/supabase';
 import { NewLeague } from '../types';
+import { updateStripeProductLeagueId } from '../../../../../lib/stripe';
 
 interface UseLeagueActionsProps {
   loadData: () => Promise<void>;
@@ -10,33 +11,39 @@ interface UseLeagueActionsProps {
 export function useLeagueActions({ loadData, showToast }: UseLeagueActionsProps) {
   const [saving, setSaving] = useState(false);
 
-  const handleCreateLeague = async (newLeague: NewLeague) => {
+  const handleCreateLeague = async (newLeague: NewLeague): Promise<{id: number} | null> => {
     try {
       setSaving(true);
       
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('leagues')
         .insert({
           name: newLeague.name,
-          year: newLeague.year,
+          description: newLeague.description,
           sport_id: newLeague.sport_id,
           skill_id: newLeague.skill_id,
           day_of_week: newLeague.day_of_week,
+          year: newLeague.year,
           start_date: newLeague.start_date,
           end_date: newLeague.end_date,
           cost: newLeague.cost,
           max_teams: newLeague.max_teams,
           gym_ids: newLeague.gym_ids,
           active: true
-        });
+        })
+        .select()
+        .single();
 
       if (error) throw error;
 
       showToast('League created successfully!', 'success');
       await loadData();
+      
+      return data;
     } catch (error) {
       console.error('Error creating league:', error);
       showToast('Failed to create league', 'error');
+      return null;
     } finally {
       setSaving(false);
     }
@@ -70,6 +77,6 @@ export function useLeagueActions({ loadData, showToast }: UseLeagueActionsProps)
   return {
     saving,
     handleCreateLeague,
-    handleDeleteLeague
+    handleDeleteLeague,
   };
 }

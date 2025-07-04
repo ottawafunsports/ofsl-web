@@ -4,14 +4,17 @@ import { Card, CardContent } from "../../components/ui/card";
 import { ChevronDown, X, MapPin, Calendar, Clock, Users, DollarSign } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { 
-  fetchLeagues, 
-  fetchSports, 
-  fetchSkills, 
-  getDayName, 
-  formatLeagueDates, 
+  fetchLeagues,
+  fetchSports,
+  fetchSkills,
+  getDayName,
+  formatLeagueDates,
   getPrimaryLocation,
-  type LeagueWithTeamCount 
+  LeagueWithTeamCount 
 } from "../../lib/leagues";
+import { formatPrice } from '../../stripe-config';
+import { getStripeProductByLeagueId } from '../../lib/stripe';
+import { useAuth } from "../../contexts/AuthContext";
 
 // Filter options data
 const filterOptions = {
@@ -21,6 +24,7 @@ const filterOptions = {
 
 export const LeaguesPage = (): JSX.Element => {
   const [searchParams] = useSearchParams();
+  const { userProfile } = useAuth();
   
   // Data state
   const [leagues, setLeagues] = useState<LeagueWithTeamCount[]>([]);
@@ -28,6 +32,9 @@ export const LeaguesPage = (): JSX.Element => {
   const [skills, setSkills] = useState<Array<{ id: number; name: string }>>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // State for Stripe products
+  const [leagueProducts, setLeagueProducts] = useState<Record<number, any>>({});
 
   // Filter state
   const [filters, setFilters] = useState({
@@ -48,6 +55,13 @@ export const LeaguesPage = (): JSX.Element => {
     loadData();
   }, []);
 
+  // Load Stripe products for leagues
+  useEffect(() => {
+    if (leagues.length > 0) {
+      loadStripeProducts();
+    }
+  }, [leagues]);
+
   // Initialize filters from URL parameters
   useEffect(() => {
     const sportParam = searchParams.get('sport');
@@ -58,6 +72,24 @@ export const LeaguesPage = (): JSX.Element => {
       }));
     }
   }, [searchParams, sports]);
+
+  const loadStripeProducts = async () => {
+    try {
+      const productMap: Record<number, any> = {};
+      
+      // Load products for each league in parallel
+      await Promise.all(leagues.map(async (league) => {
+        const product = await getStripeProductByLeagueId(league.id);
+        if (product) {
+          productMap[league.id] = product;
+        }
+      }));
+      
+      setLeagueProducts(productMap);
+    } catch (error) {
+      console.error('Error loading Stripe products:', error);
+    }
+  };
 
   const loadData = async () => {
     try {
@@ -436,6 +468,7 @@ export const LeaguesPage = (): JSX.Element => {
                       className={`bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] px-4 ${
                         league.spots_remaining === 0 ? 'opacity-90' : ''
                       }`}
+                      variant="default"
                       disabled={league.spots_remaining === 0}
                     >
                       {league.spots_remaining === 0 ? 'Join Waitlist' : 'View Details'}

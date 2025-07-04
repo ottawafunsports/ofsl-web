@@ -1,25 +1,19 @@
 export interface Product {
-  id: string;
   priceId: string;
   name: string;
   description: string;
-  mode: 'payment' | 'subscription';
+  mode: string;
+  price?: number;
+  currency?: string;
+  interval?: string;
 }
 
-export const products: Product[] = [
-  {
-    id: 'prod_SZm7NnPQbIVmIw',
-    priceId: 'price_1RecYrRpSsHF3w12qq55ovZT',
-    name: 'Tuesday Women\'s Elite',
-    description: 'Registration fee for Tuesday Women\'s Elite',
-    mode: 'payment'
-  }
-];
+export const products: Product[] = [];
+// Products are now loaded from the database
 
-export const getProductById = (id: string): Product | undefined => {
-  return products.find(product => product.id === id);
-};
-
-export const getProductByPriceId = (priceId: string): Product | undefined => {
-  return products.find(product => product.priceId === priceId);
-};
+export function formatPrice(amount: number, currency: string = 'CAD'): string {
+  return new Intl.NumberFormat('en-CA', {
+    style: 'currency',
+    currency: currency,
+  }).format(amount);
+}

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { getStripeProductByLeagueId, updateStripeProductLeagueId } from '../../../lib/stripe';
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent } from '../../../components/ui/card';
 import { Input } from '../../../components/ui/input';
@@ -9,6 +10,8 @@ import { supabase } from '../../../lib/supabase';
 import { fetchSports, fetchSkills, fetchLeagueById, type League } from '../../../lib/leagues';
 import { ChevronLeft, Save, X } from 'lucide-react';
 import { RichTextEditor } from '../../../components/ui/rich-text-editor';
+import { StripeProductSelector } from './LeaguesTab/components/StripeProductSelector';
+
 export function LeagueEditPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -47,6 +50,8 @@ export function LeagueEditPage() {
     max_teams: 20,
     gym_ids: []
   });
+  
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!userProfile?.is_admin) {
@@ -86,6 +91,12 @@ export function LeagueEditPage() {
       if (!leagueData) {
         throw new Error('League not found');
       } else {
+        // Get the Stripe product linked to this league
+        const linkedProduct = await getStripeProductByLeagueId(parseInt(id));
+        if (linkedProduct) {
+          setSelectedProductId(linkedProduct.id);
+        }
+        
         setLeague(leagueData);
         
         setEditLeague({
@@ -134,6 +145,25 @@ export function LeagueEditPage() {
         .eq('id', id);
 
       if (error) throw error;
+      
+      // Update the Stripe product mapping if changed
+      try {
+        // If we have a previous product linked to this league, unlink it
+        const currentProduct = await getStripeProductByLeagueId(parseInt(id));
+        if (currentProduct && currentProduct.id !== selectedProductId) {
+          await updateStripeProductLeagueId(currentProduct.id, null);
+        }
+        
+        // Link the new product to this league
+        if (selectedProductId) {
+          await updateStripeProductLeagueId(selectedProductId, parseInt(id));
+        }
+
+      } catch (productError) {
+        console.error('Error updating product association:', productError);
+        // Don't fail the whole operation if just the product linking fails
+        showToast('League updated but product linking failed', 'warning');
+      }
 
       showToast('League updated successfully!', 'success');
       navigate(`/leagues/${id}`);
@@ -187,22 +217,12 @@ export function LeagueEditPage() {
             Back to League Detail
           </Link>
           
-          <h2 className="text-2xl font-bold text-[#6F6F6F]">Edit League</h2>
+          <h2 className="text-2xl font-bold text-[#6F6F6F]">Edit League Details</h2>
         </div>
 
         {/* Edit League Form - Using same Card structure as Add New League */}
         <Card>
           <CardContent className="p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-[#6F6F6F]">Edit League Details</h3>
-              <Button
-                onClick={() => navigate('/my-account/leagues')}
-                className="text-gray-500 hover:text-gray-700 bg-transparent hover:bg-transparent border-none shadow-none p-2"
-              >
-                <X className="h-5 w-5" />
-              </Button>
-            </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-[#6F6F6F] mb-2">League Name</label>
@@ -261,27 +281,6 @@ export function LeagueEditPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Year</label>
-                <select
-                  value={editLeague.year}
-                  onChange={(e) => setEditLeague({ ...editLeague, year: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
-                >
-                  <option value="2025">2025</option>
-                  <option value="2025/26">2025/26</option>
-                  <option value="2026">2026</option>
-                  <option value="2026/27">2026/27</option>
-                  <option value="2027">2027</option>
-                  <option value="2027/28">2027/28</option>
-                  <option value="2028">2028</option>
-                  <option value="2028/29">2028/29</option>
-                  <option value="2029">2029</option>
-                  <option value="2029/30">2029/30</option>
-                  <option value="2030">2030</option>
-                </select>
-              </div>
-
-              <div>
                 <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Start Date</label>
                 <Input
                   type="date"
@@ -323,7 +322,17 @@ export function LeagueEditPage() {
               </div>
             </div>
 
-            <div className="mt-6">
+            <div className="mt-8 pb-16">
+              <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Description</label>
+              <RichTextEditor
+                value={editLeague.description}
+                onChange={(value) => setEditLeague({ ...editLeague, description: value })}
+                placeholder="Enter league description"
+                rows={6}
+              />
+            </div>
+
+            <div className="mt-8">
               <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Gyms/Schools</label>
               <div className="space-y-2 max-h-40 overflow-y-auto border border-gray-300 rounded-lg p-3">
                 {gyms.map(gym => (
@@ -346,7 +355,16 @@ export function LeagueEditPage() {
               </div>
             </div>
 
-            <div className="mt-6 flex gap-4">
+            {/* Stripe Product Selector */}
+            <div className="mt-8">
+              <StripeProductSelector
+                selectedProductId={selectedProductId}
+                leagueId={parseInt(id)}
+                onChange={setSelectedProductId}
+              />
+            </div>
+
+            <div className="mt-8 flex gap-4">
               <Button
                 onClick={handleUpdateLeague}
                 disabled={saving || !editLeague.name || !editLeague.sport_id}

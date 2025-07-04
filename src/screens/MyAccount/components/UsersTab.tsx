@@ -583,13 +583,13 @@ export function UsersTab() {
                       <div className="flex items-center gap-2">
                         <Button
                           onClick={() => handleEditUser(user)}
-                          className="bg-blue-500 hover:bg-blue-600 text-white rounded-lg px-3 py-1 text-xs"
+                          className="bg-transparent hover:bg-blue-50 text-blue-500 hover:text-blue-600 rounded-lg p-2 transition-colors"
                         >
                           <Edit2 className="h-3 w-3" />
                         </Button>
                         <Button
                           onClick={() => handleDeleteUser(user.id)}
-                          className="bg-red-500 hover:bg-red-600 text-white rounded-lg px-3 py-1 text-xs"
+                          className="bg-transparent hover:bg-red-50 text-red-500 hover:text-red-600 rounded-lg p-2 transition-colors"
                         >
                           <Trash2 className="h-3 w-3" />
                         </Button>

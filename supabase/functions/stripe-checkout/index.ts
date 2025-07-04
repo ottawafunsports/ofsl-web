@@ -43,15 +43,16 @@ Deno.serve(async (req) => {
       return corsResponse({ error: 'Method not allowed' }, 405);
     }
 
-    const { price_id, success_url, cancel_url, mode } = await req.json();
+    const { price_id, success_url, cancel_url, mode, metadata = {} } = await req.json();
 
     const error = validateParameters(
-      { price_id, success_url, cancel_url, mode },
+      { price_id, success_url, cancel_url, mode, metadata },
       {
         cancel_url: 'string',
         price_id: 'string',
         success_url: 'string',
         mode: { values: ['payment', 'subscription'] },
+        metadata: 'object',
       },
     );
 
@@ -190,6 +191,7 @@ Deno.serve(async (req) => {
       mode,
       success_url,
       cancel_url,
+      metadata,
     });
 
     console.log(`Created checkout session ${session.id} for customer ${customerId}`);
@@ -204,21 +206,27 @@ Deno.serve(async (req) => {
 type ExpectedType = 'string' | { values: string[] };
 type Expectations<T> = { [K in keyof T]: ExpectedType };
 
-function validateParameters<T extends Record<string, any>>(values: T, expected: Expectations<T>): string | undefined {
+function validateParameters<T extends Record<string, any>>(values: T, expected: Partial<Expectations<T>>): string | undefined {
   for (const parameter in values) {
     const expectation = expected[parameter];
+    if (!expectation) continue; // Skip validation for parameters not in expected
+    
     const value = values[parameter];
 
     if (expectation === 'string') {
       if (value == null) {
         return `Missing required parameter ${parameter}`;
       }
-      if (typeof value !== 'string') {
+      if (typeof value !== 'string' && parameter !== 'metadata') {
         return `Expected parameter ${parameter} to be a string got ${JSON.stringify(value)}`;
       }
-    } else {
+    } else if (typeof expectation === 'object' && 'values' in expectation) {
       if (!expectation.values.includes(value)) {
         return `Expected parameter ${parameter} to be one of ${expectation.values.join(', ')}`;
+      }
+    } else if (expectation === 'object') {
+      if (typeof value !== 'object') {
+        return `Expected parameter ${parameter} to be an object`;
       }
     }
   }

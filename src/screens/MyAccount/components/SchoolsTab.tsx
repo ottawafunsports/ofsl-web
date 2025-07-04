@@ -476,7 +476,7 @@ export function SchoolsTab() {
             <h3 className="text-xl font-bold text-[#6F6F6F]">Add New School/Gym</h3>
             <Button
               onClick={() => setShowNewGymForm(false)}
-              className="text-gray-500 hover:text-gray-700 bg-transparent hover:bg-transparent border-none shadow-none p-2"
+              className="text-gray-500 hover:text-gray-700 bg-transparent hover:bg-gray-100 rounded-full p-2 transition-colors"
             >
               <X className="h-5 w-5" />
             </Button>
@@ -620,7 +620,7 @@ export function SchoolsTab() {
                   <h3 className="text-xl font-bold text-[#6F6F6F]">Edit School/Gym</h3>
                   <Button
                     onClick={handleCancelEdit}
-                    className="text-gray-500 hover:text-gray-700 bg-transparent hover:bg-transparent border-none shadow-none p-2"
+                    className="text-gray-500 hover:text-gray-700 bg-transparent hover:bg-gray-100 rounded-full p-2 transition-colors"
                   >
                     <X className="h-5 w-5" />
                   </Button>
@@ -740,10 +740,9 @@ export function SchoolsTab() {
                   <h3 className="text-xl font-bold text-[#6F6F6F]">{gym.gym}</h3>
                   <Button
                     onClick={() => handleEditGym(gym)}
-                    className="bg-blue-500 hover:bg-blue-600 text-white rounded-lg px-3 py-1 text-sm flex items-center gap-1"
+                    className="bg-transparent hover:bg-blue-50 text-blue-500 hover:text-blue-600 rounded-lg p-2 transition-colors flex items-center gap-1"
                   >
                     <Edit2 className="h-3 w-3" />
-                    Edit
                   </Button>
                 </div>
                 

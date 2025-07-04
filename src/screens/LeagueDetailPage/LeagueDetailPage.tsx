@@ -139,9 +139,6 @@ export function LeagueDetailPage() {
             />
             <h1 className="text-3xl md:text-4xl font-bold text-[#6F6F6F]">{league.name}</h1>
           </div>
-          <div className="ml-[52px]">
-            <p className="text-xl text-[#6F6F6F]">{league.year || '2025'} Season</p>
-          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -170,15 +167,11 @@ export function LeagueDetailPage() {
                 <div>
                   <h2 className="text-2xl font-bold text-[#6F6F6F] mb-4">League Description</h2>
                   <div 
-                    className="text-[#6F6F6F] league-description prose prose-ul:pl-0 prose-li:pl-0 max-w-none" 
+                    className="text-[#6F6F6F] league-description prose prose-ul:pl-0 prose-li:pl-0 max-w-none prose-headings:text-[#6F6F6F] prose-headings:font-bold" 
                     dangerouslySetInnerHTML={{ __html: league.description || 'No description available.' }}
                   />
                 </div>
                 
-                {league.skill_name && (
-                  <SkillLevelRequirements />
-                )}
-                <AdditionalLeagueInfo />
               </div>
             )}
 
