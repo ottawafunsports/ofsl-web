@@ -64,7 +64,6 @@ export function LeagueCard({ league, onDelete }: LeagueCardProps) {
               </svg>
               <p className="text-sm font-medium text-[#6F6F6F]">{getDayName(league.day_of_week)}</p>
             </div>
-            <p className="text-sm text-[#6F6F6F] ml-6">Times vary by tier</p>
           </div>
           
           {/* Dates */}

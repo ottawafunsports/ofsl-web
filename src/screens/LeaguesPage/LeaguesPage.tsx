@@ -420,9 +420,6 @@ export const LeaguesPage = (): JSX.Element => {
                         <Clock className="h-4 w-4 text-[#B20000] mr-1.5" />
                         <p className="text-sm font-medium text-[#6F6F6F]">{getDayName(league.day_of_week)}</p>
                       </div>
-                      <p className="text-sm text-[#6F6F6F] ml-6">
-                        Times vary by tier
-                      </p>
                     </div>
                     
                     {/* Dates */}

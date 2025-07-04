@@ -95,7 +95,6 @@ export function LeagueDetailPage() {
   const leagueForInfo = {
     ...league,
     day: getDayName(league.day_of_week),
-    playTimes: ["Times vary by tier"], // Could be enhanced with actual time data
     location: league.location || 'TBD',
     hide_day: league.hide_day || false,
     specificLocation: league.gyms[0]?.address || undefined,
