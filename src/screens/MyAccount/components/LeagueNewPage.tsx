@@ -228,62 +228,61 @@ export function LeagueNewPage() {
                 </select>
               </div>
 
-            <div>
-              <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Day of Week</label>
-              <select
-                value={newLeague.day_of_week || ''}
-                onChange={(e) => setNewLeague({ ...newLeague, day_of_week: e.target.value ? parseInt(e.target.value) : null })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
-              >
-                <option value="">Select day...</option>
-                <option value="0">Sunday</option>
-                <option value="1">Monday</option>
-                <option value="2">Tuesday</option>
-                <option value="3">Wednesday</option>
-                <option value="4">Thursday</option>
-                <option value="5">Friday</option>
-                <option value="6">Saturday</option>
-              </select>
-            </div>
+              <div>
+                <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Day of Week</label>
+                <select
+                  value={newLeague.day_of_week || ''}
+                  onChange={(e) => setNewLeague({ ...newLeague, day_of_week: e.target.value ? parseInt(e.target.value) : null })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
+                >
+                  <option value="">Select day...</option>
+                  <option value="0">Sunday</option>
+                  <option value="1">Monday</option>
+                  <option value="2">Tuesday</option>
+                  <option value="3">Wednesday</option>
+                  <option value="4">Thursday</option>
+                  <option value="5">Friday</option>
+                  <option value="6">Saturday</option>
+                </select>
               </div>
 
-            <div>
-              <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Start Date</label>
-              <Input
-                type="date"
-                value={newLeague.start_date}
-                onChange={(e) => setNewLeague({ ...newLeague, start_date: e.target.value })}
-                className="w-full"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-[#6F6F6F] mb-2">End Date</label>
-              <Input
-                type="date"
-                value={newLeague.end_date}
-                onChange={(e) => setNewLeague({ ...newLeague, end_date: e.target.value })}
-                className="w-full"
-              />
-            </div>
-            
-            <div>
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={newLeague.hide_day || false}
-                  onChange={(e) => setNewLeague({ ...newLeague, hide_day: e.target.checked })}
-                  className="rounded border-gray-300 text-[#B20000] focus:ring-[#B20000]"
-                  id="hide-day"
+              <div>
+                <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Start Date</label>
+                <Input
+                  type="date"
+                  value={newLeague.start_date}
+                  onChange={(e) => setNewLeague({ ...newLeague, start_date: e.target.value })}
+                  className="w-full"
                 />
-                <label htmlFor="hide-day" className="ml-2 text-sm font-medium text-[#6F6F6F]">
-                  Hide day of week
-                </label>
               </div>
-              <p className="text-xs text-gray-500 mt-1 ml-6">
-                When checked, only month and year will be displayed for the end date
-              </p>
-            </div>
+
+              <div>
+                <label className="block text-sm font-medium text-[#6F6F6F] mb-2">End Date</label>
+                <Input
+                  type="date"
+                  value={newLeague.end_date}
+                  onChange={(e) => setNewLeague({ ...newLeague, end_date: e.target.value })}
+                  className="w-full"
+                />
+              </div>
+            
+              <div>
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={newLeague.hide_day || false}
+                    onChange={(e) => setNewLeague({ ...newLeague, hide_day: e.target.checked })}
+                    className="rounded border-gray-300 text-[#B20000] focus:ring-[#B20000]"
+                    id="hide-day"
+                  />
+                  <label htmlFor="hide-day" className="ml-2 text-sm font-medium text-[#6F6F6F]">
+                    Hide day of week
+                  </label>
+                </div>
+                <p className="text-xs text-gray-500 mt-1 ml-6">
+                  When checked, only month and year will be displayed for the end date
+                </p>
+              </div>
 
               <div>
                 <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Cost ($)</label>
@@ -346,32 +345,26 @@ export function LeagueNewPage() {
                   onChange={setSelectedProductId}
                 />
               </div>
-            </div>
 
-            <div className="mt-8 flex gap-4">
-              <Button
-                onClick={handleCreateLeague}
-                disabled={saving || !newLeague.name || !newLeague.sport_id}
-                className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] px-6 py-2 flex items-center gap-2"
-              >
-                <Save className="h-4 w-4" />
-                {saving ? 'Creating...' : 'Create League'}
-              </Button>
-              <Link to="/my-account/leagues">
+              <div className="mt-8 flex gap-4">
                 <Button
-                className="bg-gray-500 hover:bg-gray-600 text-white rounded-[10px] px-6 py-2"
-              >
-                <X className="h-4 w-4 mr-2" />
-                Cancel
+                  onClick={handleCreateLeague}
+                  disabled={saving || !newLeague.name || !newLeague.sport_id}
+                  className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] px-6 py-2 flex items-center gap-2"
+                >
+                  <Save className="h-4 w-4" />
+                  {saving ? 'Creating...' : 'Create League'}
                 </Button>
-              </Link>
+                <Link to="/my-account/leagues">
+                  <Button
+                    className="bg-gray-500 hover:bg-gray-600 text-white rounded-[10px] px-6 py-2"
+                  >
+                    <X className="h-4 w-4 mr-2" />
+                    Cancel
+                  </Button>
+                </Link>
+              </div>
             </div>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
-}
           </CardContent>
         </Card>
       </div>
