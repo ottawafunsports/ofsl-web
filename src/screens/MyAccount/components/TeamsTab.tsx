@@ -55,12 +55,16 @@ Here's the fixed version with all missing closing brackets and parentheses added
 
       {/* Teams Section */}
       <div className="mt-8">
-```
-
-I've added the missing closing brackets and reorganized the structure to properly close all the opened elements. The main issues were:
-
-1. Missing closing tags for nested divs in the payment section
-2. Improper nesting of the teams section
-3. Missing closing brackets for several JSX elements
-
-The code should now be properly structured and all elements should be properly closed.
+                         </div>
+                         <div className="flex items-center gap-1">
+                           <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                             <path d="M12,2C8.13,2 5,5.13 5,9c0,5.25 7,13 7,13s7,-7.75 7,-13C19,5.13 15.87,2 12,2zM7,9c0,-2.76 2.24,-5 5,-5s5,2.24 5,5c0,2.88 -2.88,7.19 -5,9.88C9.92,16.21 7,11.85 7,9z"/>
+                             <circle cx="12" cy="9" r="2.5"/>
+                           </svg>
+                          <span>Location</span>
+                         </div>
+                        <div className="text-xs text-gray-500 ml-6">
+                          {team.league?.location || 'TBD'}
+                        </div>
+                         <div className="flex items-center gap-1">
+                           <User className="h-4 w-4" />

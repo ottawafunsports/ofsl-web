@@ -36,19 +36,30 @@ export const getDayName = (dayOfWeek: number | null): string => {
 };
 
 // Format dates for display
-export const formatLeagueDates = (startDate: string | null, endDate: string | null): string => {
+export const formatLeagueDates = (startDate: string | null, endDate: string | null, hideDay: boolean = false): string => {
   if (!startDate || !endDate) return '';
   
   const start = new Date(startDate);
   const end = new Date(endDate);
   
-  const options: Intl.DateTimeFormatOptions = { 
+  // Start date always shows the day
+  const startOptions: Intl.DateTimeFormatOptions = { 
     month: 'short', 
     day: 'numeric',
     year: 'numeric'
   };
   
-  return `${start.toLocaleDateString('en-US', options)} - ${end.toLocaleDateString('en-US', options)}`;
+  // End date may hide the day based on the hideDay parameter
+  const endOptions: Intl.DateTimeFormatOptions = hideDay ? {
+    month: 'short',
+    year: 'numeric'
+  } : { 
+    month: 'short', 
+    day: 'numeric',
+    year: 'numeric'
+  };
+  
+  return `${start.toLocaleDateString('en-US', startOptions)} - ${end.toLocaleDateString('en-US', endOptions)}`;
 };
 
 // Get primary gym location for display

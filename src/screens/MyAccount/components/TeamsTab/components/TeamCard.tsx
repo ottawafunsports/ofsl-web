@@ -76,11 +76,14 @@ export function TeamCard({ team, currentUserId, onManageTeam, onPayNow }: TeamCa
                 <path d="M12,2C8.13,2 5,5.13 5,9c0,5.25 7,13 7,13s7,-7.75 7,-13C19,5.13 15.87,2 12,2zM7,9c0,-2.76 2.24,-5 5,-5s5,2.24 5,5c0,2.88 -2.88,7.19 -5,9.88C9.92,16.21 7,11.85 7,9z"/>
                 <circle cx="12" cy="9" r="2.5"/>
               </svg>
-              <span>{getPrimaryLocation(team.gyms)}</span>
+              <span>Location</span>
+            </div>
+            <div className="text-xs text-gray-500 ml-6">
+              {team.league?.location || 'TBD'}
             </div>
             <div className="flex items-center gap-1">
               <CreditCard className="h-4 w-4" />
-              <span>{formatCostWithIcon(team.league?.cost)}</span>
+              <span>{formatCostWithIcon(team.league?.cost)} + HST</span>
             </div>
             <div>
               <span>Record: TBD</span>

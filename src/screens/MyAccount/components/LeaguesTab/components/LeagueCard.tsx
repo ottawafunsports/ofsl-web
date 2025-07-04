@@ -64,7 +64,6 @@ export function LeagueCard({ league, onDelete }: LeagueCardProps) {
               </svg>
               <p className="text-sm font-medium text-[#6F6F6F]">{getDayName(league.day_of_week)}</p>
             </div>
-            <p className="text-sm text-[#6F6F6F] ml-6">Times vary by tier</p>
           </div>
           
           {/* Dates */}
@@ -73,7 +72,7 @@ export function LeagueCard({ league, onDelete }: LeagueCardProps) {
               <svg className="h-4 w-4 text-[#B20000] mr-1.5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M19,3H18V1H16V3H8V1H6V3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M19,19H5V8H19V19Z"/>
               </svg>
-              <p className="text-sm font-medium text-[#6F6F6F]">{formatLeagueDates(league.start_date, league.end_date)}</p>
+              <p className="text-sm font-medium text-[#6F6F6F]">{formatLeagueDates(league.start_date, league.end_date, league.hide_day)}</p>
             </div>
           </div>
           
@@ -84,11 +83,11 @@ export function LeagueCard({ league, onDelete }: LeagueCardProps) {
                 <path d="M12,2C8.13,2 5,5.13 5,9c0,5.25 7,13 7,13s7,-7.75 7,-13C19,5.13 15.87,2 12,2zM7,9c0,-2.76 2.24,-5 5,-5s5,2.24 5,5c0,2.88 -2.88,7.19 -5,9.88C9.92,16.21 7,11.85 7,9z"/>
                 <circle cx="12" cy="9" r="2.5"/>
               </svg>
-              <p className="text-sm font-medium text-[#6F6F6F]">{getPrimaryLocation(league.gyms) || 'Location TBD'}</p>
+              <p className="text-sm font-medium text-[#6F6F6F]">Location</p>
             </div>
-            {league.sport_name === "Volleyball" && (
-              <p className="text-xs text-gray-500 ml-6">Location varies by tier</p>
-            )}
+            <p className="text-xs text-gray-500 ml-6">
+              {league.location || 'TBD'}
+            </p>
           </div>
           
           {/* Price */}
@@ -98,7 +97,7 @@ export function LeagueCard({ league, onDelete }: LeagueCardProps) {
                 <path d="M7,15H9C9,16.08 10.37,17 12,17C13.63,17 15,16.08 15,15C15,13.9 13.96,13.5 11.76,12.97C9.64,12.44 7,11.78 7,9C7,7.21 8.47,5.69 10.5,5.18V3H13.5V5.18C15.53,5.69 17,7.21 17,9H15C15,7.92 13.63,7 12,7C10.37,7 9,7.92 9,9C9,10.1 10.04,10.5 12.24,11.03C14.36,11.56 17,12.22 17,15C17,16.79 15.53,18.31 13.5,18.82V21H10.5V18.82C8.47,18.31 7,16.79 7,15Z"/>
               </svg>
               <p className="text-sm font-medium text-[#6F6F6F]">
-                ${league.cost} {league.sport_name === "Volleyball" ? "per team" : "per player"}
+                ${league.cost} + HST {league.sport_name === "Volleyball" ? "per team" : "per player"}
               </p>
             </div>
           </div>

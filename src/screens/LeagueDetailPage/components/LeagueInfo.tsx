@@ -134,11 +134,6 @@ export function LeagueInfo({ league, sport, onSpotsUpdate }: LeagueInfoProps) {
             <Clock className="h-4 w-4 text-[#B20000] mr-2 mt-1 flex-shrink-0" />
             <div>
               <p className="font-medium text-[#6F6F6F]">{league.day}</p>
-              {league.playTimes.map((time: string, index: number) => (
-                <p key={index} className="text-sm text-[#6F6F6F]">
-                  {time}
-                </p>
-              ))}
             </div>
           </div>
 
@@ -146,12 +141,10 @@ export function LeagueInfo({ league, sport, onSpotsUpdate }: LeagueInfoProps) {
           <div className="flex items-start">
             <MapPin className="h-4 w-4 text-[#B20000] mr-2 mt-1 flex-shrink-0" />
             <div>
-              <p className="font-medium text-[#6F6F6F]">{league.location}</p>
-              {league.specificLocation && (
-                <p className="text-sm text-[#6F6F6F]">
-                  {league.specificLocation}
-                </p>
-              )}
+              <p className="font-medium text-[#6F6F6F]">Location</p>
+              <p className="text-sm text-[#6F6F6F]">
+                {league.location || 'TBD'}
+              </p>
             </div>
           </div>
 
@@ -170,7 +163,7 @@ export function LeagueInfo({ league, sport, onSpotsUpdate }: LeagueInfoProps) {
             <div>
               <p className="font-medium text-[#6F6F6F]">League Fee</p>
               <p className="text-sm text-[#6F6F6F]">
-                {stripeProduct ? formatPrice(stripeProduct.price) : `$${league.price}`}{" "}
+                {stripeProduct ? formatPrice(stripeProduct.price) : `$${league.price}`} + HST{" "}
                 {sport === "Volleyball" ? "per team" : "per player"}
               </p>
             </div>

@@ -420,16 +420,13 @@ export const LeaguesPage = (): JSX.Element => {
                         <Clock className="h-4 w-4 text-[#B20000] mr-1.5" />
                         <p className="text-sm font-medium text-[#6F6F6F]">{getDayName(league.day_of_week)}</p>
                       </div>
-                      <p className="text-sm text-[#6F6F6F] ml-6">
-                        Times vary by tier
-                      </p>
                     </div>
                     
                     {/* Dates */}
                     <div className="space-y-1">
                       <div className="flex items-center">
                         <Calendar className="h-4 w-4 text-[#B20000] mr-1.5" />
-                        <p className="text-sm font-medium text-[#6F6F6F]">{formatLeagueDates(league.start_date, league.end_date)}</p>
+                        <p className="text-sm font-medium text-[#6F6F6F]">{formatLeagueDates(league.start_date, league.end_date, league.hide_day)}</p>
                       </div>
                     </div>
                     
@@ -437,11 +434,11 @@ export const LeaguesPage = (): JSX.Element => {
                     <div className="space-y-1">
                       <div className="flex items-center">
                         <MapPin className="h-4 w-4 text-[#B20000] mr-1.5" />
-                        <p className="text-sm font-medium text-[#6F6F6F]">{getPrimaryLocation(league.gyms) || 'Location TBD'}</p>
+                        <p className="text-sm font-medium text-[#6F6F6F]">Location</p>
                       </div>
-                      {league.sport_name === "Volleyball" && (
-                        <p className="text-xs text-gray-500 ml-6">Location varies by tier</p>
-                      )}
+                      <p className="text-xs text-gray-500 ml-6">
+                        {league.location || 'TBD'}
+                      </p>
                     </div>
                     
                     {/* Price */}
@@ -449,7 +446,7 @@ export const LeaguesPage = (): JSX.Element => {
                       <div className="flex items-center">
                         <DollarSign className="h-4 w-4 text-[#B20000] mr-1.5" />
                         <p className="text-sm font-medium text-[#6F6F6F]">
-                          ${league.cost} {league.sport_name === "Volleyball" ? "per team" : "per player"}
+                          ${league.cost} + HST {league.sport_name === "Volleyball" ? "per team" : "per player"}
                         </p>
                       </div>
                     </div>

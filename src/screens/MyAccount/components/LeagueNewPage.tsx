@@ -26,6 +26,7 @@ export function LeagueNewPage() {
   const [newLeague, setNewLeague] = useState<{
     name: string;
     description: string;
+    location: string;
     sport_id: number | null;
     skill_id: number | null;
     day_of_week: number | null;
@@ -35,9 +36,11 @@ export function LeagueNewPage() {
     cost: number | null;
     max_teams: number;
     gym_ids: number[];
+    hide_day?: boolean;
   }>({
     name: '',
     description: '',
+    location: '',
     sport_id: null,
     skill_id: null,
     day_of_week: null,
@@ -98,12 +101,14 @@ export function LeagueNewPage() {
         .insert({
           name: newLeague.name,
           description: newLeague.description,
+          location: newLeague.location,
           sport_id: newLeague.sport_id,
           skill_id: newLeague.skill_id,
           day_of_week: newLeague.day_of_week,
           year: newLeague.year,
           start_date: newLeague.start_date,
           end_date: newLeague.end_date,
+          hide_day: newLeague.hide_day,
           cost: newLeague.cost,
           max_teams: newLeague.max_teams,
           gym_ids: newLeague.gym_ids,
@@ -166,17 +171,7 @@ export function LeagueNewPage() {
         {/* Create League Form - Using same Card structure as Edit League */}
         <Card>
           <CardContent className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-[#6F6F6F] mb-2">League Name</label>
-                <Input
-                  value={newLeague.name}
-                  onChange={(e) => setNewLeague({ ...newLeague, name: e.target.value })}
-                  placeholder="Enter league name"
-                  className="w-full"
-                />
-              </div>
-
+            <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Sport</label>
                 <select
@@ -190,6 +185,16 @@ export function LeagueNewPage() {
                   ))}
                 </select>
               </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-[#6F6F6F] mb-2">League Name</label>
+                <Input
+                  value={newLeague.name}
+                  onChange={(e) => setNewLeague({ ...newLeague, name: e.target.value })}
+                  placeholder="Enter league name"
+                  className="w-full"
+                />
+              </div>
 
               <div>
                 <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Skill Level</label>
@@ -202,6 +207,24 @@ export function LeagueNewPage() {
                   {skills.map(skill => (
                     <option key={skill.id} value={skill.id}>{skill.name}</option>
                   ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Location</label>
+                <select
+                  value={newLeague.location || ''}
+                  onChange={(e) => setNewLeague({ ...newLeague, location: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
+                >
+                  <option value="">Select location...</option>
+                  <option value="Various (see details)">Various (see details)</option>
+                  <option value="Inner city">Inner city</option>
+                  <option value="East end">East end</option>
+                  <option value="West end">West end</option>
+                  <option value="Orleans">Orleans</option>
+                  <option value="Kanata">Kanata</option>
+                  <option value="Barrhaven">Barrhaven</option>
                 </select>
               </div>
 
@@ -242,6 +265,24 @@ export function LeagueNewPage() {
                   className="w-full"
                 />
               </div>
+            
+              <div>
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={newLeague.hide_day || false}
+                    onChange={(e) => setNewLeague({ ...newLeague, hide_day: e.target.checked })}
+                    className="rounded border-gray-300 text-[#B20000] focus:ring-[#B20000]"
+                    id="hide-day"
+                  />
+                  <label htmlFor="hide-day" className="ml-2 text-sm font-medium text-[#6F6F6F]">
+                    Hide day of week
+                  </label>
+                </div>
+                <p className="text-xs text-gray-500 mt-1 ml-6">
+                  When checked, only month and year will be displayed for the end date
+                </p>
+              </div>
 
               <div>
                 <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Cost ($)</label>
@@ -263,67 +304,66 @@ export function LeagueNewPage() {
                   className="w-full"
                 />
               </div>
-            </div>
-
-            <div className="mt-8 pb-16">
-              <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Description</label>
-              <RichTextEditor
-                value={newLeague.description}
-                onChange={(value) => setNewLeague({ ...newLeague, description: value })}
-                placeholder="Enter league description"
-                rows={6}
-              />
-            </div>
-
-            <div className="mt-8">
-              <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Gyms/Schools</label>
-              <div className="space-y-2 max-h-40 overflow-y-auto border border-gray-300 rounded-lg p-3">
-                {gyms.map(gym => (
-                  <label key={gym.id} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={newLeague.gym_ids.includes(gym.id)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setNewLeague({ ...newLeague, gym_ids: [...newLeague.gym_ids, gym.id] });
-                        } else {
-                          setNewLeague({ ...newLeague, gym_ids: newLeague.gym_ids.filter(id => id !== gym.id) });
-                        }
-                      }}
-                      className="mr-2"
-                    />
-                    <span className="text-sm">{gym.gym}</span>
-                  </label>
-                ))}
+              
+              <div>
+                <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Description</label>
+                <RichTextEditor
+                  value={newLeague.description}
+                  onChange={(value) => setNewLeague({ ...newLeague, description: value })}
+                  placeholder="Enter league description"
+                  rows={6}
+                />
               </div>
-            </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Gyms/Schools</label>
+                <div className="space-y-2 max-h-40 overflow-y-auto border border-gray-300 rounded-lg p-3">
+                  {gyms.map(gym => (
+                    <label key={gym.id} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={newLeague.gym_ids.includes(gym.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setNewLeague({ ...newLeague, gym_ids: [...newLeague.gym_ids, gym.id] });
+                          } else {
+                            setNewLeague({ ...newLeague, gym_ids: newLeague.gym_ids.filter(id => id !== gym.id) });
+                          }
+                        }}
+                        className="mr-2"
+                      />
+                      <span className="text-sm">{gym.gym}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              
+              <div>
+                <StripeProductSelector
+                  leagueId={null}
+                  selectedProductId={selectedProductId}
+                  onChange={setSelectedProductId}
+                />
+              </div>
 
-            {/* Stripe Product Selector */}
-            <div className="mt-8">
-              <StripeProductSelector
-                selectedProductId={selectedProductId}
-                leagueId={null}
-                onChange={setSelectedProductId}
-              />
-            </div>
-
-            <div className="mt-8 flex gap-4">
-              <Button
-                onClick={handleCreateLeague}
-                disabled={saving || !newLeague.name || !newLeague.sport_id}
-                className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] px-6 py-2 flex items-center gap-2"
-              >
-                <Save className="h-4 w-4" />
-                {saving ? 'Creating...' : 'Create League'}
-              </Button>
-              <Link to="/my-account/leagues">
+              <div className="mt-8 flex gap-4">
                 <Button
-                className="bg-gray-500 hover:bg-gray-600 text-white rounded-[10px] px-6 py-2"
-              >
-                <X className="h-4 w-4 mr-2" />
-                Cancel
+                  onClick={handleCreateLeague}
+                  disabled={saving || !newLeague.name || !newLeague.sport_id}
+                  className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] px-6 py-2 flex items-center gap-2"
+                >
+                  <Save className="h-4 w-4" />
+                  {saving ? 'Creating...' : 'Create League'}
                 </Button>
-              </Link>
+                <Link to="/my-account/leagues">
+                  <Button
+                    className="bg-gray-500 hover:bg-gray-600 text-white rounded-[10px] px-6 py-2"
+                  >
+                    <X className="h-4 w-4 mr-2" />
+                    Cancel
+                  </Button>
+                </Link>
+              </div>
             </div>
           </CardContent>
         </Card>
