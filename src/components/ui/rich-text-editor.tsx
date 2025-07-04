@@ -9,23 +9,94 @@ interface RichTextEditorProps {
   rows?: number;
 }
 
-export function RichTextEditor({ 
-  value, 
-  onChange, 
-  placeholder = 'Enter content here...', 
-  rows = 6 
-}: RichTextEditorProps) {
-  const [editorValue, setEditorValue] = useState(value || '');
-  const quillRef = useRef<ReactQuill>(null);
+export function RichTextEditor({ value, onChange, placeholder, rows = 6 }: RichTextEditorProps) {
+  const [editorValue, setEditorValue] = useState(value);
+  const editorRef = useRef<HTMLDivElement>(null);
+  const resizingRef = useRef(false);
+  const startYRef = useRef(0);
+  const startHeightRef = useRef(0);
 
   useEffect(() => {
-    setEditorValue(value || '');
+    setEditorValue(value);
   }, [value]);
 
   const handleChange = (content: string) => {
     setEditorValue(content);
     onChange(content);
   };
+
+  // Set up resize functionality
+  useEffect(() => {
+    const editorContainer = editorRef.current;
+    if (!editorContainer) return;
+
+    // Find the editor element
+    const editorElement = editorContainer.querySelector('.ql-editor');
+    if (!editorElement) return;
+
+    // Create resize handle
+    const resizeHandle = document.createElement('div');
+    resizeHandle.className = 'resize-handle';
+    resizeHandle.style.position = 'absolute';
+    resizeHandle.style.bottom = '0';
+    resizeHandle.style.right = '0';
+    resizeHandle.style.width = '15px';
+    resizeHandle.style.height = '15px';
+    resizeHandle.style.cursor = 'nwse-resize';
+    resizeHandle.style.backgroundImage = 'linear-gradient(135deg, transparent 0%, transparent 50%, #ccc 50%, #ccc 100%)';
+    resizeHandle.style.backgroundSize = '10px 10px';
+    resizeHandle.style.backgroundPosition = 'right bottom';
+    resizeHandle.style.backgroundRepeat = 'no-repeat';
+    resizeHandle.style.zIndex = '10';
+
+    // Add the resize handle to the editor container
+    editorContainer.style.position = 'relative';
+    editorContainer.appendChild(resizeHandle);
+
+    // Mouse down event handler
+    const handleMouseDown = (e: MouseEvent) => {
+      e.preventDefault();
+      resizingRef.current = true;
+      startYRef.current = e.clientY;
+      startHeightRef.current = (editorElement as HTMLElement).offsetHeight;
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    };
+
+    // Mouse move event handler
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!resizingRef.current) return;
+      
+      const deltaY = e.clientY - startYRef.current;
+      const newHeight = Math.max(100, startHeightRef.current + deltaY); // Minimum height of 100px
+      
+      (editorElement as HTMLElement).style.height = `${newHeight}px`;
+    };
+
+    // Mouse up event handler
+    const handleMouseUp = () => {
+      resizingRef.current = false;
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    // Add event listener to the resize handle
+    resizeHandle.addEventListener('mousedown', handleMouseDown);
+
+    // Clean up event listeners
+    return () => {
+      resizeHandle.removeEventListener('mousedown', handleMouseDown);
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      
+      if (editorContainer.contains(resizeHandle)) {
+        editorContainer.removeChild(resizeHandle);
+      }
+    };
+  }, []);
+
+  // Calculate initial height based on rows
+  const initialHeight = `${Math.max(150, rows * 24)}px`;
 
   const modules = {
     toolbar: [
@@ -37,28 +108,27 @@ export function RichTextEditor({
     ],
   };
 
-  const formats = [
-    'header',
-    'bold', 'italic', 'underline', 'strike',
-    'list', 'bullet',
-    'link'
-  ];
-
   return (
-    <div className="rich-text-editor">
+    <div className="rich-text-editor" ref={editorRef}>
       <ReactQuill
-        ref={quillRef}
         theme="snow"
         value={editorValue}
         onChange={handleChange}
         modules={modules}
-        formats={formats}
-        placeholder={placeholder}
+        placeholder={placeholder || 'Write something...'}
         style={{ 
-          height: `${Math.max(150, rows * 24)}px`,
-          marginBottom: '2.5rem' // Space for toolbar
+          height: 'auto',
+          marginBottom: '2.5rem' // Add space for toolbar
         }}
       />
+      <style jsx global>{`
+        .ql-editor {
+          min-height: ${initialHeight};
+          max-height: 800px;
+          overflow-y: auto;
+          resize: none; /* Disable default resize since we're implementing custom resize */
+        }
+      `}</style>
     </div>
   );
 }

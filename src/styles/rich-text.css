@@ -74,3 +74,26 @@
 .league-description p, .league-additional-info p {
   margin-bottom: 0.75rem;
 }
+
+/* Rich Text Editor resize styles */
+.rich-text-editor {
+  position: relative;
+}
+
+.rich-text-editor .resize-handle {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 15px;
+  height: 15px;
+  cursor: nwse-resize;
+  z-index: 10;
+}
+
+.rich-text-editor .ql-container {
+  position: relative;
+}
+
+.rich-text-editor .ql-editor {
+  transition: height 0.1s ease;
+}
