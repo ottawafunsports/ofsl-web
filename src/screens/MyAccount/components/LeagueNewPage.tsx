@@ -372,3 +372,9 @@ export function LeagueNewPage() {
     </div>
   );
 }
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
