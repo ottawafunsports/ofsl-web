@@ -134,7 +134,8 @@ export function LeagueInfo({ league, sport, onSpotsUpdate }: LeagueInfoProps) {
             <Clock className="h-4 w-4 text-[#B20000] mr-2 mt-1 flex-shrink-0" />
             {!league.hide_day ? (
               <div>
-                <p className="font-medium text-[#6F6F6F]">{league.day}</p>
+                <p className="font-medium text-[#6F6F6F]">Day</p>
+                <p className="text-sm text-[#6F6F6F]">{league.day}</p>
                 {league.playTimes.map((time: string, index: number) => (
                   <p key={index} className="text-sm text-[#6F6F6F]">
                     {time}
@@ -143,7 +144,8 @@ export function LeagueInfo({ league, sport, onSpotsUpdate }: LeagueInfoProps) {
               </div>
             ) : (
               <div>
-                <p className="font-medium text-[#6F6F6F]">Times vary by tier</p>
+                <p className="font-medium text-[#6F6F6F]">Day</p>
+                <p className="text-sm text-[#6F6F6F]">Times vary</p>
               </div>
             )}
           </div>

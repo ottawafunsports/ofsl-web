@@ -419,14 +419,20 @@ export const LeaguesPage = (): JSX.Element => {
                       <div className="flex items-center">
                         <Clock className="h-4 w-4 text-[#B20000] mr-1.5" />
                         {!league.hide_day ? (
-                          <p className="text-sm font-medium text-[#6F6F6F]">{getDayName(league.day_of_week)}</p>
+                          <p className="text-sm font-medium text-[#6F6F6F]">Day</p>
                         ) : (
-                          <p className="text-sm font-medium text-[#6F6F6F]">Times vary</p>
+                          <p className="text-sm font-medium text-[#6F6F6F]">Day</p>
                         )}
                       </div>
-                      <p className="text-sm text-[#6F6F6F] ml-6">
-                        Times vary by tier
-                      </p>
+                      {!league.hide_day ? (
+                        <p className="text-sm text-[#6F6F6F] ml-6">
+                          {getDayName(league.day_of_week)}
+                        </p>
+                      ) : (
+                        <p className="text-sm text-[#6F6F6F] ml-6">
+                          Times vary
+                        </p>
+                      )}
                     </div>
                     
                     {/* Dates */}
