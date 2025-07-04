@@ -42,7 +42,15 @@ export const formatLeagueDates = (startDate: string | null, endDate: string | nu
   const start = new Date(startDate);
   const end = new Date(endDate);
   
-  const options: Intl.DateTimeFormatOptions = hideDay ? {
+  // Start date always shows the day
+  const startOptions: Intl.DateTimeFormatOptions = { 
+    month: 'short', 
+    day: 'numeric',
+    year: 'numeric'
+  };
+  
+  // End date may hide the day based on the hideDay parameter
+  const endOptions: Intl.DateTimeFormatOptions = hideDay ? {
     month: 'short',
     year: 'numeric'
   } : { 
@@ -51,7 +59,7 @@ export const formatLeagueDates = (startDate: string | null, endDate: string | nu
     year: 'numeric'
   };
   
-  return `${start.toLocaleDateString('en-US', options)} - ${end.toLocaleDateString('en-US', options)}`;
+  return `${start.toLocaleDateString('en-US', startOptions)} - ${end.toLocaleDateString('en-US', endOptions)}`;
 };
 
 // Get primary gym location for display
