@@ -138,6 +138,7 @@ export function LeagueEditPage() {
           year: editLeague.year,
           start_date: editLeague.start_date,
           end_date: editLeague.end_date,
+          hide_day: editLeague.hide_day,
           cost: editLeague.cost,
           max_teams: editLeague.max_teams,
           gym_ids: editLeague.gym_ids

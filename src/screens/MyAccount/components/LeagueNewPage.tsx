@@ -104,6 +104,7 @@ export function LeagueNewPage() {
           year: newLeague.year,
           start_date: newLeague.start_date,
           end_date: newLeague.end_date,
+          hide_day: newLeague.hide_day,
           cost: newLeague.cost,
           max_teams: newLeague.max_teams,
           gym_ids: newLeague.gym_ids,
