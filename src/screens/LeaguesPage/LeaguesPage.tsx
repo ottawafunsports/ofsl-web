@@ -441,11 +441,11 @@ export const LeaguesPage = (): JSX.Element => {
                     <div className="space-y-1">
                       <div className="flex items-center">
                         <MapPin className="h-4 w-4 text-[#B20000] mr-1.5" />
-                        <p className="text-sm font-medium text-[#6F6F6F]">{getPrimaryLocation(league.gyms) || 'Location TBD'}</p>
+                        <p className="text-sm font-medium text-[#6F6F6F]">Location</p>
                       </div>
-                      {league.sport_name === "Volleyball" && (
-                        <p className="text-xs text-gray-500 ml-6">Location varies by tier</p>
-                      )}
+                      <p className="text-xs text-gray-500 ml-6">
+                        {league.location || getPrimaryLocation(league.gyms) || 'TBD'}
+                      </p>
                     </div>
                     
                     {/* Price */}

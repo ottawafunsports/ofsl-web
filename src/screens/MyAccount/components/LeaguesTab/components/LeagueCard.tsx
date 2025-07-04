@@ -88,11 +88,11 @@ export function LeagueCard({ league, onDelete }: LeagueCardProps) {
                 <path d="M12,2C8.13,2 5,5.13 5,9c0,5.25 7,13 7,13s7,-7.75 7,-13C19,5.13 15.87,2 12,2zM7,9c0,-2.76 2.24,-5 5,-5s5,2.24 5,5c0,2.88 -2.88,7.19 -5,9.88C9.92,16.21 7,11.85 7,9z"/>
                 <circle cx="12" cy="9" r="2.5"/>
               </svg>
-              <p className="text-sm font-medium text-[#6F6F6F]">{getPrimaryLocation(league.gyms) || 'Location TBD'}</p>
+              <p className="text-sm font-medium text-[#6F6F6F]">Location</p>
             </div>
-            {league.sport_name === "Volleyball" && (
-              <p className="text-xs text-gray-500 ml-6">Location varies by tier</p>
-            )}
+            <p className="text-xs text-gray-500 ml-6">
+              {league.location || getPrimaryLocation(league.gyms) || 'TBD'}
+            </p>
           </div>
           
           {/* Price */}
