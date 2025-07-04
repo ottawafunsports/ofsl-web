@@ -211,6 +211,24 @@ export function LeagueNewPage() {
               </div>
 
               <div>
+                <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Location</label>
+                <select
+                  value={newLeague.location || ''}
+                  onChange={(e) => setNewLeague({ ...newLeague, location: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
+                >
+                  <option value="">Select location...</option>
+                  <option value="Various (see details)">Various (see details)</option>
+                  <option value="Inner city">Inner city</option>
+                  <option value="East end">East end</option>
+                  <option value="West end">West end</option>
+                  <option value="Orleans">Orleans</option>
+                  <option value="Kanata">Kanata</option>
+                  <option value="Barrhaven">Barrhaven</option>
+                </select>
+              </div>
+
+              <div>
                 <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Day of Week</label>
                 <select
                   value={newLeague.day_of_week || ''}
