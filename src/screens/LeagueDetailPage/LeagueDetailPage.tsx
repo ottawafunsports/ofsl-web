@@ -97,6 +97,7 @@ export function LeagueDetailPage() {
     day: getDayName(league.day_of_week),
     playTimes: ["Times vary by tier"], // Could be enhanced with actual time data
     location: getPrimaryLocation(league.gyms) || 'Location TBD',
+    hide_day: league.hide_day || false,
     specificLocation: league.gyms[0]?.address || undefined,
     dates: formatLeagueDates(league.start_date, league.end_date),
     skillLevel: league.skill_name || 'Not specified',
