@@ -36,13 +36,16 @@ export const getDayName = (dayOfWeek: number | null): string => {
 };
 
 // Format dates for display
-export const formatLeagueDates = (startDate: string | null, endDate: string | null): string => {
+export const formatLeagueDates = (startDate: string | null, endDate: string | null, hideDay: boolean = false): string => {
   if (!startDate || !endDate) return '';
   
   const start = new Date(startDate);
   const end = new Date(endDate);
   
-  const options: Intl.DateTimeFormatOptions = { 
+  const options: Intl.DateTimeFormatOptions = hideDay ? {
+    month: 'short',
+    year: 'numeric'
+  } : { 
     month: 'short', 
     day: 'numeric',
     year: 'numeric'

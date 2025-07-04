@@ -99,7 +99,7 @@ export function LeagueDetailPage() {
     location: getPrimaryLocation(league.gyms) || 'Location TBD',
     hide_day: league.hide_day || false,
     specificLocation: league.gyms[0]?.address || undefined,
-    dates: formatLeagueDates(league.start_date, league.end_date),
+    dates: formatLeagueDates(league.start_date, league.end_date, league.hide_day),
     skillLevel: league.skill_name || 'Not specified',
     price: league.cost || 0,
     spotsRemaining: league.max_teams ? Math.max(0, league.max_teams - 0) : 0 // TODO: Calculate from actual team count
