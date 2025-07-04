@@ -228,55 +228,62 @@ export function LeagueNewPage() {
                 </select>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Day of Week</label>
-                <select
-                  value={newLeague.day_of_week || ''}
-                  onChange={(e) => setNewLeague({ ...newLeague, day_of_week: e.target.value ? parseInt(e.target.value) : null })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
-                >
-                  <option value="">Select day...</option>
-                  <option value="0">Sunday</option>
-                  <option value="1">Monday</option>
-                  <option value="2">Tuesday</option>
-                  <option value="3">Wednesday</option>
-                  <option value="4">Thursday</option>
-                  <option value="5">Friday</option>
-                  <option value="6">Saturday</option>
-                </select>
-                <div className="flex items-center mt-2">
-                  <input
-                    type="checkbox"
-                    checked={newLeague.hide_day || false}
-                    onChange={(e) => setNewLeague({ ...newLeague, hide_day: e.target.checked })}
-                    className="rounded border-gray-300 text-[#B20000] focus:ring-[#B20000]"
-                    id="hide-day"
-                  />
-                  <label htmlFor="hide-day" className="ml-2 text-sm font-medium text-[#6F6F6F]">
-                    Hide day of week
-                  </label>
-                </div>
+            <div>
+              <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Day of Week</label>
+              <select
+                value={newLeague.day_of_week || ''}
+                onChange={(e) => setNewLeague({ ...newLeague, day_of_week: e.target.value ? parseInt(e.target.value) : null })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
+              >
+                <option value="">Select day...</option>
+                <option value="0">Sunday</option>
+                <option value="1">Monday</option>
+                <option value="2">Tuesday</option>
+                <option value="3">Wednesday</option>
+                <option value="4">Thursday</option>
+                <option value="5">Friday</option>
+                <option value="6">Saturday</option>
+              </select>
+            </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Start Date</label>
-                <Input
-                  type="date"
-                  value={newLeague.start_date}
-                  onChange={(e) => setNewLeague({ ...newLeague, start_date: e.target.value })}
-                  className="w-full"
-                />
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Start Date</label>
+              <Input
+                type="date"
+                value={newLeague.start_date}
+                onChange={(e) => setNewLeague({ ...newLeague, start_date: e.target.value })}
+                className="w-full"
+              />
+            </div>
 
-              <div>
-                <label className="block text-sm font-medium text-[#6F6F6F] mb-2">End Date</label>
-                <Input
-                  type="date"
-                  value={newLeague.end_date}
-                  onChange={(e) => setNewLeague({ ...newLeague, end_date: e.target.value })}
-                  className="w-full"
+            <div>
+              <label className="block text-sm font-medium text-[#6F6F6F] mb-2">End Date</label>
+              <Input
+                type="date"
+                value={newLeague.end_date}
+                onChange={(e) => setNewLeague({ ...newLeague, end_date: e.target.value })}
+                className="w-full"
+              />
+            </div>
+            
+            <div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={newLeague.hide_day || false}
+                  onChange={(e) => setNewLeague({ ...newLeague, hide_day: e.target.checked })}
+                  className="rounded border-gray-300 text-[#B20000] focus:ring-[#B20000]"
+                  id="hide-day"
                 />
+                <label htmlFor="hide-day" className="ml-2 text-sm font-medium text-[#6F6F6F]">
+                  Hide day of week
+                </label>
               </div>
+              <p className="text-xs text-gray-500 mt-1 ml-6">
+                When checked, only month and year will be displayed for the end date
+              </p>
+            </div>
 
               <div>
                 <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Cost ($)</label>
