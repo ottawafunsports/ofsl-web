@@ -62,11 +62,9 @@ export function LeagueCard({ league, onDelete }: LeagueCardProps) {
               <svg className="h-4 w-4 text-[#B20000] mr-1.5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22C6.47,22 2,17.5 2,12A10,10 0 0,1 12,2M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z"/>
               </svg>
-              <p className="text-sm font-medium text-[#6F6F6F]">Day</p>
+              <p className="text-sm font-medium text-[#6F6F6F]">{getDayName(league.day_of_week)}</p>
             </div>
-            <p className="text-sm text-[#6F6F6F] ml-6">
-              {!league.hide_day ? getDayName(league.day_of_week) : 'Times vary'}
-            </p>
+            <p className="text-sm text-[#6F6F6F] ml-6">Times vary by tier</p>
           </div>
           
           {/* Dates */}

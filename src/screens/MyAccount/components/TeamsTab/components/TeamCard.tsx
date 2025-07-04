@@ -69,10 +69,7 @@ export function TeamCard({ team, currentUserId, onManageTeam, onPayNow }: TeamCa
           <div className="flex flex-wrap items-center gap-4 text-sm text-[#6F6F6F] mb-2">
             <div className="flex items-center gap-1">
               <Calendar className="h-4 w-4" />
-              <span>Day</span>
-            </div>
-            <div className="text-xs text-gray-500">
-              {!team.league?.hide_day ? getDayName(team.league?.day_of_week) || 'TBD' : 'Times vary'}
+              <span>{getDayName(team.league?.day_of_week) || 'Day TBD'}</span>
             </div>
             <div className="flex items-center gap-1">
               <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
