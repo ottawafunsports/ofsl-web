@@ -229,17 +229,7 @@ export function LeagueEditPage() {
         {/* Edit League Form - Using same Card structure as Add New League */}
         <Card>
           <CardContent className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-[#6F6F6F] mb-2">League Name</label>
-                <Input
-                  value={editLeague.name}
-                  onChange={(e) => setEditLeague({ ...editLeague, name: e.target.value })}
-                  placeholder="Enter league name"
-                  className="w-full"
-                />
-              </div>
-
+            <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Sport</label>
                 <select
@@ -253,12 +243,22 @@ export function LeagueEditPage() {
                   ))}
                 </select>
               </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-[#6F6F6F] mb-2">League Name</label>
+                <Input
+                  value={editLeague.name}
+                  onChange={(e) => setEditLeague({ ...editLeague, name: e.target.value })}
+                  placeholder="Enter league name"
+                  className="w-full"
+                />
+              </div>
 
               <div>
                 <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Skill Level</label>
                 <select
-                  value={editLeague.skill_id || ''}
-                  onChange={(e) => setEditLeague({ ...editLeague, skill_id: e.target.value ? parseInt(e.target.value) : null })}
+                  value={editLeague.skill_level_id || ''}
+                  onChange={(e) => setEditLeague({ ...editLeague, skill_level_id: e.target.value ? parseInt(e.target.value) : null })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
                 >
                   <option value="">Select skill level...</option>
@@ -302,6 +302,18 @@ export function LeagueEditPage() {
                   <option value="5">Friday</option>
                   <option value="6">Saturday</option>
                 </select>
+                <div className="flex items-center mt-2">
+                  <input
+                    type="checkbox"
+                    checked={editLeague.hide_day || false}
+                    onChange={(e) => setEditLeague({ ...editLeague, hide_day: e.target.checked })}
+                    className="rounded border-gray-300 text-[#B20000] focus:ring-[#B20000]"
+                    id="hide-day"
+                  />
+                  <label htmlFor="hide-day" className="ml-2 text-sm font-medium text-[#6F6F6F]">
+                    Hide day of week
+                  </label>
+                </div>
               </div>
 
               <div>
@@ -322,18 +334,6 @@ export function LeagueEditPage() {
                   onChange={(e) => setEditLeague({ ...editLeague, end_date: e.target.value })}
                   className="w-full"
                 />
-                <div className="flex items-center mt-2">
-                  <input
-                    type="checkbox"
-                    checked={editLeague.hide_day || false}
-                    onChange={(e) => setEditLeague({ ...editLeague, hide_day: e.target.checked })}
-                    className="rounded border-gray-300 text-[#B20000] focus:ring-[#B20000]"
-                    id="hide-day"
-                  />
-                  <label htmlFor="hide-day" className="ml-2 text-sm font-medium text-[#6F6F6F]">
-                    Hide day of week
-                  </label>
-                </div>
               </div>
 
               <div>
@@ -356,48 +356,47 @@ export function LeagueEditPage() {
                   className="w-full"
                 />
               </div>
-            </div>
-
-            <div className="mt-8 pb-16">
-              <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Description</label>
-              <RichTextEditor
-                value={editLeague.description}
-                onChange={(value) => setEditLeague({ ...editLeague, description: value })}
-                placeholder="Enter league description"
-                rows={6}
-              />
-            </div>
-
-            <div className="mt-8">
-              <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Gyms/Schools</label>
-              <div className="space-y-2 max-h-40 overflow-y-auto border border-gray-300 rounded-lg p-3">
-                {gyms.map(gym => (
-                  <label key={gym.id} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={editLeague.gym_ids.includes(gym.id)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setEditLeague({ ...editLeague, gym_ids: [...editLeague.gym_ids, gym.id] });
-                        } else {
-                          setEditLeague({ ...editLeague, gym_ids: editLeague.gym_ids.filter(id => id !== gym.id) });
-                        }
-                      }}
-                      className="mr-2"
-                    />
-                    <span className="text-sm">{gym.gym}</span>
-                  </label>
-                ))}
+              
+              <div>
+                <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Description</label>
+                <RichTextEditor
+                  value={editLeague.description}
+                  onChange={(value) => setEditLeague({ ...editLeague, description: value })}
+                  placeholder="Enter league description"
+                  rows={6}
+                />
               </div>
-            </div>
-
-            {/* Stripe Product Selector */}
-            <div className="mt-8">
-              <StripeProductSelector
-                selectedProductId={selectedProductId}
-                leagueId={parseInt(id)}
-                onChange={setSelectedProductId}
-              />
+              
+              <div>
+                <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Gyms/Schools</label>
+                <div className="space-y-2 max-h-40 overflow-y-auto border border-gray-300 rounded-lg p-3">
+                  {gyms.map(gym => (
+                    <label key={gym.id} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={editLeague.gym_ids.includes(gym.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setEditLeague({ ...editLeague, gym_ids: [...editLeague.gym_ids, gym.id] });
+                          } else {
+                            setEditLeague({ ...editLeague, gym_ids: editLeague.gym_ids.filter(id => id !== gym.id) });
+                          }
+                        }}
+                        className="mr-2"
+                      />
+                      <span className="text-sm">{gym.gym}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              
+              <div>
+                <StripeProductSelector
+                  selectedProductId={selectedProductId}
+                  leagueId={parseInt(id)}
+                  onChange={setSelectedProductId}
+                />
+              </div>
             </div>
 
             <div className="mt-8 flex gap-4">

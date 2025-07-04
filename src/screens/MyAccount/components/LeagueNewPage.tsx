@@ -171,17 +171,7 @@ export function LeagueNewPage() {
         {/* Create League Form - Using same Card structure as Edit League */}
         <Card>
           <CardContent className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-[#6F6F6F] mb-2">League Name</label>
-                <Input
-                  value={newLeague.name}
-                  onChange={(e) => setNewLeague({ ...newLeague, name: e.target.value })}
-                  placeholder="Enter league name"
-                  className="w-full"
-                />
-              </div>
-
+            <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Sport</label>
                 <select
@@ -194,6 +184,16 @@ export function LeagueNewPage() {
                     <option key={sport.id} value={sport.id}>{sport.name}</option>
                   ))}
                 </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-[#6F6F6F] mb-2">League Name</label>
+                <Input
+                  value={newLeague.name}
+                  onChange={(e) => setNewLeague({ ...newLeague, name: e.target.value })}
+                  placeholder="Enter league name"
+                  className="w-full"
+                />
               </div>
 
               <div>
@@ -244,6 +244,18 @@ export function LeagueNewPage() {
                   <option value="5">Friday</option>
                   <option value="6">Saturday</option>
                 </select>
+                <div className="flex items-center mt-2">
+                  <input
+                    type="checkbox"
+                    checked={newLeague.hide_day || false}
+                    onChange={(e) => setNewLeague({ ...newLeague, hide_day: e.target.checked })}
+                    className="rounded border-gray-300 text-[#B20000] focus:ring-[#B20000]"
+                    id="hide-day"
+                  />
+                  <label htmlFor="hide-day" className="ml-2 text-sm font-medium text-[#6F6F6F]">
+                    Hide day of week
+                  </label>
+                </div>
               </div>
 
               <div>
@@ -264,18 +276,6 @@ export function LeagueNewPage() {
                   onChange={(e) => setNewLeague({ ...newLeague, end_date: e.target.value })}
                   className="w-full"
                 />
-                <div className="flex items-center mt-2">
-                  <input
-                    type="checkbox"
-                    checked={newLeague.hide_day || false}
-                    onChange={(e) => setNewLeague({ ...newLeague, hide_day: e.target.checked })}
-                    className="rounded border-gray-300 text-[#B20000] focus:ring-[#B20000]"
-                    id="hide-day"
-                  />
-                  <label htmlFor="hide-day" className="ml-2 text-sm font-medium text-[#6F6F6F]">
-                    Hide day of week
-                  </label>
-                </div>
               </div>
 
               <div>
@@ -298,48 +298,47 @@ export function LeagueNewPage() {
                   className="w-full"
                 />
               </div>
-            </div>
-
-            <div className="mt-8 pb-16">
-              <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Description</label>
-              <RichTextEditor
-                value={newLeague.description}
-                onChange={(value) => setNewLeague({ ...newLeague, description: value })}
-                placeholder="Enter league description"
-                rows={6}
-              />
-            </div>
-
-            <div className="mt-8">
-              <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Gyms/Schools</label>
-              <div className="space-y-2 max-h-40 overflow-y-auto border border-gray-300 rounded-lg p-3">
-                {gyms.map(gym => (
-                  <label key={gym.id} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={newLeague.gym_ids.includes(gym.id)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setNewLeague({ ...newLeague, gym_ids: [...newLeague.gym_ids, gym.id] });
-                        } else {
-                          setNewLeague({ ...newLeague, gym_ids: newLeague.gym_ids.filter(id => id !== gym.id) });
-                        }
-                      }}
-                      className="mr-2"
-                    />
-                    <span className="text-sm">{gym.gym}</span>
-                  </label>
-                ))}
+              
+              <div>
+                <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Description</label>
+                <RichTextEditor
+                  value={newLeague.description}
+                  onChange={(value) => setNewLeague({ ...newLeague, description: value })}
+                  placeholder="Enter league description"
+                  rows={6}
+                />
               </div>
-            </div>
-
-            {/* Stripe Product Selector */}
-            <div className="mt-8">
-              <StripeProductSelector
-                selectedProductId={selectedProductId}
-                leagueId={null}
-                onChange={setSelectedProductId}
-              />
+              
+              <div>
+                <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Gyms/Schools</label>
+                <div className="space-y-2 max-h-40 overflow-y-auto border border-gray-300 rounded-lg p-3">
+                  {gyms.map(gym => (
+                    <label key={gym.id} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={newLeague.gym_ids.includes(gym.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setNewLeague({ ...newLeague, gym_ids: [...newLeague.gym_ids, gym.id] });
+                          } else {
+                            setNewLeague({ ...newLeague, gym_ids: newLeague.gym_ids.filter(id => id !== gym.id) });
+                          }
+                        }}
+                        className="mr-2"
+                      />
+                      <span className="text-sm">{gym.gym}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              
+              <div>
+                <StripeProductSelector
+                  leagueId={null}
+                  selectedProductId={selectedProductId}
+                  onChange={setSelectedProductId}
+                />
+              </div>
             </div>
 
             <div className="mt-8 flex gap-4">
