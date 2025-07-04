@@ -34,6 +34,7 @@ export function TeamRegistrationModal({
   const [skillLevelId, setSkillLevelId] = useState<number | null>(null);
   const [skills, setSkills] = useState<Skill[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [skillsLoading, setSkillsLoading] = useState(true);
   const { userProfile } = useAuth();
   const { showToast } = useToast();
@@ -66,6 +67,9 @@ export function TeamRegistrationModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Reset error state
+    setError(null);
+    
     if (!teamName.trim()) {
       showToast('Please enter a team name', 'error');
       return;
@@ -73,6 +77,19 @@ export function TeamRegistrationModal({
 
     if (!skillLevelId) {
       showToast('Please select a skill level', 'error');
+      return;
+    }
+
+    // Check if the selected skill level is "Beginner"
+    const selectedSkill = skills.find(skill => skill.id === skillLevelId);
+    if (selectedSkill && selectedSkill.name === 'Beginner') {
+      setError(
+        "Thank you for your interest!\n" +
+        "We appreciate your enthusiasm for joining our volleyball league. At this time, " +
+        "our programs are designed for intermediate to elite level players with advanced " +
+        "skills and a strong understanding of the game. Unfortunately, we're not able " +
+        "to accept beginner level registrations."
+      );
       return;
     }
 
@@ -189,6 +206,15 @@ export function TeamRegistrationModal({
               <span className="font-medium">Captain:</span> {userProfile?.name || 'Current User'}
             </p>
           </div>
+
+          {/* Error message */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-800 p-4 rounded-lg mb-6">
+              {error.split('\n').map((line, i) => (
+                <p key={i} className={i > 0 ? "mt-2" : ""}>{line}</p>
+              ))}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
