@@ -44,7 +44,7 @@ export function RegistrationSuccessModal({
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
             <h3 className="text-amber-800 font-medium mb-2">Important Payment Information</h3>
             <p className="text-amber-700 text-sm mb-3">
-              To fully secure your spot in this league, a deposit of $200 or full payment of ${leagueCost?.toFixed(2) || '0.00'} is required.
+              To fully secure your spot in this league, a deposit of $200 or full payment of ${leagueCost?.toFixed(2) || '0.00'} +HST is required.
             </p>
             <p className="text-amber-700 text-sm font-medium">
               If payment is not received, your spot is not guaranteed.

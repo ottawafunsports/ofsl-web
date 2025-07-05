@@ -279,7 +279,7 @@ export function TeamRegistrationModal({
                     <div>
                       <p className="text-sm text-amber-800 font-medium">Payment Required</p>
                       <p className="text-sm text-amber-700 mt-1">
-                        To secure your spot in this league, a deposit of $200 or full payment of ${league.cost.toFixed(2)} will be required after registration.
+                        To secure your spot in this league, a deposit of $200 or full payment of ${league.cost.toFixed(2)} +HST will be required after registration.
                       </p>
                     </div>
                   </div>
