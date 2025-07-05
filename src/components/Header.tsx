@@ -167,7 +167,7 @@ export function Header({ isCompact = false }: HeaderProps) {
                       My Teams
                     </Link>
                     <Link 
-                      to="/my-account" 
+                     to="/my-account/profile" 
                       className="block px-4 py-2 text-[#6F6F6F] hover:bg-gray-50 hover:text-[#B20000] transition-colors"
                       onClick={() => setIsUserDropdownOpen(false)}
                     >
