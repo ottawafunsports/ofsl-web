@@ -121,8 +121,8 @@ export function SignupPage() {
       return;
     }
     
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters");
+    if (password.length < 12) {
+      setError("Password must be at least 12 characters");
       return;
     }
     
@@ -165,67 +165,13 @@ export function SignupPage() {
         return;
       }
 
-      // Step 2: Check if the user was immediately signed in (no email confirmation required)
-      const { data: sessionData } = await supabase.auth.getSession();
-      
-      if (sessionData.session) {
-        // User is signed in immediately, create their profile
-        const now = new Date().toISOString();
-        const { data: userData, error: userError } = await supabase
-          .from('users')
-          .insert({
-            id: authData.user.id,
-            auth_id: authData.user.id,
-            name,
-            phone, // Store the formatted phone number
-            email,
-            date_created: now,
-            date_modified: now,
-            is_admin: false,
-          });
-        
-        if (userError) {
-          console.error("Error creating user profile:", userError);
-          setError(`Failed to create user profile: ${userError.message}`);
-          return;
-        }
-        
-        // User is signed in and profile created, redirect to home
-        navigate('/');
-      } else {
-        // User needs to confirm email first OR email confirmation is disabled but session hasn't updated yet
-        // Try to create the profile anyway since the auth user was created
-        const now = new Date().toISOString();
-        const { data: userData, error: userError } = await supabase
-          .from('users')
-          .insert({
-            id: authData.user.id,
-            auth_id: authData.user.id,
-            name,
-            phone,
-            email,
-            date_created: now,
-            date_modified: now,
-            is_admin: false,
-          });
-        
-        if (userError) {
-          console.error("Error creating user profile:", userError);
-          // If profile creation fails, provide helpful message
-          navigate('/login', { 
-            state: { 
-              message: "Account created successfully! Please try logging in. If you received a confirmation email, please verify your email first." 
-            } 
-          });
-        } else {
-          // Profile created successfully
-          navigate('/login', { 
-            state: { 
-              message: "Account created successfully! You can now log in with your credentials." 
-            } 
-          });
-        }
-      }
+      // Step 2: Account created successfully, let AuthContext handle profile creation
+      // Navigate to login page with success message
+      navigate('/login', { 
+        state: { 
+          message: "Account created successfully! You can now log in with your credentials." 
+        } 
+      });
       
     } catch (err) {
       console.error("Unexpected error during signup:", err);
@@ -354,13 +300,13 @@ export function SignupPage() {
                 htmlFor="password"
                 className="block text-sm font-medium text-[#6F6F6F]"
               >
-                Password
+                Password (minimum 12 characters)
               </label>
               <div className="relative">
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="Create a password"
+                  placeholder="Create a password (min 12 characters)"
                   className="w-full h-12 px-4 rounded-lg border border-[#D4D4D4] focus:border-[#B20000] focus:ring-[#B20000]"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
