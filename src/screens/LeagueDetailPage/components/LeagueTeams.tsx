@@ -59,7 +59,7 @@ export function LeagueTeams({ leagueId, onTeamsUpdate }: LeagueTeamsProps) {
           skill_level_id,
           users:captain_id(name),
           skills:skill_level_id(name),
-          leagues:league_id(id, name, cost)
+          leagues:league_id(id, name, cost, sports(name))
         `)
         .eq('league_id', leagueId)
         .eq('active', true)

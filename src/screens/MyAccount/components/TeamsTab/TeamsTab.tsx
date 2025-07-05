@@ -563,18 +563,14 @@ export function TeamsTab() {
                                 </span>
                               </>
                             ) : (
-                              team.league?.cost ? (
-                                <div className="flex items-center gap-2">
-                                  <p className="text-[#6F6F6F]">
-                                    ${team.league.cost.toFixed(2)} (Unpaid)
-                                  </p>
-                                  <span className="px-2 py-0.5 text-xs rounded-full bg-orange-100 text-orange-800">
-                                    Pending
-                                  </span>
-                                </div>
-                              ) : (
-                                <p className="text-[#6F6F6F]">No payment required</p>
-                              )
+                              <div className="flex items-center gap-2">
+                                <p className="text-[#6F6F6F]">
+                                  $0.00 / ${team.league?.cost ? parseFloat(team.league.cost.toString()).toFixed(2) : '0.00'}
+                                </p>
+                                <span className="px-2 py-0.5 text-xs rounded-full bg-orange-100 text-orange-800">
+                                  Pending
+                                </span>
+                              </div>
                             )}
                           </div>
                         </div>
