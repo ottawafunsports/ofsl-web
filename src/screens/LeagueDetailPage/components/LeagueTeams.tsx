@@ -305,12 +305,6 @@ export function LeagueTeams({ leagueId, onTeamsUpdate }: LeagueTeamsProps) {
                     Edit registration
                   </Link>
                   <button
-                    onClick={() => handleDeleteTeam(team.id, team.name)}
-                    disabled={deleting === team.id}
-                    className="text-red-600 hover:text-red-800 text-sm hover:underline flex items-center gap-1 mt-2"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                    {deleting === team.id ? 'Deleting...' : 'Delete team'}
                   </button>
                 </div>
               </div>
