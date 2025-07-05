@@ -339,18 +339,6 @@ export function SignupPage() {
               </div>
               {emailError && (
                 <p className="mt-1 text-sm text-red-600">{emailError}</p>
-              >
-                Email
-              </label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                className="w-full h-12 px-4 rounded-lg border border-[#D4D4D4] focus:border-[#B20000] focus:ring-[#B20000]"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
               )}
             </div>
             
