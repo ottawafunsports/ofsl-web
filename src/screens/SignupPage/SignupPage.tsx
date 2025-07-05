@@ -6,6 +6,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { supabase } from "../../lib/supabase";
+import { Loader2 } from "lucide-react";
 
 export function SignupPage() {
   const [name, setName] = useState("");
@@ -17,6 +18,8 @@ export function SignupPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [emailChecking, setEmailChecking] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
   const [googleLoading, setGoogleLoading] = useState(false);
   const navigate = useNavigate();
   const { signInWithGoogle } = useAuth();
@@ -62,6 +65,48 @@ export function SignupPage() {
     }
   };
 
+  // Check if email already exists
+  const checkEmailExists = async (email: string) => {
+    if (!email || !email.includes('@')) return;
+    
+    try {
+      setEmailChecking(true);
+      setEmailError(null);
+      
+      // First check auth.users table
+      const { data: authUser, error: authError } = await supabase.auth.admin.getUserByEmail(email);
+      
+      if (authError && !authError.message.includes('not found')) {
+        console.error('Error checking auth user:', authError);
+      }
+      
+      if (authUser) {
+        setEmailError('An account with this email already exists');
+        return;
+      }
+      
+      // Also check public.users table as fallback
+      const { data: publicUsers, error: publicError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('email', email)
+        .limit(1);
+        
+      if (publicError) {
+        console.error('Error checking public users:', publicError);
+      }
+      
+      if (publicUsers && publicUsers.length > 0) {
+        setEmailError('An account with this email already exists');
+      }
+      
+    } catch (error) {
+      console.error('Error checking email:', error);
+    } finally {
+      setEmailChecking(false);
+    }
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     
@@ -75,6 +120,11 @@ export function SignupPage() {
     const phoneDigits = phone.replace(/\D/g, '');
     if (phoneDigits.length !== 10) {
       setError("Please enter a valid 10-digit phone number");
+      return;
+    }
+    
+    if (emailError) {
+      setError(emailError);
       return;
     }
     
@@ -268,6 +318,30 @@ export function SignupPage() {
               >
                 Email
               </label>
+              <div className="relative">
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  className={`w-full h-12 px-4 rounded-lg border ${
+                    emailError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border-[#D4D4D4] focus:border-[#B20000] focus:ring-[#B20000]'
+                  }`}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onBlur={() => checkEmailExists(email)}
+                  required
+                />
+                {emailChecking && (
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <Loader2 className="h-5 w-5 text-gray-400 animate-spin" />
+                  </div>
+                )}
+              </div>
+              {emailError && (
+                <p className="mt-1 text-sm text-red-600">{emailError}</p>
+              >
+                Email
+              </label>
               <Input
                 id="email"
                 type="email"
@@ -277,6 +351,7 @@ export function SignupPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
+              )}
             </div>
             
             <div className="space-y-2">
