@@ -149,7 +149,7 @@ export function TeamsTab() {
     setConfirmModal({
       isOpen: true,
       title: 'Confirm Unregistration',
-      message: `Are you sure you want to delete your registration for ${leagueName}? This action cannot be undone and you will lose your spot in the league. Please note that any payments already made are non-refundable.`,
+      message: `Are you sure you want to delete your registration for ${leagueName}? This action cannot be undone and you will lose your spot in the league.`,
       confirmText: 'Yes, Unregister',
       cancelText: 'Cancel',
       onConfirm: () => handleUnregister(paymentId, leagueName),
@@ -257,7 +257,7 @@ export function TeamsTab() {
     setConfirmModal({
       isOpen: true,
       title: 'Confirm Team Deletion',
-      message: `Are you sure you want to deregister the team "warren's team"? This action cannot be undone and will remove all team data including registrations and payment records.`,
+      message: `Are you sure you want to deregister the team "${team.name}"? This action cannot be undone and will remove all team data including registrations and payment records.`,
       confirmText: 'Yes, Deregister Team',
       cancelText: 'Cancel',
       onConfirm: () => handleDeleteTeam(team),
@@ -319,6 +319,71 @@ export function TeamsTab() {
       showToast(error.message || 'Failed to delete team', 'error');
     } finally {
       setDeletingTeam(null);
+    }
+  };
+
+  const showLeaveTeamConfirmation = (team: TeamWithPayment) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Confirm Leave Team',
+      message: `Are you sure you want to leave the team "${team.name}"? Once you leave, only the team captain can add you back.`,
+      confirmText: 'Yes, Leave Team',
+      cancelText: 'Cancel',
+      onConfirm: () => handleLeaveTeam(team),
+      action: 'leave',
+      itemId: team.id,
+      itemName: team.name
+    });
+  };
+
+  const handleLeaveTeam = async (team: TeamWithPayment) => {
+    try {
+      setUnregisteringPayment(team.payment?.id || null);
+      
+      // Get the current team roster
+      const { data: teamData, error: teamError } = await supabase
+        .from('teams')
+        .select('roster')
+        .eq('id', team.id)
+        .single();
+
+      if (teamError) throw teamError;
+      
+      // Remove the current user from the roster
+      const updatedRoster = (teamData.roster || []).filter((userId: string) => userId !== userProfile?.id);
+      
+      // Update the team roster
+      const { error: updateError } = await supabase
+        .from('teams')
+        .update({ roster: updatedRoster })
+        .eq('id', team.id);
+
+      if (updateError) throw updateError;
+      
+      // Update user's team_ids array
+      if (userProfile) {
+        const currentTeamIds = userProfile.team_ids || [];
+        const updatedTeamIds = currentTeamIds.filter((teamId: number) => teamId !== team.id);
+        
+        const { error: userUpdateError } = await supabase
+          .from('users')
+          .update({ team_ids: updatedTeamIds })
+          .eq('id', userProfile.id);
+
+        if (userUpdateError) throw userUpdateError;
+      }
+
+      showToast('You have left the team successfully', 'success');
+      
+      // Reload all data to update the UI
+      await loadPaymentData();
+      await loadUserTeams();
+      
+    } catch (error: any) {
+      console.error('Error leaving team:', error);
+      showToast(error.message || 'Failed to leave team', 'error');
+    } finally {
+      setUnregisteringPayment(null);
     }
   };
 
@@ -669,7 +734,7 @@ export function TeamsTab() {
                           ) : (
                             team.payment && (
                               <button
-                                onClick={() => showUnregisterConfirmation(team.payment!.id, team.league?.name || 'league')}
+                                onClick={() => showLeaveTeamConfirmation(team)}
                                 disabled={unregisteringPayment === team.payment?.id}
                                 className="bg-red-600 hover:bg-red-700 text-white rounded-lg px-3 py-1.5 text-sm transition-colors flex items-center gap-1"
                               >
