@@ -162,11 +162,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             window.location.replace('/my-account/profile?complete=true');
           } else {
             // Redirect to teams page by default
-            window.location.replace('/my-account/teams');
+            window.location.replace('/my-account/profile');
           }
         } else {
           // Fallback redirect to teams page
-          window.location.replace('/my-account/teams');
+          window.location.replace('/my-account/profile');
         }
       }
     }
