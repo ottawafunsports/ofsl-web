@@ -34,6 +34,11 @@ export function ConfirmationModal({
               <h3 className="text-lg font-medium text-gray-900">{title}</h3>
               <div className="mt-2">
                 <p className="text-sm text-gray-500">{message}</p>
+                {message.includes('registration') && (
+                  <p className="text-sm text-red-500 mt-2 font-medium">
+                    Any payments already made are non-refundable.
+                  </p>
+                )}
               </div>
             </div>
           </div>

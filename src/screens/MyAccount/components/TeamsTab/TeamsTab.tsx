@@ -149,7 +149,7 @@ export function TeamsTab() {
     setConfirmModal({
       isOpen: true,
       title: 'Confirm Unregistration',
-      message: `Are you sure you want to delete your registration for ${leagueName}? This action cannot be undone and you will lose your spot in the league.`,
+      message: `Are you sure you want to delete your registration for ${leagueName}? This action cannot be undone and you will lose your spot in the league. Please note that any payments already made are non-refundable.`,
       confirmText: 'Yes, Unregister',
       cancelText: 'Cancel',
       onConfirm: () => handleUnregister(paymentId, leagueName),
@@ -257,7 +257,7 @@ export function TeamsTab() {
     setConfirmModal({
       isOpen: true,
       title: 'Confirm Team Deletion',
-      message: `Are you sure you want to deregister the team "${team.name}"? This action cannot be undone and will remove all team data including registrations and payment records.`,
+      message: `Are you sure you want to deregister the team "${team.name}"? This action cannot be undone and will remove all team data including registrations and payment records. Please note that any payments already made are non-refundable.`,
       confirmText: 'Yes, Deregister Team',
       cancelText: 'Cancel',
       onConfirm: () => handleDeleteTeam(team),
