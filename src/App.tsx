@@ -50,7 +50,7 @@ export function App() {
             {/* My Account routes with proper routing */}
             <Route path="/my-account" element={
               <ProtectedRoute>
-                <Navigate to="/my-account/teams" replace />
+               <Navigate to="/my-account/profile" replace />
               </ProtectedRoute>
             } />
             <Route path="/my-account" element={

@@ -58,7 +58,8 @@ export function LeagueTeams({ leagueId, onTeamsUpdate }: LeagueTeamsProps) {
           created_at,
           skill_level_id,
           users:captain_id(name),
-          skills:skill_level_id(name)
+          skills:skill_level_id(name),
+          leagues:league_id(id, name, cost, sports(name))
         `)
         .eq('league_id', leagueId)
         .eq('active', true)
@@ -272,11 +273,23 @@ export function LeagueTeams({ leagueId, onTeamsUpdate }: LeagueTeamsProps) {
                     <div className="flex items-center gap-2" title="Payment">
                       <DollarSign className="h-5 w-5 text-purple-500" />
                       {team.amount_due && team.amount_paid !== null ? (
-                        <p className="text-[#6F6F6F]">
-                          ${team.amount_paid.toFixed(2)} / ${team.amount_due.toFixed(2)}
-                        </p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-[#6F6F6F]">
+                            ${team.amount_paid.toFixed(2)} / ${team.amount_due.toFixed(2)}
+                          </p>
+                          <span className={`px-2 py-0.5 text-xs rounded-full ${getPaymentStatusColor(team.payment_status)}`}>
+                            {team.payment_status.charAt(0).toUpperCase() + team.payment_status.slice(1)}
+                          </span>
+                        </div>
                       ) : (
-                        <p className="text-[#6F6F6F]">No payment required</p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-[#6F6F6F]">
+                            $0.00 / ${team.league?.cost ? parseFloat(team.league.cost.toString()).toFixed(2) : '0.00'}
+                          </p>
+                          <span className="px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-800">
+                            Pending
+                          </span>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -304,14 +317,6 @@ export function LeagueTeams({ leagueId, onTeamsUpdate }: LeagueTeamsProps) {
                   >
                     Edit registration
                   </Link>
-                  <button
-                    onClick={() => handleDeleteTeam(team.id, team.name)}
-                    disabled={deleting === team.id}
-                    className="text-red-600 hover:text-red-800 text-sm hover:underline flex items-center gap-1 mt-2"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                    {deleting === team.id ? 'Deleting...' : 'Delete team'}
-                  </button>
                 </div>
               </div>
             </CardContent>

@@ -49,7 +49,7 @@ export function PaymentCard({ payment, onUnregister, unregisteringPayment }: Pay
           </span>
           
           <Button
-            onClick={() => onUnregister(payment.id, payment.league_name)}
+            onClick={() => showUnregisterConfirmation(payment.id, payment.league_name)}
             disabled={unregisteringPayment === payment.id}
             className="bg-red-600 hover:bg-red-700 text-white rounded-lg px-4 py-2 text-sm transition-colors flex items-center gap-1"
           >
