@@ -42,6 +42,8 @@ export function ProfileTab() {
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [currentPasswordError, setCurrentPasswordError] = useState<string | null>(null);
   const [newPasswordError, setNewPasswordError] = useState<string | null>(null);
+  const [confirmPasswordError, setConfirmPasswordError] = useState<string | null>(null);
+  const [confirmPasswordSuccess, setConfirmPasswordSuccess] = useState(false);
 
   useEffect(() => {
     if (userProfile) {
@@ -159,6 +161,26 @@ export function ProfileTab() {
     
     // Password is valid
     setNewPasswordError(null);
+    return true;
+  };
+
+  // Validate confirm password when field is changed
+  const validateConfirmPassword = (confirmPassword: string) => {
+    if (!confirmPassword) {
+      setConfirmPasswordError("Confirm password is required");
+      setConfirmPasswordSuccess(false);
+      return false;
+    }
+    
+    if (confirmPassword !== passwordForm.newPassword) {
+      setConfirmPasswordError("Passwords do not match");
+      setConfirmPasswordSuccess(false);
+      return false;
+    }
+    
+    // Passwords match
+    setConfirmPasswordError(null);
+    setConfirmPasswordSuccess(true);
     return true;
   };
 
@@ -448,9 +470,14 @@ export function ProfileTab() {
                 <Input
                   type={showConfirmPassword ? "text" : "password"}
                   value={passwordForm.confirmPassword}
-                  onChange={(e) => setPasswordForm({...passwordForm, confirmPassword: e.target.value})}
+                  onChange={(e) => {
+                    const newValue = e.target.value;
+                    setPasswordForm({...passwordForm, confirmPassword: newValue});
+                    if (newValue) validateConfirmPassword(newValue);
+                  }}
+                  onBlur={(e) => validateConfirmPassword(e.target.value)}
                   placeholder="Confirm your new password"
-                  className="w-full pr-10"
+                  className={`w-full pr-10 ${confirmPasswordError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : confirmPasswordSuccess ? 'border-green-500 focus:border-green-500 focus:ring-green-500' : ''}`}
                 />
                 <button
                   type="button"
@@ -460,6 +487,12 @@ export function ProfileTab() {
                   {showConfirmPassword ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
                 </button>
               </div>
+              {confirmPasswordError && (
+                <div className="mt-1 text-sm text-red-600">{confirmPasswordError}</div>
+              )}
+              {confirmPasswordSuccess && !confirmPasswordError && passwordForm.confirmPassword && (
+                <div className="mt-1 text-sm text-green-600">Passwords match</div>
+              )}
             </div>
             
             <div className="flex gap-4 pt-2">
