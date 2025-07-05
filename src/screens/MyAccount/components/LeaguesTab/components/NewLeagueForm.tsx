@@ -84,6 +84,7 @@ export function NewLeagueForm({
               onChange={(e) => setNewLeague({ ...newLeague, name: e.target.value })}
               placeholder="Enter league name"
               className="w-full"
+             required
             />
           </div>
 
@@ -93,6 +94,7 @@ export function NewLeagueForm({
               value={newLeague.sport_id || ''}
               onChange={(e) => setNewLeague({ ...newLeague, sport_id: e.target.value ? parseInt(e.target.value) : null })}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
+             required
             >
               <option value="">Select sport...</option>
               {sports.map(sport => (
@@ -107,6 +109,7 @@ export function NewLeagueForm({
               value={newLeague.skill_id || ''}
               onChange={(e) => setNewLeague({ ...newLeague, skill_id: e.target.value ? parseInt(e.target.value) : null })}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
+             required
             >
               <option value="">Select skill level...</option>
               {skills.map(skill => (
@@ -121,6 +124,7 @@ export function NewLeagueForm({
               value={newLeague.day_of_week || ''}
               onChange={(e) => setNewLeague({ ...newLeague, day_of_week: e.target.value ? parseInt(e.target.value) : null })}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
+             required
             >
               <option value="">Select day...</option>
               <option value="0">Sunday</option>
@@ -140,6 +144,7 @@ export function NewLeagueForm({
               value={newLeague.start_date}
               onChange={(e) => setNewLeague({ ...newLeague, start_date: e.target.value })}
               className="w-full"
+             required
             />
           </div>
 
@@ -150,6 +155,7 @@ export function NewLeagueForm({
               value={newLeague.end_date}
               onChange={(e) => setNewLeague({ ...newLeague, end_date: e.target.value })}
               className="w-full"
+             required
             />
           </div>
 
@@ -161,6 +167,7 @@ export function NewLeagueForm({
               onChange={(e) => setNewLeague({ ...newLeague, cost: e.target.value ? parseFloat(e.target.value) : null })}
               placeholder="0.00"
               className="w-full"
+             required
             />
           </div>
 
@@ -171,6 +178,7 @@ export function NewLeagueForm({
               value={newLeague.max_teams}
               onChange={(e) => setNewLeague({ ...newLeague, max_teams: parseInt(e.target.value) || 20 })}
               className="w-full"
+             required
             />
           </div>
         </div>
@@ -220,7 +228,7 @@ export function NewLeagueForm({
         <div className="mt-6 flex gap-4">
           <Button
             onClick={handleSubmit}
-            disabled={saving || !newLeague.name || !newLeague.sport_id}
+           disabled={saving || !newLeague.name || !newLeague.sport_id || !newLeague.skill_id || !newLeague.location || newLeague.day_of_week === null || !newLeague.start_date || !newLeague.end_date || newLeague.cost === null || !newLeague.max_teams}
             className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] px-6 py-2"
           >
             {saving ? 'Creating...' : 'Create League'}
