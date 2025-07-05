@@ -241,7 +241,7 @@ export function LeagueNewPage() {
                   required
                 >
                   <option value="">Select day...</option>
-                  <option value="0">Sunday</option>
+                  <option value={0}>Sunday</option>
                   <option value="1">Monday</option>
                   <option value="2">Tuesday</option>
                   <option value="3">Wednesday</option>
