@@ -56,7 +56,6 @@ export function RegistrationSuccessModal({
             <ul className="list-disc pl-5 mt-2 space-y-1">
               <li>The "My Teams" section in your account</li>
               <li>E-transfer to <span className="font-medium">payments@ofsl.ca</span></li>
-              <li>Cash payment at your first game</li>
             </ul>
           </div>
           
