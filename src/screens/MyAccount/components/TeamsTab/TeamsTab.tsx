@@ -6,7 +6,7 @@ import { supabase } from '../../../../lib/supabase';
 import { getUserSubscription, createPaymentIntent } from '../../../../lib/stripe';
 import { getUserPaymentSummary, getUserLeaguePayments, type LeaguePayment } from '../../../../lib/payments';
 import { getProductByLeagueId, formatPrice } from '../../../../stripe-config';
-import { Users, Calendar, CheckCircle, AlertCircle, CreditCard, AlertTriangle, Crown, DollarSign, Trash2, User } from 'lucide-react';
+import { Users, Calendar, CheckCircle, AlertCircle, CreditCard, AlertTriangle, Crown, DollarSign, Trash2, User, MapPin } from 'lucide-react';
 import { Button } from '../../../../components/ui/button';
 import { TeamDetailsModal } from '../TeamDetailsModal';
 import { StatsCard } from './components/StatsCard';
@@ -149,7 +149,7 @@ export function TeamsTab() {
     setConfirmModal({
       isOpen: true,
       title: 'Confirm Unregistration',
-      message: `Are you sure you want to delete your registration for ${leagueName}? This action cannot be undone and you will lose your spot in the league. Please note that any payments already made are non-refundable.`,
+      message: `Are you sure you want to delete your registration for ${leagueName}? This action cannot be undone and you will lose your spot in the league.`,
       confirmText: 'Yes, Unregister',
       cancelText: 'Cancel',
       onConfirm: () => handleUnregister(paymentId, leagueName),
@@ -257,7 +257,7 @@ export function TeamsTab() {
     setConfirmModal({
       isOpen: true,
       title: 'Confirm Team Deletion',
-      message: `Are you sure you want to deregister the team "warren's team"? This action cannot be undone and will remove all team data including registrations and payment records.`,
+      message: `Are you sure you want to deregister the team "${team.name}"? This action cannot be undone and will remove all team data including registrations and payment records.`,
       confirmText: 'Yes, Deregister Team',
       cancelText: 'Cancel',
       onConfirm: () => handleDeleteTeam(team),
@@ -322,6 +322,71 @@ export function TeamsTab() {
     }
   };
 
+  const showLeaveTeamConfirmation = (team: TeamWithPayment) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Confirm Leave Team',
+      message: `Are you sure you want to leave the team "${team.name}"? Once you leave, only the team captain can add you back.`,
+      confirmText: 'Yes, Leave Team',
+      cancelText: 'Cancel',
+      onConfirm: () => handleLeaveTeam(team),
+      action: 'leave',
+      itemId: team.id,
+      itemName: team.name
+    });
+  };
+
+  const handleLeaveTeam = async (team: TeamWithPayment) => {
+    try {
+      setUnregisteringPayment(team.payment?.id || null);
+      
+      // Get the current team roster
+      const { data: teamData, error: teamError } = await supabase
+        .from('teams')
+        .select('roster')
+        .eq('id', team.id)
+        .single();
+
+      if (teamError) throw teamError;
+      
+      // Remove the current user from the roster
+      const updatedRoster = (teamData.roster || []).filter((userId: string) => userId !== userProfile?.id);
+      
+      // Update the team roster
+      const { error: updateError } = await supabase
+        .from('teams')
+        .update({ roster: updatedRoster })
+        .eq('id', team.id);
+
+      if (updateError) throw updateError;
+      
+      // Update user's team_ids array
+      if (userProfile) {
+        const currentTeamIds = userProfile.team_ids || [];
+        const updatedTeamIds = currentTeamIds.filter((teamId: number) => teamId !== team.id);
+        
+        const { error: userUpdateError } = await supabase
+          .from('users')
+          .update({ team_ids: updatedTeamIds })
+          .eq('id', userProfile.id);
+
+        if (userUpdateError) throw userUpdateError;
+      }
+
+      showToast('You have left the team successfully', 'success');
+      
+      // Reload all data to update the UI
+      await loadPaymentData();
+      await loadUserTeams();
+      
+    } catch (error: any) {
+      console.error('Error leaving team:', error);
+      showToast(error.message || 'Failed to leave team', 'error');
+    } finally {
+      setUnregisteringPayment(null);
+    }
+  };
+
   const closeConfirmModal = () => {
     setConfirmModal(prev => ({
       ...prev,
@@ -341,12 +406,7 @@ export function TeamsTab() {
         .select(`
           *,
           leagues:league_id(
-            id,
-            name, 
-            day_of_week,
-            cost,
-            gym_ids,
-            sports:sport_id(name)
+            id, name, day_of_week, cost, gym_ids, location, sports:sport_id(name)
           ),
           skills:skill_level_id(name)
         `)
@@ -551,11 +611,8 @@ export function TeamsTab() {
                           <span>{getDayName(team.league?.day_of_week) || 'Day TBD'}</span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12,2C8.13,2 5,5.13 5,9c0,5.25 7,13 7,13s7,-7.75 7,-13C19,5.13 15.87,2 12,2zM7,9c0,-2.76 2.24,-5 5,-5s5,2.24 5,5c0,2.88 -2.88,7.19 -5,9.88C9.92,16.21 7,11.85 7,9z"/>
-                            <circle cx="12" cy="9" r="2.5"/>
-                          </svg>
-                          <span>{team.gyms && team.gyms.length > 0 ? team.gyms[0]?.gym || 'Location TBD' : 'Location TBD'}</span>
+                          <MapPin className="h-4 w-4" />
+                          <span>{team.league?.location || 'Location TBD'}</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <User className="h-4 w-4" />
@@ -669,7 +726,7 @@ export function TeamsTab() {
                           ) : (
                             team.payment && (
                               <button
-                                onClick={() => showUnregisterConfirmation(team.payment!.id, team.league?.name || 'league')}
+                                onClick={() => showLeaveTeamConfirmation(team)}
                                 disabled={unregisteringPayment === team.payment?.id}
                                 className="bg-red-600 hover:bg-red-700 text-white rounded-lg px-3 py-1.5 text-sm transition-colors flex items-center gap-1"
                               >
