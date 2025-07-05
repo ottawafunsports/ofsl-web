@@ -141,10 +141,7 @@ export function LeagueInfo({ league, sport, onSpotsUpdate }: LeagueInfoProps) {
           <div className="flex items-start">
             <MapPin className="h-4 w-4 text-[#B20000] mr-2 mt-1 flex-shrink-0" />
             <div>
-              <p className="font-medium text-[#6F6F6F]">Location</p>
-              <p className="text-sm text-[#6F6F6F]">
-                {league.location || 'TBD'}
-              </p>
+              <p className="font-medium text-[#6F6F6F]">{league.location || 'Location TBD'}</p>
             </div>
           </div>
 

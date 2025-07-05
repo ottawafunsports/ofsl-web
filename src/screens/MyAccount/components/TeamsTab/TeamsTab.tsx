@@ -406,12 +406,7 @@ export function TeamsTab() {
         .select(`
           *,
           leagues:league_id(
-            id,
-            name, 
-            day_of_week,
-            cost,
-            gym_ids,
-            sports:sport_id(name)
+            id, name, day_of_week, cost, gym_ids, location, sports:sport_id(name)
           ),
           skills:skill_level_id(name)
         `)
@@ -617,7 +612,7 @@ export function TeamsTab() {
                         </div>
                         <div className="flex items-center gap-1">
                           <MapPin className="h-4 w-4" />
-                          <span>{team.league?.location || 'TBD'}</span>
+                          <span>{team.league?.location || 'Location TBD'}</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <User className="h-4 w-4" />

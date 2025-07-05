@@ -95,7 +95,7 @@ export function LeagueDetailPage() {
   const leagueForInfo = {
     ...league,
     day: getDayName(league.day_of_week),
-    location: league.location || 'TBD',
+    location: league.location || 'Location TBD',
     hide_day: league.hide_day || false,
     specificLocation: league.gyms[0]?.address || undefined,
     dates: formatLeagueDates(league.start_date, league.end_date, league.hide_day),
