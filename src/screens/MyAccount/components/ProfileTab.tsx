@@ -41,6 +41,7 @@ export function ProfileTab() {
   const [validatingPassword, setValidatingPassword] = useState(false);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [currentPasswordError, setCurrentPasswordError] = useState<string | null>(null);
+  const [newPasswordError, setNewPasswordError] = useState<string | null>(null);
 
   useEffect(() => {
     if (userProfile) {
@@ -120,6 +121,47 @@ export function ProfileTab() {
     }
   };
 
+  // Validate new password when field is blurred or changed
+  const validateNewPassword = (password: string) => {
+    if (!password) {
+      setNewPasswordError("New password is required");
+      return false;
+    }
+    
+    if (password.length < 12) {
+      setNewPasswordError("Password must be at least 12 characters");
+      return false;
+    }
+    
+    // Check for at least one uppercase letter
+    if (!/[A-Z]/.test(password)) {
+      setNewPasswordError("Password must contain at least one uppercase letter");
+      return false;
+    }
+    
+    // Check for at least one lowercase letter
+    if (!/[a-z]/.test(password)) {
+      setNewPasswordError("Password must contain at least one lowercase letter");
+      return false;
+    }
+    
+    // Check for at least one number
+    if (!/\d/.test(password)) {
+      setNewPasswordError("Password must contain at least one number");
+      return false;
+    }
+    
+    // Check for at least one special character
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+      setNewPasswordError("Password must contain at least one special character");
+      return false;
+    }
+    
+    // Password is valid
+    setNewPasswordError(null);
+    return true;
+  };
+
   const handlePasswordChange = async () => {
     // Reset error state
     setPasswordError(null);
@@ -135,8 +177,9 @@ export function ProfileTab() {
       return;
     }
     
-    if (passwordForm.newPassword.length < 12) {
-      setPasswordError("New password must be at least 12 characters");
+    // Validate the new password
+    if (!validateNewPassword(passwordForm.newPassword)) {
+      setPasswordError(newPasswordError);
       return;
     }
     
@@ -371,9 +414,14 @@ export function ProfileTab() {
                 <Input
                   type={showNewPassword ? "text" : "password"}
                   value={passwordForm.newPassword}
-                  onChange={(e) => setPasswordForm({...passwordForm, newPassword: e.target.value})}
+                  onChange={(e) => {
+                    const newValue = e.target.value;
+                    setPasswordForm({...passwordForm, newPassword: newValue});
+                    if (newValue) validateNewPassword(newValue);
+                  }}
+                  onBlur={(e) => validateNewPassword(e.target.value)}
                   placeholder="Enter your new password"
-                  className="w-full pr-10"
+                  className={`w-full pr-10 ${newPasswordError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
                 />
                 <button
                   type="button"
@@ -382,6 +430,15 @@ export function ProfileTab() {
                 >
                   {showNewPassword ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
                 </button>
+              </div>
+              {newPasswordError && (
+                <div className="mt-1 text-sm text-red-600">{newPasswordError}</div>
+              )}
+              {!newPasswordError && passwordForm.newPassword && (
+                <div className="mt-1 text-sm text-green-600">Password meets requirements</div>
+              )}
+              <div className="mt-2 text-xs text-gray-500">
+                Password must be at least 12 characters and include uppercase, lowercase, number, and special character.
               </div>
             </div>
             
