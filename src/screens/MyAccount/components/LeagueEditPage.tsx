@@ -128,6 +128,10 @@ export function LeagueEditPage() {
   const handleUpdateLeague = async () => {
     if (!id) return;
 
+    // Convert day_of_week from string to number
+    const dayOfWeek = editLeague.day_of_week !== null ? 
+      parseInt(editLeague.day_of_week.toString()) : null;
+
     try {
       setSaving(true);
       
@@ -139,7 +143,7 @@ export function LeagueEditPage() {
           location: editLeague.location,
           sport_id: editLeague.sport_id,
           skill_id: editLeague.skill_id,
-          day_of_week: editLeague.day_of_week,
+          day_of_week: dayOfWeek,
           year: editLeague.year,
           start_date: editLeague.start_date,
           end_date: editLeague.end_date,
@@ -236,6 +240,7 @@ export function LeagueEditPage() {
                   value={editLeague.sport_id || ''}
                   onChange={(e) => setEditLeague({ ...editLeague, sport_id: e.target.value ? parseInt(e.target.value) : null })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
+                  required
                 >
                   <option value="">Select sport...</option>
                   {sports.map(sport => (
@@ -251,6 +256,7 @@ export function LeagueEditPage() {
                   onChange={(e) => setEditLeague({ ...editLeague, name: e.target.value })}
                   placeholder="Enter league name"
                   className="w-full"
+                  required
                 />
               </div>
 
@@ -260,6 +266,7 @@ export function LeagueEditPage() {
                   value={editLeague.skill_id || ''}
                   onChange={(e) => setEditLeague({ ...editLeague, skill_id: e.target.value ? parseInt(e.target.value) : null })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
+                  required
                 >
                   <option value="">Select skill level...</option>
                   {skills.map(skill => (
@@ -274,6 +281,7 @@ export function LeagueEditPage() {
                   value={editLeague.location || ''}
                   onChange={(e) => setEditLeague({ ...editLeague, location: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
+                  required
                 >
                   <option value="">Select location...</option>
                   <option value="Various (see details)">Various (see details)</option>
@@ -292,6 +300,7 @@ export function LeagueEditPage() {
                   value={editLeague.day_of_week || ''}
                   onChange={(e) => setEditLeague({ ...editLeague, day_of_week: e.target.value ? parseInt(e.target.value) : null })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
+                  required
                 >
                   <option value="">Select day...</option>
                   <option value="0">Sunday</option>
@@ -311,6 +320,7 @@ export function LeagueEditPage() {
                   value={editLeague.start_date}
                   onChange={(e) => setEditLeague({ ...editLeague, start_date: e.target.value })}
                   className="w-full"
+                  required
                 />
               </div>
 
@@ -321,6 +331,7 @@ export function LeagueEditPage() {
                   value={editLeague.end_date}
                   onChange={(e) => setEditLeague({ ...editLeague, end_date: e.target.value })}
                   className="w-full"
+                  required
                 />
               </div>
               
@@ -350,6 +361,7 @@ export function LeagueEditPage() {
                   onChange={(e) => setEditLeague({ ...editLeague, cost: e.target.value ? parseFloat(e.target.value) : null })}
                   placeholder="0.00"
                   className="w-full"
+                  required
                 />
               </div>
 
@@ -360,6 +372,7 @@ export function LeagueEditPage() {
                   value={editLeague.max_teams}
                   onChange={(e) => setEditLeague({ ...editLeague, max_teams: parseInt(e.target.value) || 20 })}
                   className="w-full"
+                  required
                 />
               </div>
               
@@ -408,7 +421,7 @@ export function LeagueEditPage() {
             <div className="mt-8 flex gap-4">
               <Button
                 onClick={handleUpdateLeague}
-                disabled={saving || !editLeague.name || !editLeague.sport_id}
+                disabled={saving || !editLeague.name || !editLeague.sport_id || !editLeague.skill_id || !editLeague.location || editLeague.day_of_week === null || !editLeague.start_date || !editLeague.end_date || editLeague.cost === null || !editLeague.max_teams}
                 className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] px-6 py-2 flex items-center gap-2"
               >
                 <Save className="h-4 w-4" />
