@@ -99,6 +99,10 @@ export function ProfileTab() {
       });
       
       if (signInError) {
+        // Only log unexpected errors, not invalid credentials which are expected during validation
+        if (signInError.message !== 'Invalid login credentials') {
+          console.error('Unexpected error validating password:', signInError);
+        }
         setCurrentPasswordError("Current password is incorrect");
         return false;
       }
