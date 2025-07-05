@@ -162,10 +162,19 @@ export function LeagueInfo({ league, sport, onSpotsUpdate }: LeagueInfoProps) {
             <DollarSign className="h-4 w-4 text-[#B20000] mr-2 mt-1 flex-shrink-0" />
             <div>
               <p className="font-medium text-[#6F6F6F]">League Fee</p>
-              <p className="text-sm text-[#6F6F6F]">
-                {stripeProduct ? formatPrice(stripeProduct.price) : `$${league.price}`} + HST{" "}
-                {sport === "Volleyball" ? "per team" : "per player"}
-              </p>
+              {stripeProduct ? (
+                <p className="text-sm text-[#6F6F6F]">
+                  {formatPrice(stripeProduct.price)} + HST{" "}
+                  {sport === "Volleyball" ? "per team" : "per player"}
+                </p>
+              ) : league.price ? (
+                <p className="text-sm text-[#6F6F6F]">
+                  ${league.price.toFixed(2)} + HST{" "}
+                  {sport === "Volleyball" ? "per team" : "per player"}
+                </p>
+              ) : (
+                <p className="text-sm text-[#6F6F6F]">No fee required</p>
+              )}
             </div>
           </div>
 
