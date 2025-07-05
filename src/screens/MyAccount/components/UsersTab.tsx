@@ -643,8 +643,8 @@ export function UsersTab() {
       {/* Edit User Modal */}
       {editingUser && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-lg max-w-md w-full">
-            <div className="p-6">
+          <div className="bg-white rounded-lg shadow-lg max-w-md w-full max-h-[90vh] overflow-hidden">
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-2rem)]">
               <h3 className="text-xl font-bold text-[#6F6F6F] mb-6">Edit User</h3>
               
               <div className="space-y-4">
@@ -774,7 +774,7 @@ export function UsersTab() {
                 )}
               </div>
 
-              <div className="flex gap-4 mt-6">
+              <div className="flex gap-4 mt-6 sticky bottom-0 pt-4 bg-white border-t">
                 <Button
                   onClick={handleSaveUser}
                   className="flex-1 bg-[#B20000] hover:bg-[#8A0000] text-white rounded-lg px-6 py-2"
