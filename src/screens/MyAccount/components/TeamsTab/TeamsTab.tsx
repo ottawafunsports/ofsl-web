@@ -13,6 +13,7 @@ import { StatsCard } from './components/StatsCard';
 import { TeamCard } from './components/TeamCard';
 import { PaymentCard } from './components/PaymentCard';
 import { BalanceNotice } from './components/BalanceNotice';
+import { ConfirmationModal } from './components/ConfirmationModal';
 import { SubscriptionBanner } from './components/SubscriptionBanner';
 import { PaymentModal } from '../../../../components/PaymentModal';
 
@@ -85,6 +86,19 @@ export function TeamsTab() {
   // Add state for deleting team
   const [deletingTeam, setDeletingTeam] = useState<number | null>(null);
 
+  // Confirmation modal state
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    confirmText: 'Confirm',
+    cancelText: 'Cancel',
+    onConfirm: () => {},
+    action: '' as 'unregister' | 'delete' | '',
+    itemId: null as number | null,
+    itemName: ''
+  });
+
   // Stats calculations from actual data
   const activeTeams = teams.filter(team => team.active).length;
   const captainTeams = teams.filter(team => team.captain_id === userProfile?.id);
@@ -131,11 +145,21 @@ export function TeamsTab() {
     }
   };
 
-  const handleUnregister = async (paymentId: number, leagueName: string) => {
-    const confirmUnregister = confirm(`Are you sure you want to delete your registration for ${leagueName}? This action cannot be undone and you will lose your spot in the league.`);
-    
-    if (!confirmUnregister) return;
+  const showUnregisterConfirmation = (paymentId: number, leagueName: string) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Confirm Unregistration',
+      message: `Are you sure you want to delete your registration for ${leagueName}? This action cannot be undone and you will lose your spot in the league.`,
+      confirmText: 'Yes, Unregister',
+      cancelText: 'Cancel',
+      onConfirm: () => handleUnregister(paymentId, leagueName),
+      action: 'unregister',
+      itemId: paymentId,
+      itemName: leagueName
+    });
+  };
 
+  const handleUnregister = async (paymentId: number, leagueName: string) => {
     try {
       setUnregisteringPayment(paymentId);
       
@@ -229,11 +253,21 @@ export function TeamsTab() {
     }
   };
 
+  const showDeleteTeamConfirmation = (team: TeamWithPayment) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Confirm Team Deletion',
+      message: `Are you sure you want to delete the team "${team.name}"? This action cannot be undone and will remove all team data including registrations and payment records.`,
+      confirmText: 'Yes, Delete Team',
+      cancelText: 'Cancel',
+      onConfirm: () => handleDeleteTeam(team),
+      action: 'delete',
+      itemId: team.id,
+      itemName: team.name
+    });
+  };
+
   const handleDeleteTeam = async (team: TeamWithPayment) => {
-    const confirmDelete = confirm(`Are you sure you want to delete the team "${team.name}"? This action cannot be undone and will remove all team data including registrations and payment records.`);
-    
-    if (!confirmDelete) return;
-    
     try {
       setDeletingTeam(team.id);
       
@@ -286,6 +320,13 @@ export function TeamsTab() {
     } finally {
       setDeletingTeam(null);
     }
+  };
+
+  const closeConfirmModal = () => {
+    setConfirmModal(prev => ({
+      ...prev,
+      isOpen: false
+    }));
   };
 
   const loadUserTeams = async () => {
@@ -612,7 +653,7 @@ export function TeamsTab() {
                           {/* Delete/Leave Team Button */}
                           {team.captain_id === userProfile?.id ? (
                             <button
-                              onClick={() => handleDeleteTeam(team)}
+                              onClick={() => showDeleteTeamConfirmation(team)}
                               disabled={deletingTeam === team.id}
                               className="bg-red-600 hover:bg-red-700 text-white rounded-lg px-3 py-1.5 text-sm transition-colors flex items-center gap-1"
                             >
@@ -628,7 +669,7 @@ export function TeamsTab() {
                           ) : (
                             team.payment && (
                               <button
-                                onClick={() => handleUnregister(team.payment!.id, team.league?.name || 'league')}
+                                onClick={() => showUnregisterConfirmation(team.payment!.id, team.league?.name || 'league')}
                                 disabled={unregisteringPayment === team.payment?.id}
                                 className="bg-red-600 hover:bg-red-700 text-white rounded-lg px-3 py-1.5 text-sm transition-colors flex items-center gap-1"
                               >
@@ -678,6 +719,20 @@ export function TeamsTab() {
           onPaymentSuccess={handlePaymentSuccess}
         />
       )}
+      
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        confirmText={confirmModal.confirmText}
+        cancelText={confirmModal.cancelText}
+        onConfirm={() => {
+          confirmModal.onConfirm();
+          closeConfirmModal();
+        }}
+        onCancel={closeConfirmModal}
+      />
     </div>
   );
 }
