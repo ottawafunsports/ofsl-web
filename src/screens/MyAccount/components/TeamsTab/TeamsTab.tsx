@@ -662,7 +662,7 @@ export function TeamsTab() {
                               ) : (
                                 <>
                                   <Trash2 className="h-3 w-3" />
-                                  Delete
+                                  Deregister
                                 </>
                               )}
                             </button>
