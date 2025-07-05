@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
-import { useAuth } from '../../../contexts/AuthContext';
+import { Eye, EyeOff, User, Shield, Bell } from 'lucide-react';
+import { useAuth } from '../../../contexts/AuthContext'; 
 import { useToast } from '../../../components/ui/toast';
 import { supabase } from '../../../lib/supabase';
-import { User, Shield, Bell } from 'lucide-react';
 
 export function ProfileTab() {
   const { userProfile, refreshUserProfile } = useAuth();
@@ -26,6 +26,19 @@ export function ProfileTab() {
     leagueUpdates: false,
     paymentReminders: true
   });
+
+  // Password change state
+  const [showPasswordSection, setShowPasswordSection] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
 
   useEffect(() => {
     if (userProfile) {
@@ -65,6 +78,81 @@ export function ProfileTab() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handlePasswordChange = async () => {
+    // Reset error state
+    setPasswordError(null);
+    
+    // Validate passwords
+    if (!passwordForm.currentPassword) {
+      setPasswordError("Current password is required");
+      return;
+    }
+    
+    if (!passwordForm.newPassword) {
+      setPasswordError("New password is required");
+      return;
+    }
+    
+    if (passwordForm.newPassword.length < 12) {
+      setPasswordError("New password must be at least 12 characters");
+      return;
+    }
+    
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      setPasswordError("New passwords do not match");
+      return;
+    }
+    
+    try {
+      setChangingPassword(true);
+      
+      // First verify the current password by attempting to sign in
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: profile.email,
+        password: passwordForm.currentPassword
+      });
+      
+      if (signInError) {
+        setPasswordError("Current password is incorrect");
+        return;
+      }
+      
+      // Update the password
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: passwordForm.newPassword
+      });
+      
+      if (updateError) {
+        throw updateError;
+      }
+      
+      // Reset form and show success message
+      setPasswordForm({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      });
+      setShowPasswordSection(false);
+      showToast('Password updated successfully!', 'success');
+      
+    } catch (error: any) {
+      console.error('Error updating password:', error);
+      setPasswordError(error.message || 'Failed to update password');
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+
+  const handleCancelPasswordChange = () => {
+    setShowPasswordSection(false);
+    setPasswordForm({
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: ''
+    });
+    setPasswordError(null);
   };
 
   const handleNotificationToggle = (key: keyof typeof notifications) => {
@@ -187,13 +275,104 @@ export function ProfileTab() {
             <Shield className="h-5 w-5 text-[#6F6F6F]" />
             <h2 className="text-xl font-bold text-[#6F6F6F]">Password & Security</h2>
           </div>
-          <Button className="border border-[#B20000] text-[#B20000] bg-white hover:bg-[#B20000] hover:text-white rounded-lg px-4 py-2">
-            Change Password
+          <Button 
+            onClick={() => setShowPasswordSection(!showPasswordSection)}
+            className="border border-[#B20000] text-[#B20000] bg-white hover:bg-[#B20000] hover:text-white rounded-lg px-4 py-2"
+          >
+            {showPasswordSection ? 'Cancel' : 'Change Password'}
           </Button>
         </div>
 
-        <p className="text-[#6F6F6F] mb-4">Keep your account secure by using a strong password.</p>
-        <p className="text-sm text-[#6F6F6F]"><span className="font-medium">Last updated:</span> Never</p>
+        {!showPasswordSection ? (
+          <>
+            <p className="text-[#6F6F6F] mb-4">Keep your account secure by using a strong password.</p>
+            <p className="text-sm text-[#6F6F6F]"><span className="font-medium">Last updated:</span> Never</p>
+          </>
+        ) : (
+          <div className="mt-4 space-y-4">
+            {passwordError && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                {passwordError}
+              </div>
+            )}
+            
+            <div>
+              <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Current Password</label>
+              <div className="relative">
+                <Input
+                  type={showCurrentPassword ? "text" : "password"}
+                  value={passwordForm.currentPassword}
+                  onChange={(e) => setPasswordForm({...passwordForm, currentPassword: e.target.value})}
+                  placeholder="Enter your current password"
+                  className="w-full pr-10"
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                >
+                  {showCurrentPassword ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
+                </button>
+              </div>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-[#6F6F6F] mb-2">New Password (minimum 12 characters)</label>
+              <div className="relative">
+                <Input
+                  type={showNewPassword ? "text" : "password"}
+                  value={passwordForm.newPassword}
+                  onChange={(e) => setPasswordForm({...passwordForm, newPassword: e.target.value})}
+                  placeholder="Enter your new password"
+                  className="w-full pr-10"
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                >
+                  {showNewPassword ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
+                </button>
+              </div>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Confirm New Password</label>
+              <div className="relative">
+                <Input
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={passwordForm.confirmPassword}
+                  onChange={(e) => setPasswordForm({...passwordForm, confirmPassword: e.target.value})}
+                  placeholder="Confirm your new password"
+                  className="w-full pr-10"
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  {showConfirmPassword ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
+                </button>
+              </div>
+            </div>
+            
+            <div className="flex gap-4 pt-2">
+              <Button
+                onClick={handlePasswordChange}
+                disabled={changingPassword}
+                className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-lg px-6 py-2"
+              >
+                {changingPassword ? 'Updating...' : 'Update Password'}
+              </Button>
+              <Button
+                onClick={handleCancelPasswordChange}
+                className="bg-gray-500 hover:bg-gray-600 text-white rounded-lg px-6 py-2"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Notification Preferences Section */}
