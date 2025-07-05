@@ -2,18 +2,24 @@ import { useState, FormEvent } from "react";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
 import { Input } from "../../components/ui/input";
+import { Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { supabase } from "../../lib/supabase";
+import { Loader2 } from "lucide-react";
 
 export function SignupPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [emailChecking, setEmailChecking] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
   const [googleLoading, setGoogleLoading] = useState(false);
   const navigate = useNavigate();
   const { signInWithGoogle } = useAuth();
@@ -59,6 +65,36 @@ export function SignupPage() {
     }
   };
 
+  // Check if email already exists
+  const checkEmailExists = async (email: string) => {
+    if (!email || !email.includes('@')) return;
+    
+    try {
+      setEmailChecking(true);
+      setEmailError(null);
+      
+      // Check public.users table for existing email
+      const { data: publicUsers, error: publicError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('email', email)
+        .limit(1);
+        
+      if (publicError) {
+        console.error('Error checking public users:', publicError);
+      }
+      
+      if (publicUsers && publicUsers.length > 0) {
+        setEmailError('An account with this email already exists');
+      }
+      
+    } catch (error) {
+      console.error('Error checking email:', error);
+    } finally {
+      setEmailChecking(false);
+    }
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     
@@ -75,13 +111,18 @@ export function SignupPage() {
       return;
     }
     
+    if (emailError) {
+      setError(emailError);
+      return;
+    }
+    
     if (password !== confirmPassword) {
       setError("Passwords do not match");
       return;
     }
     
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters");
+    if (password.length < 12) {
+      setError("Password must be at least 12 characters");
       return;
     }
     
@@ -124,67 +165,13 @@ export function SignupPage() {
         return;
       }
 
-      // Step 2: Check if the user was immediately signed in (no email confirmation required)
-      const { data: sessionData } = await supabase.auth.getSession();
-      
-      if (sessionData.session) {
-        // User is signed in immediately, create their profile
-        const now = new Date().toISOString();
-        const { data: userData, error: userError } = await supabase
-          .from('users')
-          .insert({
-            id: authData.user.id,
-            auth_id: authData.user.id,
-            name,
-            phone, // Store the formatted phone number
-            email,
-            date_created: now,
-            date_modified: now,
-            is_admin: false,
-          });
-        
-        if (userError) {
-          console.error("Error creating user profile:", userError);
-          setError(`Failed to create user profile: ${userError.message}`);
-          return;
-        }
-        
-        // User is signed in and profile created, redirect to home
-        navigate('/');
-      } else {
-        // User needs to confirm email first OR email confirmation is disabled but session hasn't updated yet
-        // Try to create the profile anyway since the auth user was created
-        const now = new Date().toISOString();
-        const { data: userData, error: userError } = await supabase
-          .from('users')
-          .insert({
-            id: authData.user.id,
-            auth_id: authData.user.id,
-            name,
-            phone,
-            email,
-            date_created: now,
-            date_modified: now,
-            is_admin: false,
-          });
-        
-        if (userError) {
-          console.error("Error creating user profile:", userError);
-          // If profile creation fails, provide helpful message
-          navigate('/login', { 
-            state: { 
-              message: "Account created successfully! Please try logging in. If you received a confirmation email, please verify your email first." 
-            } 
-          });
-        } else {
-          // Profile created successfully
-          navigate('/login', { 
-            state: { 
-              message: "Account created successfully! You can now log in with your credentials." 
-            } 
-          });
-        }
-      }
+      // Step 2: Account created successfully, let AuthContext handle profile creation
+      // Navigate to login page with success message
+      navigate('/login', { 
+        state: { 
+          message: "Account created successfully! You can now log in with your credentials." 
+        } 
+      });
       
     } catch (err) {
       console.error("Unexpected error during signup:", err);
@@ -265,15 +252,28 @@ export function SignupPage() {
               >
                 Email
               </label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                className="w-full h-12 px-4 rounded-lg border border-[#D4D4D4] focus:border-[#B20000] focus:ring-[#B20000]"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
+              <div className="relative">
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  className={`w-full h-12 px-4 rounded-lg border ${
+                    emailError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border-[#D4D4D4] focus:border-[#B20000] focus:ring-[#B20000]'
+                  }`}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onBlur={() => checkEmailExists(email)}
+                  required
+                />
+                {emailChecking && (
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <Loader2 className="h-5 w-5 text-gray-400 animate-spin" />
+                  </div>
+                )}
+              </div>
+              {emailError && (
+                <p className="mt-1 text-sm text-red-600">{emailError}</p>
+              )}
             </div>
             
             <div className="space-y-2">
@@ -300,17 +300,31 @@ export function SignupPage() {
                 htmlFor="password"
                 className="block text-sm font-medium text-[#6F6F6F]"
               >
-                Password
+                Password (minimum 12 characters)
               </label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Create a password"
-                className="w-full h-12 px-4 rounded-lg border border-[#D4D4D4] focus:border-[#B20000] focus:ring-[#B20000]"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Create a password (min 12 characters)"
+                  className="w-full h-12 px-4 rounded-lg border border-[#D4D4D4] focus:border-[#B20000] focus:ring-[#B20000]"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? (
+                    <Eye className="h-5 w-5" />
+                  ) : (
+                    <EyeOff className="h-5 w-5" />
+                  )}
+                </button>
+              </div>
             </div>
             
             <div className="space-y-2">
@@ -320,15 +334,29 @@ export function SignupPage() {
               >
                 Confirm Password
               </label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                placeholder="Confirm your password"
-                className="w-full h-12 px-4 rounded-lg border border-[#D4D4D4] focus:border-[#B20000] focus:ring-[#B20000]"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-              />
+              <div className="relative">
+                <Input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder="Confirm your password"
+                  className="w-full h-12 px-4 rounded-lg border border-[#D4D4D4] focus:border-[#B20000] focus:ring-[#B20000]"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                >
+                  {showConfirmPassword ? (
+                    <Eye className="h-5 w-5" />
+                  ) : (
+                    <EyeOff className="h-5 w-5" />
+                  )}
+                </button>
+              </div>
             </div>
             
             <Button

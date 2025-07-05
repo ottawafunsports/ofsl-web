@@ -274,29 +274,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       });
       
-      if (!error && data.user) {
-        // Create user profile manually if needed
-        const now = new Date().toISOString();
-        const { error: profileError } = await supabase
-          .from('users')
-          .insert({
-            id: data.user.id,
-            auth_id: data.user.id,
-            name: data.user.user_metadata?.full_name || data.user.user_metadata?.name || '',
-            email: data.user.email || '',
-            phone: '',
-            date_created: now,
-            date_modified: now,
-            is_admin: false,
-          })
-          .select()
-          .single();
-          
-        if (profileError && profileError.code !== 'PGRST116') {
-          console.error('Error creating user profile:', profileError);
-        }
-      }
-      
       return { user: data?.user || null, error };
     } catch (error) {
       console.error('Error in signUp:', error);
