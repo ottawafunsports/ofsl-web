@@ -38,7 +38,9 @@ export function ProfileTab() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
+  const [validatingPassword, setValidatingPassword] = useState(false);
   const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [currentPasswordError, setCurrentPasswordError] = useState<string | null>(null);
 
   useEffect(() => {
     if (userProfile) {
@@ -80,6 +82,40 @@ export function ProfileTab() {
     }
   };
 
+  // Validate current password when field is blurred
+  const validateCurrentPassword = async (password: string) => {
+    if (!password) {
+      setCurrentPasswordError("Current password is required");
+      return false;
+    }
+    
+    try {
+      setValidatingPassword(true);
+      
+      // Verify the current password by attempting to sign in
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: profile.email,
+        password: password
+      });
+      
+      if (signInError) {
+        setCurrentPasswordError("Current password is incorrect");
+        return false;
+      }
+      
+      // Password is correct
+      setCurrentPasswordError(null);
+      return true;
+      
+    } catch (error: any) {
+      console.error('Error validating password:', error);
+      setCurrentPasswordError("Failed to validate password");
+      return false;
+    } finally {
+      setValidatingPassword(false);
+    }
+  };
+
   const handlePasswordChange = async () => {
     // Reset error state
     setPasswordError(null);
@@ -105,19 +141,14 @@ export function ProfileTab() {
       return;
     }
     
+    // Current password validation is already done on blur
+    if (currentPasswordError) {
+      return;
+    }
+    
     try {
       setChangingPassword(true);
       
-      // First verify the current password by attempting to sign in
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: profile.email,
-        password: passwordForm.currentPassword
-      });
-      
-      if (signInError) {
-        setPasswordError("Current password is incorrect");
-        return;
-      }
       
       // Update the password
       const { error: updateError } = await supabase.auth.updateUser({
@@ -299,12 +330,17 @@ export function ProfileTab() {
             <div>
               <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Current Password</label>
               <div className="relative">
-                <Input
+                <Input 
                   type={showCurrentPassword ? "text" : "password"}
                   value={passwordForm.currentPassword}
-                  onChange={(e) => setPasswordForm({...passwordForm, currentPassword: e.target.value})}
+                  onChange={(e) => {
+                    setPasswordForm({...passwordForm, currentPassword: e.target.value});
+                    // Clear error when user starts typing again
+                    if (currentPasswordError) setCurrentPasswordError(null);
+                  }}
+                  onBlur={(e) => validateCurrentPassword(e.target.value)}
                   placeholder="Enter your current password"
-                  className="w-full pr-10"
+                  className={`w-full pr-10 ${currentPasswordError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
                 />
                 <button
                   type="button"
@@ -314,6 +350,15 @@ export function ProfileTab() {
                   {showCurrentPassword ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
                 </button>
               </div>
+              {validatingPassword && (
+                <div className="mt-1 text-sm text-blue-600 flex items-center">
+                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600 mr-2"></div>
+                  Validating password...
+                </div>
+              )}
+              {currentPasswordError && (
+                <div className="mt-1 text-sm text-red-600">{currentPasswordError}</div>
+              )}
             </div>
             
             <div>
