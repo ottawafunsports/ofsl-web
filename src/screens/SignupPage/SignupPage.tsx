@@ -73,19 +73,7 @@ export function SignupPage() {
       setEmailChecking(true);
       setEmailError(null);
       
-      // First check auth.users table
-      const { data: authUser, error: authError } = await supabase.auth.admin.getUserByEmail(email);
-      
-      if (authError && !authError.message.includes('not found')) {
-        console.error('Error checking auth user:', authError);
-      }
-      
-      if (authUser) {
-        setEmailError('An account with this email already exists');
-        return;
-      }
-      
-      // Also check public.users table as fallback
+      // Check public.users table for existing email
       const { data: publicUsers, error: publicError } = await supabase
         .from('users')
         .select('id')
