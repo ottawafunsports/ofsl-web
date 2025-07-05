@@ -43,11 +43,21 @@ export function NewLeagueForm({
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
 
   const handleSubmit = async () => {
+    // Convert day_of_week from string to number
+    const dayOfWeek = newLeague.day_of_week !== null ? 
+      parseInt(newLeague.day_of_week.toString()) : null;
+      
+    // Create a copy of the league with the converted day_of_week
+    const leagueToSubmit = {
+      ...newLeague,
+      day_of_week: dayOfWeek
+    };
+    
     // Pass the selected product ID to the parent component
     if (selectedProductId) {
-      onProductSelect(selectedProductId, newLeague);
+      onProductSelect(selectedProductId, leagueToSubmit);
     }
-    await onSubmit(newLeague);
+    await onSubmit(leagueToSubmit);
     setNewLeague({
       name: '',
       description: '',
@@ -127,7 +137,7 @@ export function NewLeagueForm({
              required
             >
               <option value="">Select day...</option>
-              <option value={0}>Sunday</option>
+              <option value="0">Sunday</option>
               <option value="1">Monday</option>
               <option value="2">Tuesday</option>
               <option value="3">Wednesday</option>

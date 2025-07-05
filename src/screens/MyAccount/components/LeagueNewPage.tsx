@@ -94,6 +94,10 @@ export function LeagueNewPage() {
   const handleCreateLeague = async () => {
     try {
       setSaving(true);
+
+      // Convert day_of_week from string to number
+      const dayOfWeek = newLeague.day_of_week !== null ? 
+        parseInt(newLeague.day_of_week.toString()) : null;
       
       // Create the league
       const { data: leagueData, error } = await supabase
@@ -104,7 +108,7 @@ export function LeagueNewPage() {
           location: newLeague.location,
           sport_id: newLeague.sport_id,
           skill_id: newLeague.skill_id,
-          day_of_week: newLeague.day_of_week,
+          day_of_week: dayOfWeek,
           year: newLeague.year,
           start_date: newLeague.start_date,
           end_date: newLeague.end_date,
@@ -241,7 +245,7 @@ export function LeagueNewPage() {
                   required
                 >
                   <option value="">Select day...</option>
-                  <option value={0}>Sunday</option>
+                  <option value="0">Sunday</option>
                   <option value="1">Monday</option>
                   <option value="2">Tuesday</option>
                   <option value="3">Wednesday</option>

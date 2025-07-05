@@ -128,6 +128,10 @@ export function LeagueEditPage() {
   const handleUpdateLeague = async () => {
     if (!id) return;
 
+    // Convert day_of_week from string to number
+    const dayOfWeek = editLeague.day_of_week !== null ? 
+      parseInt(editLeague.day_of_week.toString()) : null;
+
     try {
       setSaving(true);
       
@@ -139,7 +143,7 @@ export function LeagueEditPage() {
           location: editLeague.location,
           sport_id: editLeague.sport_id,
           skill_id: editLeague.skill_id,
-          day_of_week: editLeague.day_of_week,
+          day_of_week: dayOfWeek,
           year: editLeague.year,
           start_date: editLeague.start_date,
           end_date: editLeague.end_date,
@@ -299,7 +303,7 @@ export function LeagueEditPage() {
                   required
                 >
                   <option value="">Select day...</option>
-                  <option value={0}>Sunday</option>
+                  <option value="0">Sunday</option>
                   <option value="1">Monday</option>
                   <option value="2">Tuesday</option>
                   <option value="3">Wednesday</option>
