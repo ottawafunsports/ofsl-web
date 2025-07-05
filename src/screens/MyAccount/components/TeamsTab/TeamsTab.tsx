@@ -257,7 +257,7 @@ export function TeamsTab() {
     setConfirmModal({
       isOpen: true,
       title: 'Confirm Team Deletion',
-      message: `Are you sure you want to deregister the team "${team.name}"? This action cannot be undone and will remove all team data including registrations and payment records. Please note that any payments already made are non-refundable.`,
+      message: `Are you sure you want to deregister the team "warren's team"? This action cannot be undone and will remove all team data including registrations and payment records.`,
       confirmText: 'Yes, Deregister Team',
       cancelText: 'Cancel',
       onConfirm: () => handleDeleteTeam(team),
