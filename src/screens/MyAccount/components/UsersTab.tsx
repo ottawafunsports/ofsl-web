@@ -64,6 +64,11 @@ export function UsersTab() {
     loadUsers();
   }, []);
 
+  // Add a refresh button to manually reload users
+  const handleRefresh = () => {
+    loadUsers();
+  };
+
   useEffect(() => {
     // Filter and sort users
     let filtered = users.filter(user => 
@@ -134,6 +139,21 @@ export function UsersTab() {
     try {
       setLoading(true);
       
+      // First check if the user is an admin
+      const { data: adminCheck, error: adminError } = await supabase
+        .from('users')
+        .select('is_admin')
+        .eq('id', userProfile?.id)
+        .single();
+
+      if (adminError || !adminCheck?.is_admin) {
+        console.error('Error checking admin status:', adminError);
+        showToast('You must be an admin to view users', 'error');
+        setLoading(false);
+        return;
+      }
+
+      // Use service role client for admin operations if available
       const { data, error } = await supabase
         .from('users')
         .select('*')
@@ -374,8 +394,16 @@ export function UsersTab() {
           <Users className="h-6 w-6 text-[#6F6F6F]" />
           <h2 className="text-2xl font-bold text-[#6F6F6F]">Manage Users</h2>
         </div>
-        <div className="text-sm text-[#6F6F6F]">
-          Total Users: {users.length}
+        <div className="flex items-center gap-4">
+          <div className="text-sm text-[#6F6F6F]">
+            Total Users: {users.length}
+          </div>
+          <Button
+            onClick={handleRefresh}
+            className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] px-4 py-2 text-sm"
+          >
+            Refresh Users
+          </Button>
         </div>
       </div>
 
@@ -615,8 +643,8 @@ export function UsersTab() {
       {/* Edit User Modal */}
       {editingUser && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-lg max-w-md w-full">
-            <div className="p-6">
+          <div className="bg-white rounded-lg shadow-lg max-w-md w-full max-h-[90vh] overflow-hidden">
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-2rem)]">
               <h3 className="text-xl font-bold text-[#6F6F6F] mb-6">Edit User</h3>
               
               <div className="space-y-4">
@@ -746,7 +774,7 @@ export function UsersTab() {
                 )}
               </div>
 
-              <div className="flex gap-4 mt-6">
+              <div className="flex gap-4 mt-6 sticky bottom-0 pt-4 bg-white border-t">
                 <Button
                   onClick={handleSaveUser}
                   className="flex-1 bg-[#B20000] hover:bg-[#8A0000] text-white rounded-lg px-6 py-2"
