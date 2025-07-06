@@ -3,13 +3,13 @@ import { ReactNode } from "react";
 interface HeroBannerProps {
   image: string;
   imageAlt: string;
-  height?: string;
+  containerClassName?: string;
   children: ReactNode;
 }
 
-export function HeroBanner({ image, imageAlt, height = "604px", children }: HeroBannerProps) {
+export function HeroBanner({ image, imageAlt, containerClassName = "h-[604px]", children }: HeroBannerProps) {
   return (
-    <div className="relative w-full" style={{ height }}>
+    <div className={`relative w-full ${containerClassName}`}>
       <img
         className="w-full h-full object-cover"
         alt={imageAlt}
