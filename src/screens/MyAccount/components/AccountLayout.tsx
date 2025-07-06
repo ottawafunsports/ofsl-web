@@ -31,7 +31,7 @@ export function AccountLayout() {
         </div>
 
         {/* Navigation Tabs with Icons */}
-        <div className="flex border-b border-gray-200 mb-8">
+        <div className="flex flex-nowrap overflow-x-auto scrollbar-thin border-b border-gray-200 mb-8">
           <Link
             to="/my-account/teams"
             className={`flex items-center gap-2 px-6 py-3 text-center cursor-pointer relative transition-all ${
