@@ -59,6 +59,7 @@ export const HomePage = (): JSX.Element => {
   const [dragDistance, setDragDistance] = useState(0);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
+  const [showLeftButton, setShowLeftButton] = useState(false);
 
   // Mouse event handlers for draggable scrolling
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -170,6 +171,39 @@ export const HomePage = (): JSX.Element => {
     };
   }, [isDragging]);
 
+  // Function to scroll the carousel by one card width
+  const scrollCarousel = (direction: 'left' | 'right') => {
+    if (!scrollContainerRef.current) return;
+    
+    const container = scrollContainerRef.current;
+    const cardWidth = 280 + 24; // card width + gap
+    const scrollAmount = direction === 'left' ? -cardWidth : cardWidth;
+    
+    container.scrollBy({
+      left: scrollAmount,
+      behavior: 'smooth'
+    });
+    
+    // Update showLeftButton based on scroll position
+    setShowLeftButton(container.scrollLeft + scrollAmount > 0);
+  };
+  
+  // Update left button visibility on scroll
+  const handleScroll = () => {
+    if (scrollContainerRef.current) {
+      setShowLeftButton(scrollContainerRef.current.scrollLeft > 0);
+    }
+  };
+  
+  // Add scroll event listener
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', handleScroll);
+      return () => container.removeEventListener('scroll', handleScroll);
+    }
+  }, []);
+
   return (
     <div className="bg-white w-full">
       <HeroBanner 
@@ -276,6 +310,7 @@ export const HomePage = (): JSX.Element => {
               ref={scrollContainerRef}
               className="flex gap-6 overflow-x-auto pb-8 scrollbar-thin"
               onMouseDown={handleMouseDown}
+              onScroll={handleScroll}
               onMouseLeave={handleMouseLeave}
               onMouseUp={handleMouseUp}
               onMouseMove={handleMouseMove}
@@ -323,8 +358,24 @@ export const HomePage = (): JSX.Element => {
             </div>
             
             {/* Scroll indicators */}
+            {showLeftButton && (
+              <div 
+                onClick={() => scrollCarousel('left')}
+                className="hidden md:block absolute -left-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-50 rounded-full p-1.5 shadow-sm cursor-pointer hover:bg-opacity-70 z-10"
+              >
+                <div className="w-6 h-6 flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#B20000]">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                  </svg>
+                </div>
+              </div>
+            )}
+            
             <div className="hidden md:block absolute -right-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-50 rounded-full p-1.5 shadow-sm">
-              <div className="w-6 h-6 flex items-center justify-center">
+              <div 
+                className="w-6 h-6 flex items-center justify-center cursor-pointer hover:bg-opacity-70"
+                onClick={() => scrollCarousel('right')}
+              >
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#B20000]">
                   <polyline points="9 18 15 12 9 6"></polyline>
                 </svg>
