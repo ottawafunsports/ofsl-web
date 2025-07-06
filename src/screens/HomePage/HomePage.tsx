@@ -172,7 +172,11 @@ export const HomePage = (): JSX.Element => {
 
   return (
     <div className="bg-white w-full">
-      <HeroBanner image="/mask-group.png" imageAlt="Volleyball players">
+      <HeroBanner 
+        image="/mask-group.png" 
+        imageAlt="Volleyball players"
+        containerClassName="h-[450px] md:h-[604px]"
+      >
         <div className="text-center text-white max-w-[860px] px-4">
           <h1 className="text-4xl md:text-5xl lg:text-6xl mb-4 md:mb-6 font-heading font-bold">Welcome to OFSL!</h1>
           <p className="text-base md:text-lg lg:text-xl">
