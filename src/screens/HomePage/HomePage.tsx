@@ -274,7 +274,7 @@ export const HomePage = (): JSX.Element => {
           <div className="relative">
             <div 
               ref={scrollContainerRef}
-              className="flex gap-6 overflow-x-auto pb-8 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
+              className="flex gap-6 overflow-x-auto pb-8 scrollbar-thin"
               onMouseDown={handleMouseDown}
               onMouseLeave={handleMouseLeave}
               onMouseUp={handleMouseUp}
@@ -323,7 +323,7 @@ export const HomePage = (): JSX.Element => {
             </div>
             
             {/* Scroll indicators */}
-            <div className="hidden md:block absolute -right-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-70 rounded-full p-2 shadow-md">
+            <div className="hidden md:block absolute -right-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-50 rounded-full p-1.5 shadow-sm">
               <div className="w-6 h-6 flex items-center justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#B20000]">
                   <polyline points="9 18 15 12 9 6"></polyline>
