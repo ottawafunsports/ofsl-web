@@ -77,24 +77,7 @@ export function Layout() {
   return (
     <div className="bg-white w-full">
       <div className="sticky top-0 z-50">
-        <div 
-          className="relative transform-gpu will-change-transform overflow-hidden"
-          style={{ 
-            height: showAnnouncement ? '42px' : '0px',
-            transition: 'height 500ms cubic-bezier(0.4, 0, 0.2, 1)'
-          }}
-        >
-          <div 
-            className="w-full"
-            style={{ 
-              opacity: showAnnouncement ? '1' : '0',
-              transform: showAnnouncement ? 'translateY(0)' : 'translateY(-100%)',
-              transition: 'opacity 500ms cubic-bezier(0.4, 0, 0.2, 1), transform 500ms cubic-bezier(0.4, 0, 0.2, 1)'
-            }}
-          >
-            <AnnouncementBar />
-          </div>
-        </div>
+        {showAnnouncement && <AnnouncementBar />}
         <Header isCompact={isCompactHeader} />
       </div>
       <Outlet />
