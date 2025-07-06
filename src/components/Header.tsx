@@ -202,7 +202,16 @@ export function Header({ isCompact = false }: HeaderProps) {
             isMenuOpen ? 'translate-y-0' : 'translate-y-full'
           }`}
         >
-          <div className="container mx-auto px-4 py-6 pb-24 pt-[108px] md:pt-[135px]">
+          <div className="container mx-auto px-4 py-6 pb-24">
+            <div className="flex justify-end lg:hidden mb-4">
+              <button
+                className="text-white p-2"
+                onClick={() => setIsMenuOpen(false)}
+                aria-label="Close mobile menu"
+              >
+                <X size={24} />
+              </button>
+            </div>
             <nav className="flex flex-col space-y-4 min-h-[calc(100vh-200px)]">
               <Link 
                 to="/volleyball" 
