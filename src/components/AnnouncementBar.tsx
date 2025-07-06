@@ -7,7 +7,7 @@ export function AnnouncementBar() {
         <div className="font-normal text-white text-sm md:text-base text-center">
           <span className="tracking-[0.08px]">Summer 2025 leagues registration is now open! </span>
           <Link 
-            to="/leagues" 
+            to="/leagues"
             className="text-base md:text-lg underline ml-0 md:ml-2 font-bold"
           >
             Register now
