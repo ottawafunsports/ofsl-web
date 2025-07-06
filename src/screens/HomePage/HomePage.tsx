@@ -59,6 +59,7 @@ export const HomePage = (): JSX.Element => {
   const [dragDistance, setDragDistance] = useState(0);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
+  const [showLeftButton, setShowLeftButton] = useState(false);
 
   // Mouse event handlers for draggable scrolling
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -170,6 +171,39 @@ export const HomePage = (): JSX.Element => {
     };
   }, [isDragging]);
 
+  // Function to scroll the carousel by one card width
+  const scrollCarousel = (direction: 'left' | 'right') => {
+    if (!scrollContainerRef.current) return;
+    
+    const container = scrollContainerRef.current;
+    const cardWidth = 280 + 24; // card width + gap
+    const scrollAmount = direction === 'left' ? -cardWidth : cardWidth;
+    
+    container.scrollBy({
+      left: scrollAmount,
+      behavior: 'smooth'
+    });
+    
+    // Update showLeftButton based on scroll position
+    setShowLeftButton(container.scrollLeft + scrollAmount > 0);
+  };
+  
+  // Update left button visibility on scroll
+  const handleScroll = () => {
+    if (scrollContainerRef.current) {
+      setShowLeftButton(scrollContainerRef.current.scrollLeft > 0);
+    }
+  };
+  
+  // Add scroll event listener
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', handleScroll);
+      return () => container.removeEventListener('scroll', handleScroll);
+    }
+  }, []);
+
   return (
     <div className="bg-white w-full">
       <HeroBanner 
@@ -268,61 +302,85 @@ export const HomePage = (): JSX.Element => {
       </div>
 
       {/* League cards with overflow handling */}
-      <div className="w-full overflow-hidden mb-8 md:mb-12">
+      <div className="w-full mb-8 md:mb-12">
         <div className="max-w-[1280px] mx-auto px-4">
           <h2 className="text-2xl md:text-3xl font-bold text-[#6F6F6F] mb-8">Popular Leagues</h2>
-          <div 
-            ref={scrollContainerRef}
-            className="flex gap-6 overflow-x-auto pb-8 -mx-[400px] pl-[400px] pr-[450px] scrollbar-hide"
-            onMouseDown={handleMouseDown}
-            onMouseLeave={handleMouseLeave}
-            onMouseUp={handleMouseUp}
-            onMouseMove={handleMouseMove}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            style={{ 
-              cursor: 'grab', 
-              width: 'calc(100% + 850px)',
-              scrollBehavior: 'auto', // Disable smooth scrolling for immediate stop
-              paddingTop: '10px' // Add padding at top to prevent cutoff during zoom
-            }}
-          >
-            {leagueCards.map((card, index) => (
-              <Link 
-                key={index} 
-                to={card.link} 
-                className={`block transition-transform duration-300 hover:scale-105 hover:shadow-lg rounded-lg flex-shrink-0 ${
-                  index < 4 ? 'w-[calc((100%-72px)/4)]' : 'w-[280px]'
-                }`}
-                style={{ transformOrigin: 'center center' }}
-                onClick={(e) => {
-                  // Prevent navigation if we're dragging or just finished dragging
-                  if (isDragging || hasDragged) {
-                    e.preventDefault();
-                  }
-                }}
-              >
-                <Card className="border-none overflow-hidden h-full rounded-lg">
-                  <CardContent className="p-0">
-                    <div className="relative">
-                      <img
-                        className="w-full h-[400px] object-cover rounded-t-lg"
-                        alt={card.alt}
-                        src={card.image}
-                      />
-                      <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-70 h-[90px] flex items-center justify-center px-4">
-                        <h3 className="text-white font-bold text-lg text-center">
-                          {card.title}
-                        </h3>
+          <div className="relative">
+            <div 
+              ref={scrollContainerRef}
+              className="flex gap-6 overflow-x-auto pb-8 scrollbar-thin"
+              onMouseDown={handleMouseDown}
+              onScroll={handleScroll}
+              onMouseLeave={handleMouseLeave}
+              onMouseUp={handleMouseUp}
+              onMouseMove={handleMouseMove}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              style={{ 
+                cursor: 'grab', 
+                scrollBehavior: 'auto', // Disable smooth scrolling for immediate stop
+                paddingTop: '10px', // Add padding at top to prevent cutoff during zoom
+                WebkitOverflowScrolling: 'touch' // Smooth scrolling on iOS
+              }}
+            >
+              {leagueCards.map((card, index) => (
+                <Link 
+                  key={index} 
+                  to={card.link} 
+                  className="block transition-transform duration-300 hover:scale-105 hover:shadow-lg rounded-lg flex-shrink-0 w-[280px] md:w-[calc((100%-72px)/4)]"
+                  style={{ transformOrigin: 'center center' }}
+                  onClick={(e) => {
+                    // Prevent navigation if we're dragging or just finished dragging
+                    if (isDragging || hasDragged) {
+                      e.preventDefault();
+                    }
+                  }}
+                >
+                  <Card className="border-none overflow-hidden h-full rounded-lg">
+                    <CardContent className="p-0">
+                      <div className="relative">
+                        <img
+                          className="w-full h-[400px] object-cover rounded-t-lg"
+                          alt={card.alt}
+                          src={card.image}
+                        />
+                        <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-70 h-[90px] flex items-center justify-center px-4">
+                          <h3 className="text-white font-bold text-lg text-center">
+                            {card.title}
+                          </h3>
+                        </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-            {/* Add empty spacer div for additional padding */}
-            <div className="w-[50px] flex-shrink-0"></div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+            
+            {/* Scroll indicators */}
+            {showLeftButton && (
+              <div 
+                onClick={() => scrollCarousel('left')}
+                className="hidden md:block absolute -left-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-50 rounded-full p-1.5 shadow-sm cursor-pointer hover:bg-opacity-70 z-10"
+              >
+                <div className="w-6 h-6 flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#B20000]">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                  </svg>
+                </div>
+              </div>
+            )}
+            
+            <div className="hidden md:block absolute -right-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-50 rounded-full p-1.5 shadow-sm">
+              <div 
+                className="w-6 h-6 flex items-center justify-center cursor-pointer hover:bg-opacity-70"
+                onClick={() => scrollCarousel('right')}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#B20000]">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </div>
+            </div>
           </div>
         </div>
       </div>
