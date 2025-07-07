@@ -140,8 +140,8 @@ export function AddPlayersModal({
         captainName: teamData.users?.name || 'Team Captain'
       };
 
-      // Use the custom domain URL for Supabase functions
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://api.ofsl.ca';
+      // Get the Supabase URL from environment variables
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const response = await fetch(`${supabaseUrl}/functions/v1/send-invite`, {
         method: 'POST',
         headers: {

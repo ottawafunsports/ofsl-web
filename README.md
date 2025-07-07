@@ -30,9 +30,24 @@ npm run build
 Create a `.env` file in the root directory with the following variables:
 
 ```
-VITE_SUPABASE_URL=https://api.ofsl.ca
+VITE_SUPABASE_URL=https://api.ofsl.ca  # Use your custom domain
 VITE_SUPABASE_ANON_KEY=your-anon-key
 VITE_STRIPE_PUBLISHABLE_KEY=your-publishable-key
 ```
 
-Note: The Supabase URL now uses the custom domain `api.ofsl.ca` instead of the default Supabase project URL.
+## Google OAuth Configuration
+
+When using Google OAuth with a custom domain, you need to:
+
+1. Update your Google Cloud Console OAuth credentials:
+   - Go to https://console.cloud.google.com/apis/credentials
+   - Edit your OAuth 2.0 Client ID
+   - Add the following Authorized redirect URIs:
+     - `https://api.ofsl.ca/auth/v1/callback`
+     - `https://[your-project-ref].supabase.co/auth/v1/callback` (keep the original as well)
+
+2. Update your Supabase Authentication settings:
+   - Go to your Supabase dashboard > Authentication > Providers > Google
+   - Ensure the Redirect URL is set to `https://api.ofsl.ca/auth/v1/callback`
+
+This configuration ensures that Google OAuth works correctly with your custom domain.

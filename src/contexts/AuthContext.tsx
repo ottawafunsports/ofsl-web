@@ -338,6 +338,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
+          // Use the current origin for the redirect URL
           redirectTo: `${window.location.origin}/my-account/profile`,
           queryParams: {
             access_type: 'offline',
