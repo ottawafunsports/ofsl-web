@@ -59,6 +59,13 @@ export function ProfileTab() {
   const handleProfileSave = async () => {
     if (!userProfile) return;
 
+    // Validate phone number format
+    const phoneDigits = profile.phone.replace(/\D/g, '');
+    if (phoneDigits.length !== 10) {
+      showToast("Please enter a valid 10-digit phone number", "error");
+      return;
+    }
+
     setSaving(true);
     try {
       const { error } = await supabase
@@ -75,6 +82,13 @@ export function ProfileTab() {
       if (error) throw error;
 
       await refreshUserProfile();
+      
+      // If this was a profile completion after Google sign-in, redirect to teams page
+      const searchParams = new URLSearchParams(window.location.search);
+      if (searchParams.get('complete') === 'true') {
+        navigate('/my-account/teams');
+      }
+      
       setIsEditing(false);
       showToast('Profile updated successfully!', 'success');
     } catch (error) {

@@ -54,11 +54,11 @@ export function SignupPage() {
       const { error } = await signInWithGoogle();
       
       if (error) {
-        console.error('Google sign-up error:', error);
+        console.error('Google sign-up error:', error.message);
         setError(error.message);
         setGoogleLoading(false);
       } else {
-        console.log('Google sign-up initiated successfully');
+        console.log('Google sign-up initiated successfully, redirecting to OAuth provider');
         // The redirect will happen automatically via the Google OAuth flow
         // Keep the loading state to show the user something is happening
       }
@@ -188,9 +188,9 @@ export function SignupPage() {
       // Step 2: Account created successfully, let AuthContext handle profile creation
       // Navigate to login page with success message
       console.log('Redirecting to login page with success message');
-      navigate('/login', { 
+      navigate('/login', {
         state: { 
-          message: "Account created successfully! You can now log in with your credentials." 
+          message: "Account created successfully! Please check your email for verification instructions and then log in with your credentials." 
         } 
       });
       

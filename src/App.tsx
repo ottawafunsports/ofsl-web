@@ -29,6 +29,7 @@ import { LeagueEditPage } from "./screens/MyAccount/components/LeagueEditPage";
 import { TeamEditPage } from "./screens/MyAccount/components/TeamEditPage";
 import { Navigate } from "react-router-dom";
 import { LeagueNewPage } from "./screens/MyAccount/components/LeagueNewPage";
+import { GoogleSignupRedirect } from "./screens/SignupPage/GoogleSignupRedirect";
 
 // Create a catch-all route component to handle direct URL access
 // const CatchAllRoute = () => {
@@ -47,6 +48,7 @@ export function App() {
             <Route path="/volleyball" element={<VolleyballPage />} />
             <Route path="/badminton" element={<BadmintonPage />} />
             <Route path="/leagues" element={<LeaguesPage />} />
+            <Route path="/google-signup-redirect" element={<GoogleSignupRedirect />} />
             <Route path="/leagues/:id" element={<LeagueDetailPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
