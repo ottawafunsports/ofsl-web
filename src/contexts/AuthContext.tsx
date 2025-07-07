@@ -77,11 +77,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.log('App metadata:', user.app_metadata);
       
       // First check if user profile already exists
-      const { data: existingProfile, error: fetchError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('auth_id', user.id)
-        .single();
+      let { data: existingProfile, error: fetchError } = await supabase
+        .rpc('check_and_fix_user_profile_v2', {
+          p_auth_id: user.id,
+          p_email: user.email,
+          p_name: user.user_metadata?.full_name || user.user_metadata?.name || '',
+          p_phone: user.user_metadata?.phone || ''
+        });
 
       if (fetchError && fetchError.code !== 'PGRST116') {
         console.error('Error checking existing user:', fetchError);
@@ -133,43 +135,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           date_created: now,
           date_modified: now,
           is_admin: false,
-        };
-        
-        console.log('New profile data:', newProfile);
-
-        const { data: insertedUser, error: insertError } = await supabase
-          .from('users')
-          .insert(newProfile)
-          .select()
-          .single();
-
-        console.log('Insert result:', insertError ? 'Error' : 'Success');
-        if (insertError && insertError.code !== '23505') { // Skip unique violation errors
-          console.error('Error creating user profile:', insertError);
-          return null;
-        } else if (insertError) {
-          console.log('User profile already exists (unique violation), fetching existing profile');
-          // Try to fetch the profile again
-          const { data: existingUser, error: fetchAgainError } = await supabase
-            .from('users')
-            .select('*')
-            .eq('auth_id', user.id)
-            .single();
-            
-          if (fetchAgainError) {
-            console.error('Error fetching existing user after insert error:', fetchAgainError);
-            return null;
-          }
-          
-          return existingUser;
         }
-
-        return insertedUser;
+      }
+      // After attempting to fix the profile, fetch the current profile
+      const { data: profile, error: profileError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('auth_id', user.id)
+        .single();
+      
+      if (profileError) {
+        console.error('Error fetching user profile after fix attempt:', profileError);
+        return null;
       }
       
       console.log('Existing profile found');
 
-      return existingProfile;
+      return profile;
     } catch (error) {
       console.error('Error in handleUserProfileCreation:', error);
       return null;
@@ -179,6 +161,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Handle auth state changes
   const handleAuthStateChange = async (event: string, session: Session | null) => {
     console.log('Auth state change:', event, session?.user?.email);
+    
+    // Set session and user state immediately to ensure UI updates
+    if (session) {
+      console.log('Setting session and user state with session ID:', session.user.id);
+      setSession(session);
+      setUser(session.user);
+    } else {
+      console.log('Clearing session and user state');
+      setSession(null);
+      setUser(null);
+    }
+    
+    // Add more detailed logging for debugging
+    if (session?.user) {
+      console.log('User ID:', session.user.id);
+      console.log('User email:', session.user.email);
+      console.log('User metadata:', JSON.stringify(session.user.user_metadata));
+    }
     console.log('Auth event details:', event, 'Time:', new Date().toISOString());
     
     if (session?.user) {
@@ -187,9 +187,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.log('Auth user metadata:', session.user.user_metadata);
     }
     
-    setSession(session);
-    setUser(session?.user ?? null);
-
     if (event === 'SIGNED_OUT') {
       // Clear all auth state
       setSession(null);
@@ -198,6 +195,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Clear any stored redirect paths
       localStorage.removeItem('redirectAfterLogin');
       setLoading(false);
+      console.log('Sign out complete, state cleared');
       return;
     }
 
@@ -225,12 +223,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (event === 'SIGNED_IN') {
         // Check for redirect after login
         const redirectPath = localStorage.getItem('redirectAfterLogin') || '/my-account/teams';
+        console.log('SIGNED_IN event detected, redirecting to:', redirectPath);
         if (redirectPath) {
           localStorage.removeItem('redirectAfterLogin');
           // Use setTimeout to ensure the state is fully updated before redirecting
           setTimeout(() => {
-            window.location.href = redirectPath;
-          }, 100);
+            console.log('Executing redirect to:', redirectPath);
+            window.location.replace(redirectPath);
+          }, 500); // Increased timeout to ensure state is fully updated
           return;
         }
         
@@ -241,14 +241,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           
           if (!isProfileComplete) {
             // Redirect to account page for profile completion
-            window.location.href = '/my-account/profile?complete=true';
+            window.location.replace('/my-account/profile?complete=true');
           } else {
             // Redirect to teams page by default
-            window.location.href = '/my-account/teams';
+            window.location.replace('/my-account/teams');
           }
+          return;
         } else {
           // Fallback redirect to teams page
-          window.location.href = '/my-account/teams';
+          window.location.replace('/my-account/teams');
+          return;
         }
       }
     }
@@ -263,14 +265,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     let mounted = true;
 
+    console.log('AuthProvider mounted, initializing auth state');
+
     // Get initial session
     const getInitialSession = async () => {
       try {
         // Keep loading true until we've processed everything
         setLoading(true);
         console.log('Getting initial session');
-        
-        const { data: { session }, error } = await supabase.auth.getSession();
+       
+        const { data, error } = await supabase.auth.getSession();
+        const session = data?.session;
+
         if (error) {
           console.error('Error getting session:', error);
           if (mounted) {
@@ -281,7 +287,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
         
         if (mounted) {
-          console.log('Initial session found:', session ? 'yes' : 'no', session?.user?.id);
+          console.log('Initial session found:', session ? `yes, user ID: ${session.user.id}` : 'no');
           await handleAuthStateChange('INITIAL_SESSION', session);
         }
       } catch (error) {
@@ -298,6 +304,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Subscribe to auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (mounted && !initializing) {
+        console.log('Auth state change event:', event);
         await handleAuthStateChange(event, session);
       }
     });
@@ -311,14 +318,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signIn = async (email: string, password: string) => {
     try {
       setLoading(true);
+      console.log('Attempting to sign in with email:', email);
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       
       if (error) {
+        console.error('Sign in error:', error.message);
         setLoading(false);
         return { error };
       }
+
+      console.log('Sign in successful, user ID:', data.user?.id);
       
       // Don't set loading to false here - let the auth state change handler do it
+      // The redirect will happen in the auth state change handler
+      console.log('Waiting for auth state change event...');
+      
+      // Force a state update to trigger UI refresh
+      setUser(data.user);
+      setSession(data.session);
+      
       return { error: null };
     } catch (error) {
       console.error('Error in signIn:', error);
@@ -334,6 +352,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Store the current URL for redirect after login
       const currentPath = window.location.pathname;
       if (currentPath !== '/login' && currentPath !== '/signup') {
+        console.log('Storing redirect path:', currentPath);
         localStorage.setItem('redirectAfterLogin', currentPath);
       }
       
@@ -348,9 +367,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           }
         }
       });
-      
-      if (data) {
-        console.log('Google sign-in initiated successfully');
+
+      if (data?.url) {
+        console.log('Google sign-in initiated, redirecting to OAuth provider');
       }
       
       return { error };
@@ -424,8 +443,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Don't render children until we've checked for an initial session
   if (initializing) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex flex-col items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#B20000]"></div>
+        <p className="mt-4 text-[#6F6F6F]">Initializing authentication...</p>
       </div>
     );
   }
@@ -434,7 +454,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     <AuthContext.Provider value={{ 
       session, 
       user, 
-      userProfile, 
+      userProfile,
       loading, 
       signIn, 
       signInWithGoogle, 
@@ -453,5 +473,16 @@ export const useAuth = () => {
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
+  
+  // Log auth state when hook is used (helps with debugging)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('useAuth hook called, auth state:', {
+      isAuthenticated: !!context.user,
+      userId: context.user?.id,
+      profileId: context.userProfile?.id,
+      loading: context.loading
+    });
+  }
+  
   return context;
 };

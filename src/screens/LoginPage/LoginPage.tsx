@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
 import { Input } from "../../components/ui/input";
@@ -15,6 +15,7 @@ export function LoginPage() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const { signIn, signInWithGoogle, user } = useAuth();
+  const [redirectPath, setRedirectPath] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation(); 
 
@@ -25,18 +26,33 @@ export function LoginPage() {
     }
   }, [location.state]);
 
+  // Get redirect path from location state or localStorage
+  useEffect(() => {
+    const fromPath = location.state?.from;
+    const savedPath = localStorage.getItem('redirectAfterLogin');
+    
+    if (fromPath) {
+      setRedirectPath(fromPath);
+    } else if (savedPath) {
+      setRedirectPath(savedPath);
+    }
+    
+    console.log('Redirect path set to:', fromPath || savedPath || 'default path');
+  }, [location.state]);
+
   // Redirect if user is already logged in
   useEffect(() => {
     if (user) {
-      const redirectPath = localStorage.getItem('redirectAfterLogin') || '/my-account/teams';
-      navigate(redirectPath, { replace: true });
+      const redirectTo = redirectPath || '/my-account/teams';
+      console.log('User already logged in, redirecting to:', redirectTo);
+      navigate(redirectTo);
     }
-  }, [user, navigate]);
+  }, [user, navigate, redirectPath]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    console.log('Login form submitted');
+    console.log('Login form submitted for email:', email);
     if (!email || !password) {
       setError("Please enter both email and password");
       return;
@@ -49,15 +65,23 @@ export function LoginPage() {
     try {
       console.log('Attempting to sign in with email:', email);
       const { error } = await signIn(email.trim(), password);
+      console.log('Sign in response received');
       
       if (error) {
-        console.error('Login error:', error.message);
+        console.error('Sign in error:', error.message);
         setError(error.message);
+        setLoading(false);
+      } else {
+        console.log('Sign in successful, redirect should happen automatically');
+        // The redirect will be handled by the auth context
+        // Keep loading state true to show the user something is happening
+        // It will be reset by the auth context after redirect or after 5 seconds as fallback
+        setTimeout(() => {
+          setLoading(false);
+          console.log('Login timeout reached, forcing page reload');
+          window.location.reload();
+        }, 5000);
       }
-      
-      // Set loading to false regardless of success or failure
-      // This prevents the loading indicator from getting stuck
-      setLoading(false);
     } catch (err) {
       setError("An unexpected error occurred");
       console.error(err);
@@ -68,19 +92,22 @@ export function LoginPage() {
   const handleGoogleSignIn = async () => {
     setError(null);
     setSuccessMessage(null);
-    console.log('Initiating Google sign-in');
+    console.log('Initiating Google sign-in flow');
     setGoogleLoading(true); 
     
     try {
+      console.log('Attempting to sign in with Google');
       const { error } = await signInWithGoogle();
       
       if (error) {
-        console.error('Google sign-in error:', error.message);
+        console.error('Google sign in error:', error.message);
         setError(error.message);
+        setGoogleLoading(false);
+      } else {
+        console.log('Google sign in successful, redirecting...');
+        // Google OAuth will handle the redirect automatically
+        // Keep loading state true to show the user something is happening
       }
-      
-      // Set loading to false regardless of success or failure
-      setGoogleLoading(false);
     } catch (err) {
       setError("An unexpected error occurred");
       console.error(err);
@@ -203,6 +230,13 @@ export function LoginPage() {
               {loading ? "Logging in..." : "Login"}
             </Button>
           </form>
+          
+          {loading && (
+            <div className="mt-4 text-center text-sm text-[#6F6F6F]">
+              <div className="animate-pulse">Logging in, please wait...</div>
+            </div>
+          )}
+          
           <div className="mt-6 text-center">
             <span className="text-[#6F6F6F]">Don't have an account? </span>
             <Link to="/signup" className="text-[#B20000] hover:underline font-bold">

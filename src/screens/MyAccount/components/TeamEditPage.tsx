@@ -774,10 +774,10 @@ export function TeamEditPage() {
                 <AlertCircle className="h-6 w-6 text-red-600" />
               </div>
               <div className="ml-3">
-                <h3 className="text-lg font-medium text-gray-900">Confirm Team Deletion</h3>
+                <h3 className="text-lg font-medium text-gray-900">Confirm Team Unregistration</h3>
                 <div className="mt-2">
                   <p className="text-sm text-gray-500">
-                    Are you sure you want to deregister the team "{team?.name}"? This action cannot be undone and will remove all team data including registrations and payment records.
+                    Are you sure you want to unregister the team "{team?.name}"? This action cannot be undone and will remove all team data including registrations and payment records.
                   </p>
                 </div>
               </div>
@@ -793,7 +793,7 @@ export function TeamEditPage() {
                 onClick={handleDeleteTeam}
                 className="bg-red-600 hover:bg-red-700 text-white"
               >
-                Yes, Deregister Team
+                Yes, Unregister Team
               </Button>
             </div>
           </div>
@@ -935,7 +935,7 @@ export function TeamEditPage() {
                 className="bg-red-600 hover:bg-red-700 text-white rounded-[10px] px-6 py-2 flex items-center gap-2"
               >
                 <Trash className="h-4 w-4" />
-                {deleting ? 'Deleting...' : 'Deregister Team'}
+                {deleting ? 'Deleting...' : 'Unregister Team'}
               </Button>
             </div>
           </CardContent>
