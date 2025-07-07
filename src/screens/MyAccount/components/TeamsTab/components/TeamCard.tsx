@@ -63,8 +63,9 @@ export function TeamCard({
       <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-4">
         <div>
           <Link to={`/leagues/${team.league?.id}`}>
-            <h3 className="text-lg font-bold text-[#6F6F6F] mb-2 hover:text-[#B20000] transition-colors">{team.league?.name || 'Unknown League'}</h3>
+            <h3 className="text-lg font-bold text-[#6F6F6F] hover:text-[#B20000] transition-colors">{team.league?.name || 'Unknown League'}</h3>
           </Link>
+          <p className="text-sm text-[#6F6F6F] mb-2">Team: {team.name}</p>
           
           <TeamInfo 
             team={team} 
@@ -80,12 +81,8 @@ export function TeamCard({
       {/* Location and other details */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 text-sm text-[#6F6F6F]">
         <div className="flex items-center gap-1">
-          <MapPin className="h-4 w-4 text-[#B20000]" />
-          <span>{team.league?.location || 'Location TBD'}</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <User className="h-4 w-4 text-[#B20000]" />
-          <span>Team: {team.name}</span>
+          <MapPin className="h-4 w-4 text-[#B20000] flex-shrink-0" />
+          <span className="line-clamp-1">{team.league?.location || 'Location TBD'}</span>
         </div>
       </div>
       
