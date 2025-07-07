@@ -264,9 +264,14 @@ export function TeamRegistrationModal({
                     >
                       <option value="">Select skill level...</option>
                       {skills.map(skill => (
-                        <option key={skill.id} value={skill.id}>
+                        <option 
+                          key={skill.id} 
+                          value={skill.id} 
+                          disabled={skill.name === 'Beginner'}
+                        >
                           {skill.name}
                           {skill.description && ` - ${skill.description}`}
+                          {skill.name === 'Beginner' && ' (not available)'}
                         </option>
                       ))}
                     </select>
