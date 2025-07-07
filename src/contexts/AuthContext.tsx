@@ -70,6 +70,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Helper function to create user profile if it doesn't exist
   const handleUserProfileCreation = async (user: User) => {
     try {
+      console.log('Creating user profile for:', user.email);
+      console.log('User metadata:', user.user_metadata);
+      console.log('App metadata:', user.app_metadata);
+      
       // First check if user profile already exists
       const { data: existingProfile, error: fetchError } = await supabase
         .from('users')
@@ -85,12 +89,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (!existingProfile) {
         console.log('Creating new user profile for:', user.email);
         
+        // Get provider from app_metadata
+        const provider = user.app_metadata?.provider || 'email';
+        console.log('Auth provider:', provider);
+        
         const now = new Date().toISOString();
         const newProfile = {
           id: user.id,
           auth_id: user.id,
-          name: user.user_metadata?.full_name || user.user_metadata?.name || '',
-          phone: user.user_metadata?.phone || '', // Will be empty for Google sign-ups
+          name: user.user_metadata?.full_name || user.user_metadata?.name || user.user_metadata?.user_name || '',
+          phone: provider === 'google' ? '' : (user.user_metadata?.phone || ''), // Will be empty for Google sign-ups
           email: user.email || '',
           date_created: now,
           date_modified: now,
@@ -106,6 +114,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (insertError && insertError.code !== '23505') { // Skip unique violation errors
           console.error('Error creating user profile:', insertError);
           return null;
+        } else if (insertError) {
+          console.log('User profile already exists (unique violation), fetching existing profile');
+          // Try to fetch the profile again
+          const { data: existingUser, error: fetchAgainError } = await supabase
+            .from('users')
+            .select('*')
+            .eq('auth_id', user.id)
+            .single();
+            
+          if (fetchAgainError) {
+            console.error('Error fetching existing user after insert error:', fetchAgainError);
+            return null;
+          }
+          
+          return existingUser;
         }
 
         return insertedUser;
@@ -121,6 +144,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Handle auth state changes
   const handleAuthStateChange = async (event: string, session: Session | null) => {
     console.log('Auth state change:', event, session?.user?.email);
+    console.log('Auth metadata:', session?.user?.app_metadata);
+    console.log('Auth user metadata:', session?.user?.user_metadata);
     
     setSession(session);
     setUser(session?.user ?? null);
@@ -140,6 +165,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Handle user profile for any signed-in user
       const profile = await handleUserProfileCreation(session.user);
       setUserProfile(profile);
+      
+      console.log('User profile after creation:', profile);
 
       // Handle redirect only for explicit sign-in events (not initial session)
       if (event === 'SIGNED_IN') {
@@ -245,13 +272,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signInWithGoogle = async () => {
     try {
       setLoading(true);
+      console.log('Initiating Google sign-in');
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/my-account/profile`,
           queryParams: {
-            access_type: 'offline',
             prompt: 'consent',
+            access_type: 'offline',
           }
         }
       });

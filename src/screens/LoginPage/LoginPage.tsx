@@ -170,12 +170,12 @@ export function LoginPage() {
               <div className="flex justify-between items-center">
                 <label
                   htmlFor="password"
-                  className="block text-sm font-medium text-[#6F6F6F]"
+                  className="block text-sm font-medium text-[#6F6F6F] mb-1"
                 >
                   Password
                 </label>
                 <Link
-                  to="/forgot-password"
+                  to="/forgot-password" 
                   className="text-sm text-[#B20000] hover:underline font-bold"
                 >
                   Forgot password?
