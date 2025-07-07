@@ -418,6 +418,25 @@ export function TeamsTab() {
 
       if (error) throw error;
 
+      // Get all unique skill IDs from all teams
+      const allSkillIds = new Set<number>();
+      teamsData?.forEach(team => {
+        if (team.leagues?.skill_ids) {
+          team.leagues.skill_ids.forEach((id: number) => allSkillIds.add(id));
+        }
+      });
+      
+      // Fetch all skills for mapping skill_ids to names
+      const { data: allSkills, error: skillsError } = await supabase
+        .from('skills')
+        .select('id, name');
+        
+      if (skillsError) {
+        console.error('Error fetching skills:', skillsError);
+      }
+      
+      const skillsMap = new Map(allSkills?.map(skill => [skill.id, skill]) || []);
+
       // Get all unique skill IDs
       const allSkillIds = new Set<number>();
       teamsData?.forEach(team => {
@@ -457,6 +476,18 @@ export function TeamsTab() {
           
           let rosterDetails: Array<{ id: string; name: string; email: string; }> = [];
           let gyms: Array<{ id: number; gym: string | null; address: string | null; }> = [];
+          let skillNames: string[] | null = null;
+          
+          // Get skill names from skill_ids array if available in the league
+          if (team.leagues?.skill_ids && team.leagues.skill_ids.length > 0) {
+            const names = team.leagues.skill_ids
+              .map((id: number) => skillsMap.get(id)?.name)
+              .filter((name: string | undefined) => name !== undefined) as string[];
+            
+            if (names.length > 0) {
+              skillNames = names;
+            }
+          }
           let skillNames: string[] | null = null;
 
           // Get skill names from skill_ids array if available in the league
@@ -502,6 +533,7 @@ export function TeamsTab() {
             league: team.leagues,
             captain_name: captainName,
             skill: team.skills, 
+            skill_names: skillNames,
             skill_names: skillNames, // Add skill names from league skill_ids
             roster_details: rosterDetails,
             gyms: gyms

@@ -28,6 +28,7 @@ interface TeamCardProps {
       name: string;
     } | null;
     skill_names?: string[] | null;
+    skill_names?: string[] | null;
     payment?: {
       id: number;
       amount_due: number;
@@ -76,7 +77,6 @@ export function TeamCard({
             skillNames={team.skill_names} 
             fallbackSkill={team.skill?.name}
           />
-        </div>
       </div>
       
       {/* Location and other details */}
