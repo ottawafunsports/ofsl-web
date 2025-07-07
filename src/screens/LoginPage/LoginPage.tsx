@@ -18,6 +18,9 @@ export function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Get the redirect path from location state or localStorage
+  const from = location.state?.from?.pathname || localStorage.getItem('redirectAfterLogin') || '/';
+
   // Check for success message from signup
   useEffect(() => {
     if (location.state?.message) {
@@ -28,9 +31,9 @@ export function LoginPage() {
   // Redirect if user is already logged in
   useEffect(() => {
     if (user) {
-      navigate("/");
+      navigate(from, { replace: true });
     }
-  }, [user, navigate]);
+  }, [user, navigate, from]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,13 +56,7 @@ export function LoginPage() {
       } else {
         // On successful login, we'll redirect in the auth context
         // But add a fallback redirect here in case that fails
-        setTimeout(() => {
-          if (document.visibilityState === 'visible') {
-            // If we're still on this page after 2 seconds, force a redirect
-            const redirectPath = localStorage.getItem('redirectAfterLogin') || '/';
-            window.location.replace(redirectPath);
-          }
-        }, 2000);
+        // No need for additional redirect logic here as the auth context handles it
       }
       // Don't set loading to false on success - the redirect will handle it
     } catch (err) {
@@ -80,14 +77,6 @@ export function LoginPage() {
       if (error) {
         setError(error.message);
         setGoogleLoading(false);
-      } else {
-        // Add a fallback redirect in case the auth context redirect fails
-        setTimeout(() => {
-          if (document.visibilityState === 'visible') {
-            const redirectPath = localStorage.getItem('redirectAfterLogin') || '/my-account/profile';
-            window.location.replace(redirectPath);
-          }
-        }, 3000);
       }
       // Note: Don't set loading to false here as the user will be redirected
       // The loading state will be reset when the component unmounts

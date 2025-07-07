@@ -24,13 +24,23 @@ export function ResetPasswordPage() {
   // Check if we have a valid hash in the URL
   useEffect(() => {
     const hash = window.location.hash;
-    const searchParams = new URLSearchParams(window.location.search);
+    const query = new URLSearchParams(window.location.search);
+    const type = query.get('type');
     
-    // Check both hash and query parameters for recovery type
-    if ((!hash || !hash.includes("type=recovery")) && 
-        (!searchParams.get('type') || searchParams.get('type') !== 'recovery')) {
-      setError("Invalid or expired password reset link. Please request a new password reset link.");
-      console.error("Missing recovery type in URL", { hash, search: window.location.search });
+    // Check if we're in a password reset flow
+    if (type !== 'recovery' && !hash.includes('type=recovery')) {
+      console.log('Not a recovery flow, checking session');
+      
+      // Check if user is already authenticated
+      const checkSession = async () => {
+        const { data } = await supabase.auth.getSession();
+        if (!data.session) {
+          setError("Invalid or expired password reset link. Please request a new password reset link.");
+          console.error("No active session and not a recovery flow", { hash, search: window.location.search });
+        }
+      };
+      
+      checkSession();
     }
   }, []);
 

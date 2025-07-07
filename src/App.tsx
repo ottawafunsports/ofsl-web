@@ -30,6 +30,12 @@ import { TeamEditPage } from "./screens/MyAccount/components/TeamEditPage";
 import { Navigate } from "react-router-dom";
 import { LeagueNewPage } from "./screens/MyAccount/components/LeagueNewPage";
 
+// Create a catch-all route component to handle direct URL access
+const CatchAllRoute = () => {
+  // This will redirect any unknown routes to the home page
+  return <Navigate to="/" replace />;
+};
+
 export function App() {
   return (
     <ToastProvider>
@@ -101,6 +107,9 @@ export function App() {
                 <TeamEditPage />
               </ProtectedRoute>
             } />
+
+            {/* Catch-all route for any unmatched routes */}
+            <Route path="*" element={<CatchAllRoute />} />
 
             {/* Legacy redirects for backward compatibility */}
             <Route path="/my-teams" element={
