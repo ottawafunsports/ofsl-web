@@ -69,9 +69,9 @@ export function LeagueSchedule({ mockSchedule, openScoreSubmissionModal }: Leagu
                   </colgroup>
                   <thead className="bg-white">
                     <tr>
-                      <th className="px-4 py-3 text-left text-sm font-medium text-[#6F6F6F]">Position</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-[#6F6F6F] rounded-tl-lg">Position</th>
                       <th className="px-4 py-3 text-left text-sm font-medium text-[#6F6F6F]">Team</th>
-                      <th className="px-4 py-3 text-left text-sm font-medium text-[#6F6F6F]">Ranking</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-[#6F6F6F] rounded-tr-lg">Ranking</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
@@ -91,9 +91,9 @@ export function LeagueSchedule({ mockSchedule, openScoreSubmissionModal }: Leagu
                     
                     {/* Position C */}
                     <tr className="bg-white">
-                      <td className="px-4 py-3 text-sm font-medium text-[#6F6F6F]">C</td>
+                      <td className="px-4 py-3 text-sm font-medium text-[#6F6F6F] rounded-bl-lg">C</td>
                       <td className="px-4 py-3 text-sm text-[#6F6F6F] truncate">{tier.teams.C?.name || "-"}</td>
-                      <td className="px-4 py-3 text-sm text-[#6F6F6F] text-left">{tier.teams.C?.ranking || "-"}</td>
+                      <td className="px-4 py-3 text-sm text-[#6F6F6F] text-left rounded-br-lg">{tier.teams.C?.ranking || "-"}</td>
                     </tr>
                   </tbody>
                 </table>

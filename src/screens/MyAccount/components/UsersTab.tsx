@@ -527,7 +527,7 @@ export function UsersTab() {
               <thead className="bg-gray-50 border-b">
                 <tr>
                   <th 
-                    className="px-6 py-3 text-left text-xs font-medium text-[#6F6F6F] uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    className="px-6 py-3 text-left text-xs font-medium text-[#6F6F6F] uppercase tracking-wider cursor-pointer hover:bg-gray-100 rounded-tl-lg"
                     onClick={() => handleSort('name')}
                   >
                     <div className="flex items-center">
@@ -572,7 +572,9 @@ export function UsersTab() {
                     </div>
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-[#6F6F6F] uppercase tracking-wider">
-                    Actions
+                    <div className="flex items-center">
+                      Actions
+                    </div>
                   </th>
                 </tr>
               </thead>
@@ -655,14 +657,14 @@ export function UsersTab() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex items-center gap-2">
                         <Button
-                          onClick={() => handleEditUser(user)}
-                          className="bg-transparent hover:bg-blue-50 text-blue-500 hover:text-blue-600 rounded-lg p-2 transition-colors"
+                          onClick={() => handleEditUser(user)} 
+                          className="bg-transparent hover:bg-blue-50 text-blue-500 hover:text-blue-600 rounded-lg p-2 transition-colors" 
                         >
                           <Edit2 className="h-3 w-3" />
                         </Button>
                         <Button
                           onClick={() => handleDeleteUser(user.id)}
-                          className="bg-transparent hover:bg-red-50 text-red-500 hover:text-red-600 rounded-lg p-2 transition-colors"
+                          className="bg-transparent hover:bg-red-50 text-red-500 hover:text-red-600 rounded-lg p-2 transition-colors" 
                         >
                           <Trash2 className="h-3 w-3" />
                         </Button>
