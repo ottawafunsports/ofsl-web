@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Button } from '../../../../../components/ui/button';
-import { Calendar, Crown, CreditCard, Users, DollarSign, MapPin, User } from 'lucide-react';
+import { Calendar, Crown, Users, DollarSign, MapPin, User } from 'lucide-react';
 import { getDayName } from '../../../../../lib/leagues';
 
 interface TeamCardProps {
@@ -8,90 +8,118 @@ interface TeamCardProps {
     id: number;
     name: string;
     captain_id: string;
+    captain_name: string | null;
     league_id: number;
     league?: {
       id: number;
       name: string;
       day_of_week: number | null;
       cost: number | null;
+      location: string | null;
       sports?: {
         name: string;
       } | null;
     } | null;
-    gyms: Array<{
-      id: number;
-      gym: string | null;
-      address: string | null;
-    }>;
+    skill?: {
+      name: string;
+    } | null;
     payment?: {
       id: number;
       amount_due: number;
       amount_paid: number;
       status: string;
-      amount_due: number;
-      amount_paid: number;
-      status: string;
     };
+    roster: string[];
   };
   currentUserId: string;
-  onManageTeam: () => void;
+  onManageTeam: (team: any) => void;
   onPayNow?: (paymentId: number) => void;
+  showDeleteTeamConfirmation: (team: any) => void;
+  showLeaveTeamConfirmation: (team: any) => void;
+  deletingTeam: number | null;
+  unregisteringPayment: number | null;
 }
 
-export function TeamCard({ team, currentUserId, onManageTeam, onPayNow }: TeamCardProps) {
+export function TeamCard({ 
+  team, 
+  currentUserId, 
+  onManageTeam, 
+  onPayNow,
+  showDeleteTeamConfirmation,
+  showLeaveTeamConfirmation,
+  deletingTeam,
+  unregisteringPayment
+}: TeamCardProps) {
   const isCaptain = currentUserId === team.captain_id;
   
-  // Helper function to get primary gym location
-  const getPrimaryLocation = (gyms: Array<{ gym: string | null }>) => {
-    if (!gyms || gyms.length === 0) return 'Location TBD';
-    return gyms[0]?.gym || 'Location TBD';
+  const handleManageTeam = () => {
+    onManageTeam(team);
   };
 
-  // Helper function to format cost with icon
-  const formatCostWithIcon = (cost: number | null) => {
-    if (!cost) return 'Cost TBD';
-    return `$${cost}`;
+  const handlePayNow = (paymentId: number) => {
+    if (onPayNow) {
+      onPayNow(paymentId);
+    }
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-6">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-4">
-        <div className="flex-1 space-y-2">
-          <Link 
-            to={`/leagues/${team.league_id}`}
-            className="block"
-          >
-            <h3 className="text-lg font-bold text-[#6F6F6F] hover:text-[#B20000] transition-colors cursor-pointer">
-              {team.league?.name || 'Unknown League'}
-            </h3>
-          </Link>
+    <div className="bg-white border border-gray-200 rounded-lg p-4 md:p-6">
+      {/* Card Header - League and Team Info */}
+      <div className="flex flex-col mb-4">
+        <Link 
+          to={`/leagues/${team.league_id}`}
+          className="block"
+        >
+          <h3 className="text-lg font-bold text-[#6F6F6F] hover:text-[#B20000] transition-colors">
+            {team.league?.name || 'Unknown League'}
+          </h3>
+        </Link>
+        
+        <div className="flex flex-wrap gap-2 mt-1">
+          {/* Day */}
+          <div className="flex items-center text-sm text-[#6F6F6F]">
+            <Calendar className="h-4 w-4 mr-1 text-[#B20000]" />
+            <span>{getDayName(team.league?.day_of_week) || 'Day TBD'}</span>
+          </div>
           
-          <div className="flex flex-col text-sm text-[#6F6F6F] space-y-1">
-            <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              <span>{getDayName(team.league?.day_of_week) || 'Day TBD'}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <MapPin className="h-4 w-4" />
-              <span>{team.league?.location || 'Location TBD'}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <User className="h-4 w-4" />
-              <span>Team: {team.name}</span>
-            </div>
+          {/* Location */}
+          <div className="flex items-center text-sm text-[#6F6F6F]">
+            <MapPin className="h-4 w-4 mr-1 text-[#B20000]" />
+            <span>{team.league?.location || 'Location TBD'}</span>
+          </div>
+          
+          {/* Team Name */}
+          <div className="flex items-center text-sm text-[#6F6F6F]">
+            <User className="h-4 w-4 mr-1 text-[#B20000]" />
+            <span>Team: {team.name}</span>
+          </div>
+        </div>
+      </div>
+      
+      {/* Team Details Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+        {/* Captain */}
+        <div className="flex items-center">
+          <Crown className="h-4 w-4 text-yellow-500 mr-2" />
+          <div className="text-sm text-[#6F6F6F]">
+            {team.captain_id === currentUserId ? (
+              <span>You <span className="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-full">Captain</span></span>
+            ) : (
+              team.captain_name || 'Unknown'
+            )}
           </div>
         </div>
         
         {/* Team Size */}
-        <div className="flex items-center gap-2">
-          <Users className="h-4 w-4 text-blue-500" />
-          <p className="text-[#6F6F6F]">{team.roster?.length || 0} players</p>
+        <div className="flex items-center">
+          <Users className="h-4 w-4 text-blue-500 mr-2" />
+          <div className="text-sm text-[#6F6F6F]">{team.roster.length} players</div>
         </div>
         
-        {/* Payment Info */}
-        <div className="flex items-center gap-2">
-          <DollarSign className="h-4 w-4 text-purple-500" />
-          <div className="overflow-hidden">
+        {/* Payment Status */}
+        <div className="flex items-center">
+          <DollarSign className="h-4 w-4 text-purple-500 mr-2" />
+          <div className="text-sm">
             {team.payment ? (
               <div className="flex items-center gap-1">
                 <span className={`px-2 py-0.5 text-xs rounded-full ${
@@ -112,115 +140,104 @@ export function TeamCard({ team, currentUserId, onManageTeam, onPayNow }: TeamCa
         </div>
       </div>
       
-      {/* Payment due notification */}
+      {/* Payment Due Notification */}
       {team.payment && team.payment.amount_due > team.payment.amount_paid && team.captain_id === currentUserId && (
-        <div className="mb-4 flex items-center gap-2 text-sm bg-orange-50 p-2 rounded-lg">
-          <DollarSign className="h-4 w-4 text-orange-500" />
-          <span className="text-orange-600 font-medium">
-            Payment due: ${(team.payment.amount_due - team.payment.amount_paid).toFixed(2)}
-          </span>
-          {onPayNow && (
-            <Button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation(); 
-                onPayNow(team.payment!.id);
-              }}
-              className="ml-auto bg-green-600 hover:bg-green-700 text-white text-xs py-1 px-2 rounded"
-            >
-              Pay Now
-            </Button>
-          )}
+        <div className="mb-4 p-2 bg-orange-50 border border-orange-200 rounded-lg text-sm">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <DollarSign className="h-4 w-4 text-orange-500 mr-1" />
+              <span className="text-orange-700 font-medium">
+                Payment due: ${(team.payment.amount_due - team.payment.amount_paid).toFixed(2)}
+              </span>
+            </div>
+            {onPayNow && (
+              <Button
+                onClick={() => handlePayNow(team.payment!.id)}
+                className="bg-green-600 hover:bg-green-700 text-white text-xs py-1 px-2 rounded h-auto"
+              >
+                Pay Now
+              </Button>
+            )}
+          </div>
         </div>
       )}
       
-      {/* Action buttons */}
-      <div className="flex flex-wrap gap-2 justify-end">
-        <button
-          onClick={() => handleManageTeam(team)}
-          className="border border-[#B20000] bg-white hover:bg-[#B20000] hover:text-white text-[#B20000] rounded-lg px-3 py-1.5 text-sm transition-colors flex items-center gap-1"
-        >
-          <Users className="h-3 w-3" />
-          {team.captain_id === currentUserId ? 'Manage' : 'View'}
-        </button>
-        
-        {/* Pay Now Button */}
-        {team.payment && 
-         team.payment.amount_due > team.payment.amount_paid && 
-         team.captain_id === currentUserId && (
-          <button
-            onClick={() => handlePayNow(team.payment!.id)}
-            className="bg-green-600 hover:bg-green-700 text-white rounded-lg px-3 py-1.5 text-sm transition-colors flex items-center gap-1 whitespace-nowrap"
-          >
-            <DollarSign className="h-3 w-3" />
-            Pay
-          </button>
-        )}
-        
-        {/* Delete/Leave Team Button */}
-        {team.captain_id === currentUserId ? (
-          <button
-            onClick={() => showDeleteTeamConfirmation(team)}
-            disabled={deletingTeam === team.id}
-            className="bg-red-600 hover:bg-red-700 text-white rounded-lg px-3 py-1.5 text-sm transition-colors flex items-center gap-1"
-          >
-            {deletingTeam === team.id ? (
-              'Deleting...'
-            ) : (
-              <>
-                <Trash2 className="h-3 w-3" />
-                Deregister
-              </>
-            )}
-          </button>
-        ) : (
-          team.payment && (
-            <button
-              onClick={() => showLeaveTeamConfirmation(team)}
-              disabled={unregisteringPayment === team.payment?.id}
-              className="bg-red-600 hover:bg-red-700 text-white rounded-lg px-3 py-1.5 text-sm transition-colors flex items-center gap-1"
-            >
-              {unregisteringPayment === team.payment?.id ? (
-                'Removing...'
-              ) : (
-                <>
-                  <Trash2 className="h-3 w-3" />
-                  Leave
-                </>
-              )}
-            </button>
-          )
-        )}
-
-        {/* Team metadata and badges */}
-        <div className="flex flex-wrap items-center gap-2 sm:flex-col sm:items-end">
-          {/* Skill Level */}
+      {/* Action Buttons and Badges */}
+      <div className="flex flex-wrap items-center justify-between gap-2 mt-2">
+        {/* Skill Level Badge */}
+        <div>
           {team.skill?.name && (
-            <span className="px-3 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+            <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
               {team.skill.name}
             </span>
           )}
-          
-          {/* Captain Badge */}
-          {team.captain_id === currentUserId && (
-            <span className="px-3 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full flex items-center gap-1">
-              <Crown className="h-3 w-3" />
-              Captain
-            </span>
-          )}
         </div>
-      </div>
-      
-      {/* Team details grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4 text-sm">
-        {/* Captain Info */}
-        <div className="flex items-center gap-2">
-          <Crown className="h-4 w-4 text-yellow-500" />
-          <div className="overflow-hidden">
-            <p className="text-[#6F6F6F] truncate">
-              {team.captain_id === currentUserId ? 'You' : team.captain_name || 'Unknown'}
-            </p>
-          </div>
+        
+        {/* Action Buttons */}
+        <div className="flex gap-2">
+          <Button
+            onClick={handleManageTeam}
+            className="border border-[#B20000] bg-white hover:bg-[#B20000] hover:text-white text-[#B20000] rounded-lg px-3 py-1.5 text-sm transition-colors flex items-center gap-1 h-auto"
+          >
+            <Users className="h-3 w-3" />
+            {team.captain_id === currentUserId ? 'Manage' : 'View'}
+          </Button>
+          
+          {/* Pay Now Button */}
+          {team.payment && 
+           team.payment.amount_due > team.payment.amount_paid && 
+           team.captain_id === currentUserId && onPayNow && (
+            <Button
+              onClick={() => handlePayNow(team.payment!.id)}
+              className="bg-green-600 hover:bg-green-700 text-white rounded-lg px-3 py-1.5 text-sm transition-colors flex items-center gap-1 h-auto"
+            >
+              <DollarSign className="h-3 w-3" />
+              Pay
+            </Button>
+          )}
+          
+          {/* Delete/Leave Team Button */}
+          {team.captain_id === currentUserId ? (
+            <Button
+              onClick={() => showDeleteTeamConfirmation(team)}
+              disabled={deletingTeam === team.id}
+              className="bg-red-600 hover:bg-red-700 text-white rounded-lg px-3 py-1.5 text-sm transition-colors flex items-center gap-1 h-auto"
+            >
+              {deletingTeam === team.id ? (
+                'Deleting...'
+              ) : (
+                <>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
+                    <path d="M3 6h18"></path>
+                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                  </svg>
+                  Deregister
+                </>
+              )}
+            </Button>
+          ) : (
+            team.payment && (
+              <Button
+                onClick={() => showLeaveTeamConfirmation(team)}
+                disabled={unregisteringPayment === team.payment?.id}
+                className="bg-red-600 hover:bg-red-700 text-white rounded-lg px-3 py-1.5 text-sm transition-colors flex items-center gap-1 h-auto"
+              >
+                {unregisteringPayment === team.payment?.id ? (
+                  'Removing...'
+                ) : (
+                  <>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
+                      <path d="M3 6h18"></path>
+                      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                    </svg>
+                    Leave
+                  </>
+                )}
+              </Button>
+            )
+          )}
         </div>
       </div>
     </div>
