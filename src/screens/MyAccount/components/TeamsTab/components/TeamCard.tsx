@@ -220,3 +220,9 @@ export function TeamCard({ team, currentUserId, onManageTeam, onPayNow }: TeamCa
             <p className="text-[#6F6F6F] truncate">
               {team.captain_id === currentUserId ? 'You' : team.captain_name || 'Unknown'}
             </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
