@@ -28,6 +28,7 @@ export interface LeagueWithTeamCount extends League {
   team_count: number;
   spots_remaining: number;
   skill_names?: string[] | null;
+  skill_names?: string[] | null;
 }
 
 // Convert day_of_week number to day name
@@ -157,8 +158,8 @@ export const fetchLeagues = async (): Promise<LeagueWithTeamCount[]> => {
       let skillNames: string[] | null = null;
       if (league.skill_ids && league.skill_ids.length > 0) {
         skillNames = league.skill_ids
-          .map(id => skillsMap.get(id)?.name)
-          .filter(name => name !== undefined) as string[];
+          .map((id: number) => skillsMap.get(id)?.name)
+          .filter((name: string | undefined) => name !== undefined) as string[];
       }
 
       // Get gyms for this league
@@ -170,6 +171,7 @@ export const fetchLeagues = async (): Promise<LeagueWithTeamCount[]> => {
         ...league,
         sport_name: league.sports?.name || null,
         skill_name: league.skills?.name || null,
+        skill_names: skillNames,
         skill_ids: league.skill_ids || [],
         skill_names: skillNames,
         gyms: leagueGyms,

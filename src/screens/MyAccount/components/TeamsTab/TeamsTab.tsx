@@ -42,6 +42,7 @@ interface Team {
   skill: {
     name: string;
   } | null;
+  skill_names: string[] | null;
   gyms: Array<{
     id: number;
     gym: string | null;
@@ -417,6 +418,25 @@ export function TeamsTab() {
 
       if (error) throw error;
 
+      // Get all unique skill IDs
+      const allSkillIds = new Set<number>();
+      teamsData?.forEach(team => {
+        if (team.leagues?.skill_ids) {
+          team.leagues.skill_ids.forEach((id: number) => allSkillIds.add(id));
+        }
+      });
+      
+      // Fetch all skills for mapping skill_ids to names
+      const { data: allSkills, error: skillsError } = await supabase
+        .from('skills')
+        .select('id, name');
+        
+      if (skillsError) {
+        console.error('Error fetching skills:', skillsError);
+      }
+      
+      const skillsMap = new Map(allSkills?.map(skill => [skill.id, skill]) || []);
+
       // Process teams and fetch additional data
       const teamsWithFullDetails = await Promise.all(
         (teamsData || []).map(async (team) => {
@@ -451,6 +471,14 @@ export function TeamsTab() {
             }
           }
 
+          // Get skill names from skill_ids array if available
+          let skillNames: string[] | null = null;
+          if (team.leagues?.skill_ids && team.leagues.skill_ids.length > 0) {
+            skillNames = team.leagues.skill_ids
+              .map((id: number) => skillsMap.get(id)?.name)
+              .filter((name: string | undefined) => name !== undefined) as string[];
+          }
+
           // Fetch gym details if gym_ids exist in league
           if (team.leagues?.gym_ids && team.leagues.gym_ids.length > 0) {
             const { data: gymsData, error: gymsError } = await supabase
@@ -470,6 +498,7 @@ export function TeamsTab() {
             league: team.leagues,
             captain_name: captainName,
             skill: team.skills,
+            skill_names: skillNames,
             roster_details: rosterDetails,
             gyms: gyms
           };

@@ -201,11 +201,6 @@ export const LeaguesPage = (): JSX.Element => {
       // If no skill levels are selected, show all leagues
       if (filters.skillLevels.length === 0) return true;
       
-      // Check if the league's skill_name is in the selected skill levels
-      if (league.skill_name && filters.skillLevels.includes(league.skill_name)) {
-        return true;
-      }
-      
       // Check if any of the league's skill_ids match selected skill levels
       if (league.skill_ids && league.skill_ids.length > 0) {
         // Get the skill IDs that correspond to the selected skill names
@@ -215,6 +210,9 @@ export const LeaguesPage = (): JSX.Element => {
         
         // Check if any of the league's skill_ids are in the selected skill IDs
         return league.skill_ids.some(id => selectedSkillIds.includes(id));
+      } else if (league.skill_name && filters.skillLevels.includes(league.skill_name)) {
+        // For backward compatibility, check if the league's skill_name is in the selected skill levels
+        return true;
       }
       
       return false;
