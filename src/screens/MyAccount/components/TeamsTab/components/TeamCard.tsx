@@ -155,18 +155,6 @@ export function TeamCard({
       </div>
       
       {/* Payment Due Notification */}
-      {team.payment && team.payment.amount_due > team.payment.amount_paid && team.captain_id === currentUserId && (
-        <div className="mb-4 p-2 bg-orange-50 border border-orange-200 rounded-lg text-sm">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <DollarSign className="h-4 w-4 text-orange-500 mr-1" />
-              <span className="text-orange-700 font-medium">
-                Payment due: ${(team.payment.amount_due - team.payment.amount_paid).toFixed(2)}
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
       
       {/* Action Buttons */}
       <div className="flex flex-wrap items-center justify-between gap-2 mt-2">
@@ -176,6 +164,16 @@ export function TeamCard({
             <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full md:hidden">
               {team.skill.name}
             </span>
+          )}
+          
+          {/* Payment Due Notification - Moved here */}
+          {team.payment && team.payment.amount_due > team.payment.amount_paid && team.captain_id === currentUserId && (
+            <div className="flex items-center mt-2 md:mt-0">
+              <DollarSign className="h-4 w-4 text-orange-500 mr-1" />
+              <span className="text-orange-700 text-xs font-medium">
+                Due: ${(team.payment.amount_due - team.payment.amount_paid).toFixed(2)}
+              </span>
+            </div>
           )}
         </div>
         
