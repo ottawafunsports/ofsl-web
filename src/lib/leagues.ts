@@ -27,7 +27,7 @@ export interface League {
 export interface LeagueWithTeamCount extends League {
   team_count: number;
   spots_remaining: number;
-  skill_names?: string[] | null;
+  skill_names: string[] | null;
 }
 
 // Convert day_of_week number to day name

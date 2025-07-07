@@ -31,6 +31,7 @@ export function NewLeagueForm({
     description: '',
     sport_id: null,
     skill_id: null,
+    skill_ids: [],
     day_of_week: null,
     year: '2025',
     start_date: '',
@@ -64,6 +65,7 @@ export function NewLeagueForm({
       year: '2025',
       sport_id: null,
       skill_id: null,
+      skill_ids: [],
       day_of_week: null,
       start_date: '',
       end_date: '',
@@ -115,17 +117,41 @@ export function NewLeagueForm({
 
           <div>
             <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Skill Level</label>
-            <select
-              value={newLeague.skill_id || ''}
-              onChange={(e) => setNewLeague({ ...newLeague, skill_id: e.target.value ? parseInt(e.target.value) : null })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
-             required
-            >
-              <option value="">Select skill level...</option>
+            <div className="space-y-2 max-h-40 overflow-y-auto border border-gray-300 rounded-lg p-3">
               {skills.map(skill => (
-                <option key={skill.id} value={skill.id}>{skill.name}</option>
+                <label key={skill.id} className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={newLeague.skill_ids.includes(skill.id)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setNewLeague({ 
+                          ...newLeague, 
+                          skill_ids: [...newLeague.skill_ids, skill.id],
+                          // Also update the primary skill_id if it's not set yet
+                          skill_id: newLeague.skill_id || skill.id
+                        });
+                      } else {
+                        const updatedSkillIds = newLeague.skill_ids.filter(id => id !== skill.id);
+                        setNewLeague({ 
+                          ...newLeague, 
+                          skill_ids: updatedSkillIds,
+                          // If we're removing the primary skill, set it to the first remaining skill or null
+                          skill_id: skill.id === newLeague.skill_id 
+                            ? (updatedSkillIds.length > 0 ? updatedSkillIds[0] : null)
+                            : newLeague.skill_id
+                        });
+                      }
+                    }}
+                    className="mr-2"
+                  />
+                  <span className="text-sm">{skill.name}</span>
+                </label>
               ))}
-            </select>
+            </div>
+            <p className="text-xs text-gray-500 mt-1">
+              Select multiple skill levels that apply to this league.
+            </p>
           </div>
 
           <div>
