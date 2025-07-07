@@ -935,7 +935,7 @@ export function TeamEditPage() {
                 className="bg-red-600 hover:bg-red-700 text-white rounded-[10px] px-6 py-2 flex items-center gap-2"
               >
                 <Trash className="h-4 w-4" />
-                {deleting ? 'Deleting...' : 'Deregister Team'}
+                {deleting ? 'Deleting...' : 'Unregister Team'}
               </Button>
             </div>
           </CardContent>
