@@ -15,10 +15,6 @@ import { PaymentCard } from './components/PaymentCard';
 import { BalanceNotice } from './components/BalanceNotice';
 import { ConfirmationModal } from './components/ConfirmationModal';
 import { SubscriptionBanner } from './components/SubscriptionBanner';
-import { PaymentCard } from './components/PaymentCard';
-import { BalanceNotice } from './components/BalanceNotice';
-import { ConfirmationModal } from './components/ConfirmationModal';
-import { SubscriptionBanner } from './components/SubscriptionBanner';
 import { PaymentModal } from '../../../../components/PaymentModal';
 
 interface Team {
