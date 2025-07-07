@@ -171,7 +171,7 @@ export function TeamCard({
             <div className="flex items-center mt-2 md:mt-0">
               <DollarSign className="h-4 w-4 text-orange-500 mr-1" />
               <span className="text-orange-700 text-xs font-medium">
-                Due: ${(team.payment.amount_due - team.payment.amount_paid).toFixed(2)}
+                Payment Due
               </span>
             </div>
           )}
