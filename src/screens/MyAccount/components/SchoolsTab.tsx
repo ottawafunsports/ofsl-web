@@ -5,7 +5,8 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../components/ui/toast';
 import { supabase } from '../../../lib/supabase';
 import { fetchSports } from '../../../lib/leagues';
-import { Plus, X, MapPin, Edit2, Save, Search, Filter } from 'lucide-react';
+import { Plus, X, MapPin, Edit2, Save, Search, Filter, SlidersHorizontal } from 'lucide-react';
+import { MobileFilterDrawer } from './SchoolsTab/components/MobileFilterDrawer';
 
 interface Gym {
   id: number;
@@ -40,6 +41,7 @@ export function SchoolsTab() {
   const [editingGym, setEditingGym] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showMobileFilterDrawer, setShowMobileFilterDrawer] = useState(false);
   
   // Filter state
   const [filters, setFilters] = useState<SchoolFilters>({
@@ -338,16 +340,63 @@ export function SchoolsTab() {
           <h2 className="text-2xl font-bold text-[#6F6F6F]">Schools</h2>
           <span className="text-sm text-[#6F6F6F]">({filteredGyms.length} of {gyms.length})</span>
         </div>
-        <Button
-          onClick={() => setShowNewGymForm(true)}
-          className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-lg px-6 py-2"
-        >
-          Add School
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={() => setShowMobileFilterDrawer(true)}
+            className="md:hidden bg-[#B20000] hover:bg-[#8A0000] text-white rounded-lg px-3 py-2"
+          >
+            <SlidersHorizontal className="h-4 w-4" />
+          </Button>
+          <Button
+            onClick={() => setShowNewGymForm(true)}
+            className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-lg px-6 py-2"
+          >
+            Add School
+          </Button>
+        </div>
       </div>
 
+      {/* Mobile Search Bar (Visible only on mobile) */}
+      <div className="md:hidden mb-6">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#6F6F6F]" />
+          <Input
+            placeholder="Search schools..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 w-full"
+          />
+        </div>
+        {isAnyFilterActive() && (
+          <div className="flex justify-start mt-2">
+            <Button
+              onClick={clearFilters}
+              className="text-sm text-[#B20000] hover:text-[#8A0000] bg-transparent hover:bg-transparent p-0"
+            >
+              Clear all filters
+            </Button>
+          </div>
+        )}
+      </div>
+
+      {/* Mobile Filter Drawer */}
+      <MobileFilterDrawer
+        isOpen={showMobileFilterDrawer}
+        onClose={() => setShowMobileFilterDrawer(false)}
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        filters={filters}
+        handleFilterChange={handleFilterChange}
+        handleDayFilterToggle={handleDayFilterToggle}
+        handleSportFilterToggle={handleSportFilterToggle}
+        clearFilters={clearFilters}
+        daysOfWeek={daysOfWeek}
+        sports={sports}
+        isAnyFilterActive={isAnyFilterActive}
+      />
+
       {/* Search and Filters */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6 mb-8">
+      <div className="bg-white border border-gray-200 rounded-lg p-6 mb-8 hidden md:block">
         <div className="flex items-center gap-2 mb-4">
           <Filter className="h-5 w-5 text-[#6F6F6F]" />
           <h3 className="text-lg font-medium text-[#6F6F6F]">Search & Filters</h3>

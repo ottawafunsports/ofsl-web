@@ -5,8 +5,9 @@ import { Input } from '../../../components/ui/input';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../components/ui/toast';
 import { supabase } from '../../../lib/supabase';
-import { Users, Search, Edit2, Trash2, Crown, Mail, Phone, Calendar, ChevronUp, ChevronDown, Filter, Key } from 'lucide-react';
+import { Users, Search, Edit2, Trash2, Crown, Mail, Phone, Calendar, ChevronUp, ChevronDown, Filter, Key, SlidersHorizontal } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { MobileFilterDrawer } from './UsersTab/components/MobileFilterDrawer';
 
 interface User {
   id: string;
@@ -48,6 +49,7 @@ export function UsersTab() {
     role: 'captain' | 'player'
   }>>([]);
   const [resettingPassword, setResettingPassword] = useState(false);
+  const [showMobileFilterDrawer, setShowMobileFilterDrawer] = useState(false);
   
   // Sorting state
   const [sortField, setSortField] = useState<SortField>('date_created');
@@ -394,7 +396,13 @@ export function UsersTab() {
           <Users className="h-6 w-6 text-[#6F6F6F]" />
           <h2 className="text-2xl font-bold text-[#6F6F6F]">Manage Users</h2>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 md:gap-4">
+          <Button
+            onClick={() => setShowMobileFilterDrawer(true)}
+            className="md:hidden bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] px-3 py-2 text-sm"
+          >
+            <SlidersHorizontal className="h-4 w-4" />
+          </Button>
           <div className="text-sm text-[#6F6F6F]">
             Total Users: {users.length}
           </div>
@@ -408,7 +416,7 @@ export function UsersTab() {
       </div>
 
       {/* Search Bar */}
-      <div className="flex items-center gap-6">
+      <div className="hidden md:flex items-center gap-6">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#6F6F6F]" />
           <Input
@@ -464,6 +472,40 @@ export function UsersTab() {
       
       {/* Clear filters button */}
       {isAnyFilterActive() && (
+        <div className="hidden md:flex justify-start">
+          <Button
+            onClick={clearFilters}
+            className="text-sm text-[#B20000] hover:text-[#8A0000] bg-transparent hover:bg-transparent p-0"
+          >
+            Clear all filters
+          </Button>
+        </div>
+      )}
+
+      {/* Mobile Filter Drawer */}
+      <MobileFilterDrawer
+        isOpen={showMobileFilterDrawer}
+        onClose={() => setShowMobileFilterDrawer(false)}
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        filters={filters}
+        handleFilterChange={handleFilterChange}
+        clearFilters={clearFilters}
+        isAnyFilterActive={isAnyFilterActive}
+      />
+
+      {/* Search Bar for Mobile (Visible only on mobile) */}
+      <div className="md:hidden mb-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#6F6F6F]" />
+          <Input
+            placeholder="Search users..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 w-full"
+          />
+        </div>
+        {isAnyFilterActive() && (
         <div className="flex justify-start">
           <Button
             onClick={clearFilters}
@@ -473,6 +515,7 @@ export function UsersTab() {
           </Button>
         </div>
       )}
+      </div>
 
       {/* Users Table */}
       <Card>
