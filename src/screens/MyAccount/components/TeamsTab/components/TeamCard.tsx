@@ -77,6 +77,7 @@ export function TeamCard({
             skillNames={team.skill_names} 
             fallbackSkill={team.skill?.name}
           />
+        </div>
       </div>
       
       {/* Location and other details */}
@@ -110,6 +111,4 @@ export function TeamCard({
       </div>
     </div>
   );
-}
-  )
 }
