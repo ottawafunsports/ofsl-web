@@ -293,8 +293,11 @@ export function LeagueEditPage() {
                           }
                         }}
                         className="mr-2"
-                      />
-                      <span className="text-sm">{skill.name}</span>
+                      disabled={skill.name === 'Beginner'} />
+                      <span className={`text-sm ${skill.name === 'Beginner' ? 'text-gray-400' : ''}`}>
+                        {skill.name}
+                        {skill.name === 'Beginner' && ' (not available)'}
+                      </span>
                     </label>
                   ))}
                 </div>
