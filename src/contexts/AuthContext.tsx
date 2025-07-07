@@ -135,6 +135,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           date_created: now,
           date_modified: now,
           is_admin: false,
+        }
+      }
       // After attempting to fix the profile, fetch the current profile
       const { data: profile, error: profileError } = await supabase
         .from('users')
@@ -283,6 +285,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (mounted) {
           console.log('Initial session found:', session ? 'yes' : 'no', session?.user?.id);
           await handleAuthStateChange('INITIAL_SESSION', session);
+        }
        window.location.href = '/';
       } catch (error) {
         console.error('Error in getInitialSession:', error);
