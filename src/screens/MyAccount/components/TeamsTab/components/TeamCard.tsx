@@ -74,11 +74,6 @@ export function TeamCard({
         </div>
 
         <div className="flex flex-col items-end gap-2 mt-4 md:mt-0">
-          {/* Skill Levels */}
-          <SkillBadges 
-            skillNames={team.skill_names} 
-            fallbackSkill={team.skill?.name}
-          />
         </div>
       </div>
       
