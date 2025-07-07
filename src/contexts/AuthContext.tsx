@@ -70,6 +70,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Helper function to create user profile if it doesn't exist
   const handleUserProfileCreation = async (user: User) => {
     try {
+      console.log('Handling user profile creation for:', user.email, 'Provider:', user.app_metadata.provider);
+      
       console.log('Creating user profile for:', user.email);
       console.log('User metadata:', user.user_metadata);
       console.log('App metadata:', user.app_metadata);
@@ -87,6 +89,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       if (!existingProfile) {
+        console.log('No profile found by auth_id, checking by email');
+        
+        // Try to find by email as fallback
+        const { data: emailProfile, error: emailError } = await supabase
+          .from('users')
+          .select('*')
+          .eq('email', user.email)
+          .maybeSingle();
+        
+        if (emailProfile) {
+          console.log('Found existing profile by email, updating auth_id');
+          
+          // Update the existing profile with the auth_id
+          const { data: updatedProfile, error: updateError } = await supabase
+            .from('users')
+            .update({ auth_id: user.id })
+            .eq('id', emailProfile.id)
+            .select()
+            .single();
+            
+          if (updateError) {
+            console.error('Error updating existing profile with auth_id:', updateError);
+          } else {
+            return updatedProfile;
+          }
+        }
+        
+        // If we get here, we need to create a new profile
         console.log('Creating new user profile for:', user.email);
         
         // Get provider from app_metadata
@@ -104,6 +134,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           date_modified: now,
           is_admin: false,
         };
+        
+        console.log('New profile data:', newProfile);
 
         const { data: insertedUser, error: insertError } = await supabase
           .from('users')
@@ -111,6 +143,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           .select()
           .single();
 
+        console.log('Insert result:', insertError ? 'Error' : 'Success');
         if (insertError && insertError.code !== '23505') { // Skip unique violation errors
           console.error('Error creating user profile:', insertError);
           return null;
@@ -133,6 +166,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         return insertedUser;
       }
+      
+      console.log('Existing profile found');
 
       return existingProfile;
     } catch (error) {
@@ -144,8 +179,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Handle auth state changes
   const handleAuthStateChange = async (event: string, session: Session | null) => {
     console.log('Auth state change:', event, session?.user?.email);
-    console.log('Auth metadata:', session?.user?.app_metadata);
-    console.log('Auth user metadata:', session?.user?.user_metadata);
+    console.log('Auth event details:', event);
+    if (session?.user) {
+      console.log('Auth provider:', session.user.app_metadata?.provider);
+      console.log('Auth metadata:', session.user.app_metadata);
+      console.log('Auth user metadata:', session.user.user_metadata);
+    }
     
     setSession(session);
     setUser(session?.user ?? null);
@@ -164,9 +203,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (session?.user) {
       // Handle user profile for any signed-in user
       const profile = await handleUserProfileCreation(session.user);
-      setUserProfile(profile);
+      console.log('User profile after creation/update:', profile ? 'exists' : 'missing');
       
-      console.log('User profile after creation:', profile);
+      if (profile) {
+        console.log('User profile after creation:', profile);
+        setUserProfile(profile);
+      } else {
+        console.error('Failed to create or retrieve user profile');
+      }
 
       // Handle redirect only for explicit sign-in events (not initial session)
       if (event === 'SIGNED_IN') {
@@ -212,6 +256,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const getInitialSession = async () => {
       try {
         setLoading(true);
+        console.log('Getting initial session');
         
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error) {
@@ -224,6 +269,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
         
         if (mounted) {
+          console.log('Initial session found:', session ? 'yes' : 'no');
           await handleAuthStateChange('INITIAL_SESSION', session);
         }
       } catch (error) {
@@ -272,17 +318,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signInWithGoogle = async () => {
     try {
       setLoading(true);
+      console.log('Initiating Google sign-in with redirectTo:', `${window.location.origin}/my-account/profile`);
       console.log('Initiating Google sign-in');
-      const { error } = await supabase.auth.signInWithOAuth({
+      console.log('Starting Google sign-in process');
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/my-account/profile`,
           queryParams: {
-            prompt: 'consent',
             access_type: 'offline',
+            prompt: 'consent',
           }
         }
       });
+      
+      if (data) {
+        console.log('Google sign-in initiated successfully');
+      }
+      
       return { error };
     } catch (error) {
       console.error('Error in signInWithGoogle:', error);
