@@ -1,4 +1,6 @@
 import { ReactNode, useEffect, useState } from 'react';
+import { useLocation, Navigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase'; // Fixed duplicate imports
 
 interface ProtectedRouteProps {
