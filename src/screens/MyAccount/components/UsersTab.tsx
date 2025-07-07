@@ -391,18 +391,20 @@ export function UsersTab() {
   return (
     <>
       <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <Users className="h-6 w-6 text-[#6F6F6F]" />
-          <h2 className="text-2xl font-bold text-[#6F6F6F]">Manage Users</h2>
-        </div>
-        <div className="flex items-center gap-2 md:gap-4">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+        <div className="flex items-center gap-2 justify-between">
+          <div className="flex items-center gap-2">
+            <Users className="h-6 w-6 text-[#6F6F6F]" />
+            <h2 className="text-2xl font-bold text-[#6F6F6F]">Manage Users</h2>
+          </div>
           <Button
             onClick={() => setShowMobileFilterDrawer(true)}
             className="md:hidden bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] px-3 py-2 text-sm"
           >
             <SlidersHorizontal className="h-4 w-4" />
           </Button>
+        </div>
+        <div className="flex items-center justify-between md:justify-end gap-2 md:gap-4">
           <div className="text-sm text-[#6F6F6F]">
             Total Users: {users.length}
           </div>
