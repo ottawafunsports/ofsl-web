@@ -118,21 +118,6 @@ supabase.auth.onAuthStateChange((event, session) => {
         try {
           // Use RPC to check and fix user profile
           const { data, error } = await supabase.rpc('check_and_fix_user_profile', {
-            p_auth_id: session.user.id,
-            p_email: session.user.email,
-            p_name: session.user.user_metadata?.full_name || session.user.user_metadata?.name,
-            p_phone: session.user.user_metadata?.phone
-          });
-          
-          if (error) {
-            console.error('Error checking/fixing user profile:', error);
-          } else if (data) {
-            console.log('User profile was created or fixed, result:', data);
-          }
-        } catch (err) {
-          console.error('Error in profile check:', err);
-        }
-      }, 1000); // Delay slightly to ensure auth is fully processed
-    }
+    debug: true
   }
 });

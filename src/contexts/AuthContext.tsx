@@ -163,8 +163,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     console.log('Auth state change:', event, session?.user?.email);
     
     // Set session and user state immediately to ensure UI updates
-    setSession(session);
-    setUser(session?.user ?? null);
+    if (session) {
+      console.log('Setting session and user state with session ID:', session.user.id);
+      setSession(session);
+      setUser(session.user);
+    } else {
+      console.log('Clearing session and user state');
+      setSession(null);
+      setUser(null);
+    }
     
     // Add more detailed logging for debugging
     if (session?.user) {
@@ -188,6 +195,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Clear any stored redirect paths
       localStorage.removeItem('redirectAfterLogin');
       setLoading(false);
+      console.log('Sign out complete, state cleared');
       return;
     }
 
@@ -215,13 +223,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (event === 'SIGNED_IN') {
         // Check for redirect after login
         const redirectPath = localStorage.getItem('redirectAfterLogin') || '/my-account/teams';
-        console.log('Redirecting after login to:', redirectPath);
+        console.log('SIGNED_IN event detected, redirecting to:', redirectPath);
         if (redirectPath) {
           localStorage.removeItem('redirectAfterLogin');
           // Use setTimeout to ensure the state is fully updated before redirecting
           setTimeout(() => {
+            console.log('Executing redirect to:', redirectPath);
             window.location.replace(redirectPath);
-          }, 100);
+          }, 500); // Increased timeout to ensure state is fully updated
           return;
         }
         
@@ -256,17 +265,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     let mounted = true;
 
+    console.log('AuthProvider mounted, initializing auth state');
+
     // Get initial session
     const getInitialSession = async () => {
       try {
         // Keep loading true until we've processed everything
         setLoading(true);
-       // Store the current URL before signing out
-       const currentPath = window.location.pathname;
-       
         console.log('Getting initial session');
-        
-        const { data: { session }, error } = await supabase.auth.getSession();
+       
+        const { data, error } = await supabase.auth.getSession();
+        const session = data?.session;
+
         if (error) {
           console.error('Error getting session:', error);
           if (mounted) {
@@ -277,7 +287,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
         
         if (mounted) {
-          console.log('Initial session found:', session ? 'yes' : 'no', session?.user?.id);
+          console.log('Initial session found:', session ? `yes, user ID: ${session.user.id}` : 'no');
           await handleAuthStateChange('INITIAL_SESSION', session);
         }
       } catch (error) {
@@ -309,17 +319,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       setLoading(true);
       console.log('Attempting to sign in with email:', email);
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       
       if (error) {
         console.error('Sign in error:', error.message);
         setLoading(false);
         return { error };
       }
+
+      console.log('Sign in successful, user ID:', data.user?.id);
       
       // Don't set loading to false here - let the auth state change handler do it
       // The redirect will happen in the auth state change handler
-      console.log('Sign in successful, waiting for auth state change');
+      console.log('Waiting for auth state change event...');
+      
+      // Force a state update to trigger UI refresh
+      setUser(data.user);
+      setSession(data.session);
+      
       return { error: null };
     } catch (error) {
       console.error('Error in signIn:', error);
@@ -335,10 +352,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Store the current URL for redirect after login
       const currentPath = window.location.pathname;
       if (currentPath !== '/login' && currentPath !== '/signup') {
+        console.log('Storing redirect path:', currentPath);
         localStorage.setItem('redirectAfterLogin', currentPath);
       }
       
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           // Use the current origin for the redirect URL
@@ -349,6 +367,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           }
         }
       });
+
+      if (data?.url) {
+        console.log('Google sign-in initiated, redirecting to OAuth provider');
+      }
       
       return { error };
     } catch (error) {
@@ -421,8 +443,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Don't render children until we've checked for an initial session
   if (initializing) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex flex-col items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#B20000]"></div>
+        <p className="mt-4 text-[#6F6F6F]">Initializing authentication...</p>
       </div>
     );
   }
@@ -431,7 +454,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     <AuthContext.Provider value={{ 
       session, 
       user, 
-      userProfile, 
+      userProfile,
       loading, 
       signIn, 
       signInWithGoogle, 
@@ -450,5 +473,16 @@ export const useAuth = () => {
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
+  
+  // Log auth state when hook is used (helps with debugging)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('useAuth hook called, auth state:', {
+      isAuthenticated: !!context.user,
+      userId: context.user?.id,
+      profileId: context.userProfile?.id,
+      loading: context.loading
+    });
+  }
+  
   return context;
 };

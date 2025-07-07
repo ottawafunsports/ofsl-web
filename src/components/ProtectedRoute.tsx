@@ -1,7 +1,5 @@
 import { ReactNode, useEffect, useState } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext'; 
-import { supabase } from '../lib/supabase';
+import { supabase } from '../lib/supabase'; // Fixed duplicate imports
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -13,6 +11,16 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
   const [fixingProfile, setFixingProfile] = useState(false);
   const [profileFixed, setProfileFixed] = useState(false);
   const location = useLocation();
+  
+  // Debug logging
+  useEffect(() => {
+    console.log('ProtectedRoute rendered with auth state:', {
+      isAuthenticated: !!user,
+      hasProfile: !!userProfile,
+      isLoading: loading,
+      path: location.pathname
+    });
+  }, [user, userProfile, loading, location]);
 
   useEffect(() => {
     // Store the attempted location for redirect after login
@@ -57,7 +65,7 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
     const attemptProfileFix = async () => {
       if (user && !userProfile && !loading && !fixingProfile && !profileFixed) {
         try {
-          console.log('Attempting to fix missing user profile for:', user.id);
+          console.log('Attempting to fix missing user profile with RPC for:', user.id);
           setFixingProfile(true);
           
           // Call the RPC function to fix the user profile
@@ -73,7 +81,8 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
           } else {
             console.log('Profile fix attempt result:', data);
             // Force a page reload to get the updated profile
-            window.location.reload();
+            console.log('Reloading page to refresh user profile');
+            setTimeout(() => window.location.reload(), 500);
           }
         } catch (err) {
           console.error('Error in profile fix attempt:', err);
@@ -100,7 +109,7 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
 
   // Handle case where user is logged in but profile is missing
   if (user && !userProfile && !loading) {
-    console.warn('User is logged in but profile is missing, redirecting to login', user.id);
+    console.warn('User is logged in but profile is missing, redirecting to login. User ID:', user.id);
     
     // Store the current path for redirect after login
     localStorage.setItem('redirectAfterLogin', location.pathname + location.search);
@@ -108,7 +117,7 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
     // Force a reload to clear any stale auth state
     setTimeout(() => {
       window.location.href = '/login';
-    }, 100);
+    }, 500); // Increased timeout for better reliability
     
     return (
       <div className="min-h-screen flex items-center justify-center">
