@@ -42,6 +42,7 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
       // Determine if this is a Google user
       const isGoogleUser = user.app_metadata?.provider === 'google';
       console.log('Is Google user:', isGoogleUser);
+      console.log('User metadata:', JSON.stringify(user.user_metadata));
       
       const fixUserProfile = async (retryCount = 0) => {
         try {
@@ -50,8 +51,8 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
           // Use the enhanced v3 function for better Google OAuth support
           const { data, error } = await supabase.rpc('check_and_fix_user_profile_v3', {
             p_auth_id: user.id,
-            p_email: user.email,
-            p_name: user.user_metadata?.full_name || user.user_metadata?.name,
+            p_email: user.email || '',
+            p_name: user.user_metadata?.name || user.user_metadata?.full_name || '',
             p_phone: user.user_metadata?.phone || ''
           });
           
@@ -96,8 +97,8 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
           // Call the RPC function to fix the user profile
           const { data, error } = await supabase.rpc('check_and_fix_user_profile_v2', {
             p_auth_id: user.id,
-            p_email: user.email,
-            p_name: user.user_metadata?.full_name || user.user_metadata?.name || '',
+            p_email: user.email || '',
+            p_name: user.user_metadata?.name || user.user_metadata?.full_name || '',
             p_phone: user.user_metadata?.phone || ''
           });
           
@@ -151,11 +152,17 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
     return (
       <div className="min-h-screen flex items-center justify-center text-center">
         <div className="flex flex-col items-center max-w-md">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#B20000] mb-4"></div>
-          <p className="text-[#6F6F6F] mb-2">Account setup required</p>
-          <p className="text-sm text-[#6F6F6F] mb-4">
-            We need to complete your account setup. Redirecting you to the login page...
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#B20000] mb-6"></div>
+          <h2 className="text-xl font-bold text-[#6F6F6F] mb-3">Account Setup Required</h2>
+          <p className="text-[#6F6F6F] mb-4 max-w-sm">
+            We need to complete your account setup. Redirecting you to complete your profile...
           </p>
+          <Button
+            onClick={() => window.location.replace('/google-signup-redirect')}
+            className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] px-6 py-2"
+          >
+            Complete Setup Now
+          </Button>
         </div>
       </div>
     );

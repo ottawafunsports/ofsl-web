@@ -79,7 +79,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       // Use the enhanced v3 function for better Google OAuth support
       let { data: existingProfile, error: fetchError } = await supabase
-        .rpc('check_and_fix_user_profile_v3', {
+        .rpc('check_and_fix_user_profile_v2', {
           p_auth_id: user.id,
           p_email: user.email,
           p_name: user.user_metadata?.full_name || user.user_metadata?.name || '',
@@ -138,7 +138,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (session?.user) {
       console.log('Auth provider:', session.user.app_metadata?.provider);
       console.log('Auth metadata:', session.user.app_metadata);
-      console.log('Auth user metadata:', session.user.user_metadata);
+      console.log('Auth user metadata:', JSON.stringify(session.user.user_metadata));
       
       // For Google sign-ins, make an extra attempt to create the profile
       if (session.user.app_metadata?.provider === 'google') {
@@ -146,8 +146,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         try {
           const { data, error } = await supabase.rpc('check_and_fix_user_profile_v3', {
             p_auth_id: session.user.id,
-            p_email: session.user.email,
-            p_name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || '',
+            p_email: session.user.email || '',
+            p_name: session.user.user_metadata?.name || session.user.user_metadata?.full_name || '',
             p_phone: ''
           });
           
@@ -197,7 +197,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Handle redirect only for explicit sign-in events (not initial session)
       if (event === 'SIGNED_IN') {
         // For Google sign-ins, redirect to the profile completion page if needed
-        if (session.user.app_metadata?.provider === 'google' && (!profile || !profile.phone || profile.phone === '')) {
+        if (session.user.app_metadata?.provider === 'google' && 
+            (!profile || !profile.phone || profile.phone === '' || profile.phone.trim() === '')) {
           console.log('Google user needs to complete profile, redirecting to profile completion page');
           window.location.replace('/google-signup-redirect');
           return;
@@ -206,7 +207,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // Check for redirect after login
         const redirectPath = localStorage.getItem('redirectAfterLogin') || '/my-account/teams';
         console.log('SIGNED_IN event detected, redirecting to:', redirectPath);
-        if (redirectPath) {
+        if (redirectPath && redirectPath !== '/google-signup-redirect') {
           localStorage.removeItem('redirectAfterLogin');
           // Use setTimeout to ensure the state is fully updated before redirecting
           setTimeout(() => {
@@ -218,8 +219,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         
         // Check if this is a first-time sign in or incomplete profile
         else if (profile) {
-          const isProfileComplete = profile.name && profile.phone && 
-            profile.name.trim() !== '' && profile.phone.trim() !== '';
+          const isProfileComplete = profile.name && profile.phone && profile.name.trim() !== '' && profile.phone.trim() !== '';
           
           if (!isProfileComplete) {
             // Redirect to account page for profile completion
@@ -255,7 +255,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         console.log('AuthProvider: Getting initial session');
         // Keep loading true until we've processed everything
         setLoading(true);
-        console.log('Getting initial session');
        
         const { data, error } = await supabase.auth.getSession();
         const session = data?.session;
@@ -276,12 +275,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           if (session?.user) {
             // For Google users, ensure profile exists
             if (session.user.app_metadata?.provider === 'google') {
-              console.log('Initial Google session detected, ensuring profile exists');
+              console.log('Initial Google session detected, ensuring profile exists for user:', session.user.id);
               try {
                 const { data, error } = await supabase.rpc('check_and_fix_user_profile_v3', {
                   p_auth_id: session.user.id,
-                  p_email: session.user.email,
-                  p_name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || '',
+                  p_email: session.user.email || '',
+                  p_name: session.user.user_metadata?.name || session.user.user_metadata?.full_name || '',
                   p_phone: ''
                 });
                 
@@ -360,7 +359,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Store the current URL for redirect after login
       const currentPath = window.location.pathname;
       console.log('Google sign-in: storing redirect path:', currentPath);
-      if (currentPath !== '/login' && currentPath !== '/signup') {
+      if (currentPath !== '/login' && currentPath !== '/signup' && currentPath !== '/google-signup-redirect') {
         console.log('Storing redirect path:', currentPath);
         localStorage.setItem('redirectAfterLogin', currentPath);
       }
@@ -379,7 +378,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (data) {
         console.log('Google sign-in initiated successfully');
-        console.log('Redirect URL:', data.url);
+        if (data.url) {
+          console.log('Redirect URL:', data.url);
+        }
       }
       
       return { error };
@@ -409,7 +410,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
       
       return { user: data?.user || null, error };
-        console.log('Google sign-in initiated successfully, URL:', data.url);
+    } catch (error) {
       console.error('Error in signUp:', error);
       return { user: null, error: error as AuthError };
     } finally {

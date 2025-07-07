@@ -15,7 +15,8 @@ export function GoogleSignupRedirect() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    phone: ''
+    phone: '',
+    preferred_position: ''
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,7 +28,8 @@ export function GoogleSignupRedirect() {
       setFormData({
         name: user.user_metadata?.full_name || user.user_metadata?.name || '',
         email: user.email || '',
-        phone: userProfile?.phone || ''
+        phone: userProfile?.phone || '',
+        preferred_position: userProfile?.preferred_position || ''
       });
       setInitialLoading(false);
     } else if (!loading) {
@@ -75,6 +77,7 @@ export function GoogleSignupRedirect() {
         .update({
           name: formData.name,
           phone: formData.phone,
+          preferred_position: formData.preferred_position,
           date_modified: new Date().toISOString()
         })
         .eq('auth_id', user?.id);
@@ -118,7 +121,7 @@ export function GoogleSignupRedirect() {
     setFormData({...formData, phone: formattedPhone});
   };
 
-  if (loading || initialLoading) {
+  if (loading || initialLoading || !user) {
     return (
       <div className="min-h-[calc(100vh-135px)] bg-gray-50 flex flex-col items-center justify-center p-4">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#B20000] mb-4"></div>
@@ -134,10 +137,16 @@ export function GoogleSignupRedirect() {
           <h1 className="text-[32px] font-bold text-center mb-8 text-[#6F6F6F]">
             Complete Your Profile
           </h1>
-          
+
           <div className="mb-6 text-center">
+            <p className="text-[#6F6F6F] mb-2">
+              <span className="font-medium">Welcome to Ottawa Fun Sports League!</span>
+            </p>
+            <p className="text-[#6F6F6F] mb-2">
+              Thanks for signing in with Google! To complete your registration, we need a few more details.
+            </p>
             <p className="text-[#6F6F6F]">
-              Thanks for signing up with Google! Please provide a few more details to complete your profile.
+              This information helps us contact you about games, schedule changes, and league updates.
             </p>
           </div>
           
@@ -204,6 +213,29 @@ export function GoogleSignupRedirect() {
                 maxLength={12} // Limit to formatted length
                 required
               />
+              <p className="text-xs text-gray-500 mt-1">
+                We use your phone number for important league communications and emergency contact.
+              </p>
+            </div>
+            
+            <div className="space-y-2">
+              <label
+                htmlFor="preferred_position"
+                className="block text-sm font-medium text-[#6F6F6F]"
+              >
+                Preferred Position (Optional)
+              </label>
+              <select
+                id="preferred_position"
+                className="w-full h-12 px-4 rounded-lg border border-[#D4D4D4] focus:border-[#B20000] focus:ring-[#B20000]"
+                value={formData.preferred_position}
+                onChange={(e) => setFormData({...formData, preferred_position: e.target.value})}
+              >
+                <option value="">Select position (optional)</option>
+                <option value="Guard">Guard</option>
+                <option value="Forward">Forward</option>
+                <option value="Center">Center</option>
+              </select>
             </div>
             
             <Button
@@ -214,12 +246,16 @@ export function GoogleSignupRedirect() {
               {submitting ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Completing Profile...
+                  Saving Profile...
                 </>
               ) : (
-                "Complete Profile"
+                "Complete Registration"
               )}
             </Button>
+            
+            <p className="text-xs text-center text-gray-500 mt-4">
+              By completing your registration, you agree to our Terms of Service and Privacy Policy.
+            </p>
           </form>
         </CardContent>
       </Card>
