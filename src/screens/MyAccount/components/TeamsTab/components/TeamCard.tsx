@@ -127,18 +127,6 @@ export function TeamCard({
               {team.skill.name}
             </span>
           )}
-
-          {/* Payment Status */}
-          {team.payment?.status && (
-            <span className={`px-3 py-1 text-sm rounded-full ${
-              team.payment.status === 'paid' ? 'bg-green-100 text-green-800' :
-              team.payment.status === 'partial' ? 'bg-yellow-100 text-yellow-800' :
-              team.payment.status === 'overdue' ? 'bg-red-100 text-red-800' :
-              'bg-gray-100 text-gray-800'
-            }`}>
-              {team.payment.status.charAt(0).toUpperCase() + team.payment.status.slice(1)}
-            </span>
-          )}
         </div>
       </div>
       
@@ -155,7 +143,7 @@ export function TeamCard({
       </div>
       
       {/* Payment Due Notification */}
-      
+
       {/* Action Buttons */}
       <div className="flex flex-wrap items-center justify-between gap-2 mt-2">
         {/* Skill Level Badge */}
