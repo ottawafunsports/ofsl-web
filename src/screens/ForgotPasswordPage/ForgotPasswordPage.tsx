@@ -26,7 +26,7 @@ export function ForgotPasswordPage() {
     
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: `${window.location.origin}/reset-password?type=recovery`,
       });
       
       if (error) {
@@ -56,6 +56,7 @@ export function ForgotPasswordPage() {
               <p>{successMessage}</p>
               <p className="text-sm mt-2">
                 Please check your email inbox and follow the instructions to reset your password.
+                <strong> If you don't see the email, please check your spam folder.</strong>
               </p>
             </div>
           )}

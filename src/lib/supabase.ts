@@ -11,9 +11,10 @@ if (!supabaseUrl || !supabaseAnonKey) {
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
     autoRefreshToken: true,
-    persistSession: true, 
+    persistSession: true,
     detectSessionInUrl: true,
-    flowType: 'pkce'
+    flowType: 'pkce',
+    debug: true // Enable debug mode to see more detailed auth logs
   }
 });
 
@@ -34,6 +35,11 @@ supabase.auth.onAuthStateChange((event, session) => {
   // Handle session refresh failures
   if (event === 'TOKEN_REFRESHED' && !session) {
     console.warn('Token refresh failed, user will need to sign in again');
+  }
+
+  // Log password reset events
+  if (event === 'PASSWORD_RECOVERY') {
+    console.log('Password recovery initiated');
   }
   
   // Log additional information for sign-in events
