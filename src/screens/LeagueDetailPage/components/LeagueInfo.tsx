@@ -183,7 +183,7 @@ export function LeagueInfo({ league, sport, skillLevels, onSpotsUpdate }: League
                 <p className="text-sm text-[#6F6F6F]">{league.skillLevel}</p>
               </div>
             </div>
-          )}
+          ) : null}
 
           {/* Price */}
           <div className="flex items-start">

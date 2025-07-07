@@ -279,6 +279,9 @@ export function LeagueNewPage() {
                   required
                 />
               </div>
+
+              <div>
+                <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Additional Skill Levels</label>
                 <div className="space-y-2 max-h-40 overflow-y-auto border border-gray-300 rounded-lg p-3">
                   {skills.map(skill => (
                     <label key={skill.id} className="flex items-center">
