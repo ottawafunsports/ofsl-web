@@ -47,6 +47,7 @@ export function App() {
             <Route path="/volleyball" element={<VolleyballPage />} />
             <Route path="/badminton" element={<BadmintonPage />} />
             <Route path="/leagues" element={<LeaguesPage />} />
+            <Route path="/google-signup-redirect" element={<GoogleSignupRedirect />} />
             <Route path="/leagues/:id" element={<LeagueDetailPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
