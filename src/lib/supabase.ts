@@ -118,6 +118,12 @@ supabase.auth.onAuthStateChange((event, session) => {
         try {
           // Use RPC to check and fix user profile
           const { data, error } = await supabase.rpc('check_and_fix_user_profile', {
+          }
+          )
+        }
+      }
+      )
+    }
     debug: true
   }
 });
