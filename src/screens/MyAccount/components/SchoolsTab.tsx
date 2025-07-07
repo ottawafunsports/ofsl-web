@@ -334,19 +334,21 @@ export function SchoolsTab() {
   return (
     <div>
       {/* Header with Add School button */}
-      <div className="flex justify-between items-center mb-8">
-        <div className="flex items-center gap-2">
-          <MapPin className="h-6 w-6 text-[#6F6F6F]" />
-          <h2 className="text-2xl font-bold text-[#6F6F6F]">Schools</h2>
-          <span className="text-sm text-[#6F6F6F]">({filteredGyms.length} of {gyms.length})</span>
-        </div>
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <MapPin className="h-6 w-6 text-[#6F6F6F]" />
+            <h2 className="text-2xl font-bold text-[#6F6F6F]">Schools</h2>
+            <span className="text-sm text-[#6F6F6F]">({filteredGyms.length} of {gyms.length})</span>
+          </div>
           <Button
             onClick={() => setShowMobileFilterDrawer(true)}
             className="md:hidden bg-[#B20000] hover:bg-[#8A0000] text-white rounded-lg px-3 py-2"
           >
             <SlidersHorizontal className="h-4 w-4" />
           </Button>
+        </div>
+        <div>
           <Button
             onClick={() => setShowNewGymForm(true)}
             className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-lg px-6 py-2"
