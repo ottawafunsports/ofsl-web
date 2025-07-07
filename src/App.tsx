@@ -31,10 +31,10 @@ import { Navigate } from "react-router-dom";
 import { LeagueNewPage } from "./screens/MyAccount/components/LeagueNewPage";
 
 // Create a catch-all route component to handle direct URL access
-const CatchAllRoute = () => {
-  // This will redirect any unknown routes to the home page
-  return <Navigate to="/" replace />;
-};
+// const CatchAllRoute = () => {
+//   // This will redirect any unknown routes to the home page
+//   return <Navigate to="/" replace />;
+// };
 
 export function App() {
   return (
@@ -109,7 +109,7 @@ export function App() {
             } />
 
             {/* Catch-all route for any unmatched routes */}
-            <Route path="*" element={<CatchAllRoute />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
 
             {/* Legacy redirects for backward compatibility */}
             <Route path="/my-teams" element={

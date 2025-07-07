@@ -1,9 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '../types/supabase';
 
-// Get the Supabase URL from environment variables
+// Get the Supabase URL and key from environment variables
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+console.log('Initializing Supabase client with URL:', supabaseUrl);
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables');
@@ -12,16 +14,31 @@ if (!supabaseUrl || !supabaseAnonKey) {
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
     autoRefreshToken: true,
-    persistSession: true,
+    persistSession: true, 
     detectSessionInUrl: true,
     flowType: 'pkce',
-    debug: true // Enable debug mode to see more detailed auth logs
+    storage: {
+      getItem: (key) => {
+        const value = localStorage.getItem(key);
+        console.log('Auth storage getItem:', key, value ? `exists (${value.substring(0, 20)}...)` : 'missing');
+        return value;
+      },
+      setItem: (key, value) => {
+        console.log('Auth storage setItem:', key, value ? `(${value.substring(0, 20)}...)` : '(empty)');
+        localStorage.setItem(key, value);
+      },
+      removeItem: (key) => {
+        console.log('Auth storage removeItem:', key);
+        localStorage.removeItem(key);
+      }
+    },
+    debug: true
   }
 });
 
 // Set up auth state change handler for debugging
 supabase.auth.onAuthStateChange((event, session) => {
-  console.log('Supabase auth event:', event, session?.user?.id);
+  console.log('Supabase auth event:', event, 'User ID:', session?.user?.id);
   console.log('Auth provider:', session?.user?.app_metadata?.provider);
   
   // Log detailed information for Google sign-ins
@@ -56,9 +73,9 @@ supabase.auth.onAuthStateChange((event, session) => {
   // Log additional information for sign-in events
   if (event === 'SIGNED_IN' && session?.user) {
     console.log('User signed in successfully:', {
-      id: session.user.id || 'unknown',
-      email: session.user.email || 'unknown',
-      provider: session.user.app_metadata?.provider || 'unknown',
+      id: session.user.id,
+      email: session.user.email,
+      provider: session.user.app_metadata?.provider,
       metadata: session.user.user_metadata
     });
     
@@ -77,7 +94,7 @@ supabase.auth.onAuthStateChange((event, session) => {
           if (error) {
             console.error('Error checking/fixing user profile:', error);
           } else if (data) {
-            console.log('User profile was created or fixed');
+            console.log('User profile was created or fixed, result:', data);
           }
         } catch (err) {
           console.error('Error in profile check:', err);
