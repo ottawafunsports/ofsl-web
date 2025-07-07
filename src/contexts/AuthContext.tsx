@@ -77,11 +77,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.log('App metadata:', user.app_metadata);
       
       // First check if user profile already exists
-      const { data: existingProfile, error: fetchError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('auth_id', user.id)
-        .single();
+      let { data: existingProfile, error: fetchError } = await supabase
+        .rpc('check_and_fix_user_profile_v2', {
+          p_auth_id: user.id,
+          p_email: user.email,
+          p_name: user.user_metadata?.full_name || user.user_metadata?.name || '',
+          p_phone: user.user_metadata?.phone || ''
+        });
 
       if (fetchError && fetchError.code !== 'PGRST116') {
         console.error('Error checking existing user:', fetchError);
@@ -133,43 +135,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           date_created: now,
           date_modified: now,
           is_admin: false,
-        };
-        
-        console.log('New profile data:', newProfile);
-
-        const { data: insertedUser, error: insertError } = await supabase
-          .from('users')
-          .insert(newProfile)
-          .select()
-          .single();
-
-        console.log('Insert result:', insertError ? 'Error' : 'Success');
-        if (insertError && insertError.code !== '23505') { // Skip unique violation errors
-          console.error('Error creating user profile:', insertError);
-          return null;
-        } else if (insertError) {
-          console.log('User profile already exists (unique violation), fetching existing profile');
-          // Try to fetch the profile again
-          const { data: existingUser, error: fetchAgainError } = await supabase
-            .from('users')
-            .select('*')
-            .eq('auth_id', user.id)
-            .single();
-            
-          if (fetchAgainError) {
-            console.error('Error fetching existing user after insert error:', fetchAgainError);
-            return null;
-          }
-          
-          return existingUser;
-        }
-
-        return insertedUser;
+      // After attempting to fix the profile, fetch the current profile
+      const { data: profile, error: profileError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('auth_id', user.id)
+        .single();
+      
+      if (profileError) {
+        console.error('Error fetching user profile after fix attempt:', profileError);
+        return null;
       }
       
       console.log('Existing profile found');
 
-      return existingProfile;
+      return profile;
     } catch (error) {
       console.error('Error in handleUserProfileCreation:', error);
       return null;
@@ -179,6 +159,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Handle auth state changes
   const handleAuthStateChange = async (event: string, session: Session | null) => {
     console.log('Auth state change:', event, session?.user?.email);
+    
+    // Add more detailed logging for debugging
+    if (session?.user) {
+      console.log('User ID:', session.user.id);
+      console.log('User email:', session.user.email);
+      console.log('User metadata:', JSON.stringify(session.user.user_metadata));
+    }
     console.log('Auth event details:', event, 'Time:', new Date().toISOString());
     
     if (session?.user) {
@@ -197,6 +184,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUserProfile(null);
       // Clear any stored redirect paths
       localStorage.removeItem('redirectAfterLogin');
+     localStorage.removeItem('authRedirectPath');
       setLoading(false);
       return;
     }
@@ -224,9 +212,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Handle redirect only for explicit sign-in events (not initial session)
       if (event === 'SIGNED_IN') {
         // Check for redirect after login
-        const redirectPath = localStorage.getItem('redirectAfterLogin') || '/my-account/teams';
+        const redirectPath = localStorage.getItem('redirectAfterLogin') || localStorage.getItem('authRedirectPath') || '/my-account/teams';
         if (redirectPath) {
           localStorage.removeItem('redirectAfterLogin');
+         localStorage.removeItem('authRedirectPath');
           // Use setTimeout to ensure the state is fully updated before redirecting
           setTimeout(() => {
             window.location.href = redirectPath;
@@ -268,6 +257,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         // Keep loading true until we've processed everything
         setLoading(true);
+       // Store the current URL before signing out
+       const currentPath = window.location.pathname;
+       
+       
+       console.log('Sign in response:', data?.user?.id, error?.message);
+       
+       // Store the current path for potential redirect after session recovery
+       if (window.location.pathname.startsWith('/my-account')) {
+         localStorage.setItem('authRedirectPath', window.location.pathname + window.location.search);
+       }
         console.log('Getting initial session');
         
         const { data: { session }, error } = await supabase.auth.getSession();
@@ -279,11 +278,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           }
           return;
         }
+       localStorage.removeItem('authRedirectPath');
         
         if (mounted) {
           console.log('Initial session found:', session ? 'yes' : 'no', session?.user?.id);
           await handleAuthStateChange('INITIAL_SESSION', session);
-        }
+       window.location.href = '/';
       } catch (error) {
         console.error('Error in getInitialSession:', error);
         if (mounted) {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
 import { Input } from "../../components/ui/input";
@@ -15,6 +15,7 @@ export function LoginPage() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const { signIn, signInWithGoogle, user } = useAuth();
+  const [redirectPath, setRedirectPath] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation(); 
 
@@ -25,13 +26,28 @@ export function LoginPage() {
     }
   }, [location.state]);
 
+  // Get redirect path from location state or localStorage
+  useEffect(() => {
+    const fromPath = location.state?.from;
+    const savedPath = localStorage.getItem('redirectAfterLogin');
+    
+    if (fromPath) {
+      setRedirectPath(fromPath);
+    } else if (savedPath) {
+      setRedirectPath(savedPath);
+    }
+    
+    console.log('Redirect path set to:', fromPath || savedPath || 'default path');
+  }, [location.state]);
+
   // Redirect if user is already logged in
   useEffect(() => {
     if (user) {
-      const redirectPath = localStorage.getItem('redirectAfterLogin') || '/my-account/teams';
-      navigate(redirectPath, { replace: true });
+      const redirectTo = redirectPath || '/my-account/teams';
+      console.log('User already logged in, redirecting to:', redirectTo);
+      navigate(redirectTo);
     }
-  }, [user, navigate]);
+  }, [user, navigate, redirectPath]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,13 +67,15 @@ export function LoginPage() {
       const { error } = await signIn(email.trim(), password);
       
       if (error) {
-        console.error('Login error:', error.message);
+        console.error('Sign in error:', error.message);
         setError(error.message);
+        setLoading(false);
+      } else {
+        console.log('Sign in successful, redirecting...');
+        // The redirect will be handled by the auth context
+        // But we'll set loading to false after a timeout as a fallback
+        setTimeout(() => setLoading(false), 3000);
       }
-      
-      // Set loading to false regardless of success or failure
-      // This prevents the loading indicator from getting stuck
-      setLoading(false);
     } catch (err) {
       setError("An unexpected error occurred");
       console.error(err);
@@ -72,15 +90,19 @@ export function LoginPage() {
     setGoogleLoading(true); 
     
     try {
+      console.log('Attempting to sign in with Google');
       const { error } = await signInWithGoogle();
       
       if (error) {
-        console.error('Google sign-in error:', error.message);
+        console.error('Google sign in error:', error.message);
         setError(error.message);
+        setGoogleLoading(false);
+      } else {
+        console.log('Google sign in successful, redirecting...');
+        // The redirect will be handled by the auth context
+        // But we'll set loading to false after a timeout as a fallback
+        setTimeout(() => setGoogleLoading(false), 5000);
       }
-      
-      // Set loading to false regardless of success or failure
-      setGoogleLoading(false);
     } catch (err) {
       setError("An unexpected error occurred");
       console.error(err);

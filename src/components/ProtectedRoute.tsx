@@ -1,6 +1,7 @@
-import { ReactNode, useEffect } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext'; 
+import { supabase } from '../lib/supabase';
 import { supabase } from '../lib/supabase';
 import { supabase } from '../lib/supabase';
 
@@ -11,6 +12,8 @@ interface ProtectedRouteProps {
 
 export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRouteProps) {
   const { user, userProfile, loading, refreshUserProfile } = useAuth();
+  const [fixingProfile, setFixingProfile] = useState(false);
+  const [profileFixed, setProfileFixed] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
@@ -81,8 +84,43 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
       fixUserProfile();
     }
   }, [user, loading, location]);
+  
+  // Attempt to fix missing user profile if user is authenticated but profile is missing
+  useEffect(() => {
+    const attemptProfileFix = async () => {
+      if (user && !userProfile && !loading && !fixingProfile && !profileFixed) {
+        try {
+          console.log('Attempting to fix missing user profile for:', user.id);
+          setFixingProfile(true);
+          
+          // Call the RPC function to fix the user profile
+          const { data, error } = await supabase.rpc('check_and_fix_user_profile_v2', {
+            p_auth_id: user.id,
+            p_email: user.email,
+            p_name: user.user_metadata?.full_name || user.user_metadata?.name || '',
+            p_phone: user.user_metadata?.phone || ''
+          });
+          
+          if (error) {
+            console.error('Error fixing user profile:', error);
+          } else {
+            console.log('Profile fix attempt result:', data);
+            // Force a page reload to get the updated profile
+            window.location.reload();
+          }
+        } catch (err) {
+          console.error('Error in profile fix attempt:', err);
+        } finally {
+          setFixingProfile(false);
+          setProfileFixed(true);
+        }
+      }
+    };
+    
+    attemptProfileFix();
+  }, [user, userProfile, loading, fixingProfile, profileFixed]);
 
-  if (loading) {
+  if (loading || fixingProfile) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#B20000]">
@@ -127,14 +165,17 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
     
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#B20000]"></div>
+        <div className="flex flex-col items-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#B20000] mb-4"></div>
+          <p className="text-[#6F6F6F]">{fixingProfile ? 'Fixing user profile...' : 'Loading...'}</p>
+        </div>
       </div>
     );
   }
 
   if (!user) {
     // Redirect to login if not authenticated
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   }
 
   if (requireAdmin && !userProfile?.is_admin) {
