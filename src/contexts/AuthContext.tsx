@@ -262,13 +262,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
        // Store the current URL before signing out
        const currentPath = window.location.pathname;
        
-       
-       console.log('Sign in response:', data?.user?.id, error?.message);
-       
-       // Store the current path for potential redirect after session recovery
-       if (window.location.pathname.startsWith('/my-account')) {
-         localStorage.setItem('authRedirectPath', window.location.pathname + window.location.search);
-       }
         console.log('Getting initial session');
         
         const { data: { session }, error } = await supabase.auth.getSession();
@@ -280,13 +273,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           }
           return;
         }
-       localStorage.removeItem('authRedirectPath');
         
         if (mounted) {
           console.log('Initial session found:', session ? 'yes' : 'no', session?.user?.id);
           await handleAuthStateChange('INITIAL_SESSION', session);
         }
-       window.location.href = '/';
       } catch (error) {
         console.error('Error in getInitialSession:', error);
         if (mounted) {
@@ -314,7 +305,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signIn = async (email: string, password: string) => {
     try {
       setLoading(true);
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
       
       if (error) {
         setLoading(false);
@@ -340,7 +331,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         localStorage.setItem('redirectAfterLogin', currentPath);
       }
       
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           // Use the current origin for the redirect URL
@@ -351,10 +342,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           }
         }
       });
-      
-      if (data) {
-        console.log('Google sign-in initiated successfully');
-      }
       
       return { error };
     } catch (error) {
