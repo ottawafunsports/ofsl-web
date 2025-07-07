@@ -7,6 +7,7 @@ export interface League {
   additional_info: string | null;
   sport_id: number | null;
   skill_id: number | null;
+  skill_ids: number[] | null;
   day_of_week: number | null;
   start_date: string | null;
   year: string | null;
@@ -26,6 +27,7 @@ export interface League {
 export interface LeagueWithTeamCount extends League {
   team_count: number;
   spots_remaining: number;
+  skill_names?: string[] | null;
 }
 
 // Convert day_of_week number to day name
@@ -104,9 +106,13 @@ export const fetchLeagues = async (): Promise<LeagueWithTeamCount[]> => {
 
     // Get all unique gym IDs
     const allGymIds = new Set<number>();
+    const allSkillIds = new Set<number>();
     leaguesData.forEach(league => {
       if (league.gym_ids) {
         league.gym_ids.forEach((id: number) => allGymIds.add(id));
+      }
+      if (league.skill_ids) {
+        league.skill_ids.forEach((id: number) => allSkillIds.add(id));
       }
     });
 
@@ -121,6 +127,18 @@ export const fetchLeagues = async (): Promise<LeagueWithTeamCount[]> => {
     }
 
     const gymsMap = new Map(gymsData?.map(gym => [gym.id, gym]) || []);
+    
+    // Fetch all skills for mapping skill_ids to names
+    const { data: allSkills, error: skillsError } = await supabase
+      .from('skills')
+      .select('id, name');
+      
+    if (skillsError) {
+      console.error('Error fetching skills:', skillsError);
+    }
+    
+    const skillsMap = new Map(allSkills?.map(skill => [skill.id, skill]) || []);
+    
     const teamCountsMap = new Map<number, number>();
     
     // Count teams per league
@@ -134,6 +152,14 @@ export const fetchLeagues = async (): Promise<LeagueWithTeamCount[]> => {
       const teamCount = teamCountsMap.get(league.id) || 0;
       const maxTeams = league.max_teams || 20;
       const spotsRemaining = Math.max(0, maxTeams - teamCount);
+      
+      // Get skill names from skill_ids array
+      let skillNames: string[] | null = null;
+      if (league.skill_ids && league.skill_ids.length > 0) {
+        skillNames = league.skill_ids
+          .map(id => skillsMap.get(id)?.name)
+          .filter(name => name !== undefined) as string[];
+      }
 
       // Get gyms for this league
       const leagueGyms = (league.gym_ids || [])
@@ -144,6 +170,8 @@ export const fetchLeagues = async (): Promise<LeagueWithTeamCount[]> => {
         ...league,
         sport_name: league.sports?.name || null,
         skill_name: league.skills?.name || null,
+        skill_ids: league.skill_ids || [],
+        skill_names: skillNames,
         gyms: leagueGyms,
         team_count: teamCount,
         spots_remaining: spotsRemaining
@@ -178,6 +206,18 @@ export const fetchLeagueById = async (id: number): Promise<League | null> => {
     if (!data) return null;
 
     // Get gym information if gym_ids exist
+    let skillNames: string[] | null = null;
+    if (data.skill_ids && data.skill_ids.length > 0) {
+      const { data: skillsData, error: skillsError } = await supabase
+        .from('skills')
+        .select('id, name')
+        .in('id', data.skill_ids);
+        
+      if (!skillsError && skillsData) {
+        skillNames = skillsData.map(skill => skill.name);
+      }
+    }
+    
     let gyms: Array<{ id: number; gym: string | null; address: string | null }> = [];
     if (data.gym_ids && data.gym_ids.length > 0) {
       const { data: gymsData, error: gymsError } = await supabase
@@ -196,6 +236,7 @@ export const fetchLeagueById = async (id: number): Promise<League | null> => {
       ...data,
       sport_name: data.sports?.name || null,
       skill_name: data.skills?.name || null,
+      skill_names: skillNames,
       gyms: gyms || []
     };
   } catch (error) {

@@ -196,10 +196,34 @@ export const LeaguesPage = (): JSX.Element => {
     const dayName = getDayName(league.day_of_week);
     const primaryLocation = getPrimaryLocation(league.gyms);
     
+    // Helper function to check if league matches skill level filters
+    const matchesSkillLevels = () => {
+      // If no skill levels are selected, show all leagues
+      if (filters.skillLevels.length === 0) return true;
+      
+      // Check if the league's skill_name is in the selected skill levels
+      if (league.skill_name && filters.skillLevels.includes(league.skill_name)) {
+        return true;
+      }
+      
+      // Check if any of the league's skill_ids match selected skill levels
+      if (league.skill_ids && league.skill_ids.length > 0) {
+        // Get the skill IDs that correspond to the selected skill names
+        const selectedSkillIds = skills
+          .filter(skill => filters.skillLevels.includes(skill.name))
+          .map(skill => skill.id);
+        
+        // Check if any of the league's skill_ids are in the selected skill IDs
+        return league.skill_ids.some(id => selectedSkillIds.includes(id));
+      }
+      
+      return false;
+    };
+    
     return (
       (filters.sport === "All Sports" || league.sport_name === filters.sport) &&
       (filters.location === "All Locations" || primaryLocation.includes(filters.location)) &&
-      (filters.skillLevels.length === 0 || (league.skill_name && filters.skillLevels.includes(league.skill_name))) &&
+      matchesSkillLevels() &&
       (filters.day === "All Days" || dayName === filters.day)
     );
   });
