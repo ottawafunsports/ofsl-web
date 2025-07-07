@@ -437,25 +437,6 @@ export function TeamsTab() {
       
       const skillsMap = new Map(allSkills?.map(skill => [skill.id, skill]) || []);
 
-      // Get all unique skill IDs
-      const allSkillIds = new Set<number>();
-      teamsData?.forEach(team => {
-        if (team.leagues?.skill_ids) {
-          team.leagues.skill_ids.forEach((id: number) => allSkillIds.add(id));
-        }
-      });
-      
-      // Fetch all skills for mapping skill_ids to names
-      const { data: allSkills, error: skillsError } = await supabase
-        .from('skills')
-        .select('id, name');
-        
-      if (skillsError) {
-        console.error('Error fetching skills:', skillsError);
-      }
-      
-      const skillsMap = new Map(allSkills?.map(skill => [skill.id, skill]) || []);
-
       // Process teams and fetch additional data
       const teamsWithFullDetails = await Promise.all(
         (teamsData || []).map(async (team) => {
@@ -487,16 +468,6 @@ export function TeamsTab() {
             if (names.length > 0) {
               skillNames = names;
             }
-          }
-          let skillNames: string[] | null = null;
-
-          // Get skill names from skill_ids array if available in the league
-          if (team.leagues?.skill_ids && team.leagues.skill_ids.length > 0) {
-            const names = team.leagues.skill_ids
-              .map((id: number) => skillsMap.get(id)?.name)
-              .filter((name: string | undefined) => name !== undefined) as string[];
-            
-            skillNames = names.length > 0 ? names : null;
           }
           
           // Fetch roster details if roster exists
