@@ -162,6 +162,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const handleAuthStateChange = async (event: string, session: Session | null) => {
     console.log('Auth state change:', event, session?.user?.email);
     
+    // Set session and user state immediately to ensure UI updates
+    setSession(session);
+    setUser(session?.user ?? null);
+    
     // Add more detailed logging for debugging
     if (session?.user) {
       console.log('User ID:', session.user.id);
@@ -176,9 +180,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.log('Auth user metadata:', session.user.user_metadata);
     }
     
-    setSession(session);
-    setUser(session?.user ?? null);
-
     if (event === 'SIGNED_OUT') {
       // Clear all auth state
       setSession(null);
@@ -214,11 +215,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (event === 'SIGNED_IN') {
         // Check for redirect after login
         const redirectPath = localStorage.getItem('redirectAfterLogin') || '/my-account/teams';
+        console.log('Redirecting after login to:', redirectPath);
         if (redirectPath) {
           localStorage.removeItem('redirectAfterLogin');
           // Use setTimeout to ensure the state is fully updated before redirecting
           setTimeout(() => {
-            window.location.href = redirectPath;
+            window.location.replace(redirectPath);
           }, 100);
           return;
         }
@@ -230,14 +232,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           
           if (!isProfileComplete) {
             // Redirect to account page for profile completion
-            window.location.href = '/my-account/profile?complete=true';
+            window.location.replace('/my-account/profile?complete=true');
           } else {
             // Redirect to teams page by default
-            window.location.href = '/my-account/teams';
+            window.location.replace('/my-account/teams');
           }
+          return;
         } else {
           // Fallback redirect to teams page
-          window.location.href = '/my-account/teams';
+          window.location.replace('/my-account/teams');
+          return;
         }
       }
     }
@@ -290,6 +294,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Subscribe to auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (mounted && !initializing) {
+        console.log('Auth state change event:', event);
         await handleAuthStateChange(event, session);
       }
     });
@@ -303,15 +308,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signIn = async (email: string, password: string) => {
     try {
       setLoading(true);
+      console.log('Attempting to sign in with email:', email);
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       
       if (error) {
+        console.error('Sign in error:', error.message);
         setLoading(false);
         return { error };
       }
       
       // Don't set loading to false here - let the auth state change handler do it
       // The redirect will happen in the auth state change handler
+      console.log('Sign in successful, waiting for auth state change');
       return { error: null };
     } catch (error) {
       console.error('Error in signIn:', error);
