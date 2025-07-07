@@ -36,6 +36,39 @@ export function PaymentModal({
     try {
       setLoading(true);
       
+      // Handle virtual payments (not yet in database)
+      if (paymentId < 0) {
+        // This is a virtual payment (not yet in database)
+        // First create the payment record in the database
+        console.log('Creating payment record for virtual payment');
+        
+        // For virtual payments, we need to create the payment record first
+        const { data: newPayment, error: createError } = await supabase
+          .from('league_payments')
+          .insert({
+            user_id: userProfile?.id,
+            team_id: -paymentId, // Convert negative ID back to positive
+            league_id: leagueId,
+            amount_due: amountDue,
+            amount_paid: 0,
+            due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // Due in 30 days
+            status: 'pending'
+          })
+          .select()
+          .single();
+          
+        if (createError) {
+          console.error('Error creating payment record:', createError);
+          showToast('Failed to create payment record', 'error');
+          return;
+        }
+        
+        // Use the newly created payment ID
+        const { clientSecret: secret } = await createPaymentIntent(newPayment.id);
+        setClientSecret(secret);
+        return;
+      }
+      
       const { clientSecret: secret } = await createPaymentIntent(paymentId);
       setClientSecret(secret);
       
