@@ -63,9 +63,9 @@ export function TeamCard({
       <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-4">
         <div>
           <Link to={`/leagues/${team.league?.id}`}>
-            <h3 className="text-lg font-bold text-[#6F6F6F] hover:text-[#B20000] transition-colors">{team.league?.name || 'Unknown League'}</h3>
+            <h3 className="text-xl font-bold text-[#6F6F6F] hover:text-[#B20000] transition-colors">{team.league?.name || 'Unknown League'}</h3>
           </Link>
-          <p className="text-sm text-[#6F6F6F] mb-2">Team: {team.name}</p>
+          <p className="text-base font-medium text-[#B20000] mb-3">{team.name}</p>
           
           <TeamInfo 
             team={team} 
