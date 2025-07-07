@@ -140,7 +140,9 @@ export function AddPlayersModal({
         captainName: teamData.users?.name || 'Team Captain'
       };
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-invite`, {
+      // Use the custom domain URL for Supabase functions
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://api.ofsl.ca';
+      const response = await fetch(`${supabaseUrl}/functions/v1/send-invite`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
