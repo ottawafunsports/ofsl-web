@@ -123,7 +123,7 @@ export function TeamCard({
 
         <div className="flex flex-col items-end gap-2 mt-4 md:mt-0">
           {/* Skill Levels */}
-          {team.skill_names && team.skill_names.length > 0 ? (
+          {team.skill_names && team.skill_names.length > 0 && (
             <div className="flex flex-wrap gap-1 justify-end">
               {team.skill_names.map((skillName, index) => (
                 <span key={index} className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
@@ -131,12 +131,11 @@ export function TeamCard({
                 </span>
               ))}
             </div>
-          ) : team.skill?.name ? (
+          )}
+          {!team.skill_names && team.skill?.name && (
             <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
               {team.skill.name}
             </span>
-          ) : (
-            null
           )}
         </div>
       </div>

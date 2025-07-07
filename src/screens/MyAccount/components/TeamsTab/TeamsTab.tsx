@@ -458,19 +458,13 @@ export function TeamsTab() {
           let rosterDetails: Array<{ id: string; name: string; email: string; }> = [];
           let gyms: Array<{ id: number; gym: string | null; address: string | null; }> = [];
           let skillNames: string[] | null = null;
-          
+
           // Get skill names from skill_ids array if available in the league
           if (team.leagues?.skill_ids && team.leagues.skill_ids.length > 0) {
-            const { data: skillsData, error: skillsError } = await supabase
-              .from('skills')
-              .select('id, name')
-              .in('id', team.leagues.skill_ids);
-              
-            if (!skillsError && skillsData) {
-              skillNames = skillsData.map(skill => skill.name);
-            }
+            skillNames = team.leagues.skill_ids
+              .map(id => skillsMap.get(id)?.name)
+              .filter(name => name !== undefined) as string[];
           }
-
           // Fetch roster details if roster exists
           if (team.roster && team.roster.length > 0) {
             const { data: rosterData, error: rosterError } = await supabase
@@ -505,7 +499,7 @@ export function TeamsTab() {
             league: team.leagues,
             captain_name: captainName,
             skill: team.skills, 
-            skill_names: skillNames, // Add skill names from league skill_ids
+            skill_names: skillNames && skillNames.length > 0 ? skillNames : null, // Add skill names from league skill_ids
             roster_details: rosterDetails,
             gyms: gyms
           };
