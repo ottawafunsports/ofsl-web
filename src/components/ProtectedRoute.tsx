@@ -27,34 +27,57 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
   useEffect(() => {
     // Store the attempted location for redirect after login
     if (!user && !loading) {
-      const redirectPath = location.pathname + location.search;
-      console.log('Storing redirect path:', redirectPath);
-      localStorage.setItem('redirectAfterLogin', redirectPath);
+      // Only store non-login/signup paths
+      if (location.pathname !== '/login' && location.pathname !== '/signup') {
+        const redirectPath = location.pathname + location.search;
+        console.log('ProtectedRoute: Storing redirect path:', redirectPath);
+        localStorage.setItem('redirectAfterLogin', redirectPath);
+      }
     }
     
     // If user exists but profile is missing, try to fix it
     if (user && !userProfile && !loading) {
-      const fixUserProfile = async () => {
+      console.log('User exists but profile is missing, attempting to fix');
+      
+      // Determine if this is a Google user
+      const isGoogleUser = user.app_metadata?.provider === 'google';
+      console.log('Is Google user:', isGoogleUser);
+      
+      const fixUserProfile = async (retryCount = 0) => {
         try {
-          console.log('Attempting to fix missing user profile for:', user.id);
+          console.log(`Attempting to fix missing user profile (attempt ${retryCount + 1}) for:`, user.id);
           
-          // Call the RPC function to check and fix the user profile
-          const { data, error } = await supabase.rpc('check_and_fix_user_profile', {
+          // Use the enhanced v3 function for better Google OAuth support
+          const { data, error } = await supabase.rpc('check_and_fix_user_profile_v3', {
             p_auth_id: user.id,
             p_email: user.email,
             p_name: user.user_metadata?.full_name || user.user_metadata?.name,
-            p_phone: user.user_metadata?.phone
+            p_phone: user.user_metadata?.phone || ''
           });
           
           if (error) {
-            console.error('Error fixing user profile:', error);
+            console.error(`Error fixing user profile (attempt ${retryCount + 1}):`, error);
+            
+            // Retry up to 3 times with exponential backoff for Google users
+            if (isGoogleUser && retryCount < 3) {
+              const delay = Math.pow(2, retryCount) * 1000; // 1s, 2s, 4s
+              console.log(`Retrying in ${delay}ms...`);
+              setTimeout(() => fixUserProfile(retryCount + 1), delay);
+            }
           } else if (data) {
-            console.log('User profile was created or fixed, refreshing profile');
+            console.log(`User profile was created or fixed (attempt ${retryCount + 1}), refreshing profile`);
             // Refresh the user profile
             await refreshUserProfile();
           }
         } catch (err) {
-          console.error('Error in fixUserProfile:', err);
+          console.error(`Error in fixUserProfile (attempt ${retryCount + 1}):`, err);
+          
+          // Retry for Google users
+          if (isGoogleUser && retryCount < 3) {
+            const delay = Math.pow(2, retryCount) * 1000;
+            console.log(`Retrying after error in ${delay}ms...`);
+            setTimeout(() => fixUserProfile(retryCount + 1), delay);
+          }
         }
       };
       
@@ -101,9 +124,12 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
   if (loading || fixingProfile) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col items-center text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#B20000] mb-4"></div>
-          <p className="text-[#6F6F6F]">{fixingProfile ? 'Fixing user profile...' : 'Loading...'}</p>
+          <p className="text-[#6F6F6F] mb-2">{fixingProfile ? 'Fixing user profile...' : 'Loading...'}</p>
+          <p className="text-sm text-[#6F6F6F] max-w-md">
+            {fixingProfile ? 'This may take a moment while we set up your account.' : 'Please wait while we load your account information.'}
+          </p>
         </div>
       </div>
     );
@@ -112,20 +138,24 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
   // Handle case where user is logged in but profile is missing
   if (user && !userProfile && !loading) {
     console.warn('User is logged in but profile is missing, redirecting to login. User ID:', user.id);
+    console.log('Auth provider:', user.app_metadata?.provider);
     
     // Store the current path for redirect after login
     localStorage.setItem('redirectAfterLogin', location.pathname + location.search);
     
     // Force a reload to clear any stale auth state
     setTimeout(() => {
-      window.location.href = '/login';
-    }, 500); // Increased timeout for better reliability
+      window.location.replace('/login');
+    }, 500);
     
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="flex flex-col items-center">
+      <div className="min-h-screen flex items-center justify-center text-center">
+        <div className="flex flex-col items-center max-w-md">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#B20000] mb-4"></div>
-          <p className="text-[#6F6F6F]">{fixingProfile ? 'Fixing user profile...' : 'Loading...'}</p>
+          <p className="text-[#6F6F6F] mb-2">Account setup required</p>
+          <p className="text-sm text-[#6F6F6F] mb-4">
+            We need to complete your account setup. Redirecting you to the login page...
+          </p>
         </div>
       </div>
     );
