@@ -505,7 +505,6 @@ export function TeamsTab() {
     setSelectedTeam(team as TeamWithPayment);
     setShowTeamDetailsModal(true);
   };
-  };
 
   const handlePlayersUpdated = () => {
     loadUserTeams();
