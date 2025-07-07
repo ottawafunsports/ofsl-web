@@ -461,10 +461,13 @@ export function TeamsTab() {
 
           // Get skill names from skill_ids array if available in the league
           if (team.leagues?.skill_ids && team.leagues.skill_ids.length > 0) {
-            skillNames = team.leagues.skill_ids
-              .map(id => skillsMap.get(id)?.name)
-              .filter(name => name !== undefined) as string[];
+            const names = team.leagues.skill_ids
+              .map((id: number) => skillsMap.get(id)?.name)
+              .filter((name: string | undefined) => name !== undefined) as string[];
+            
+            skillNames = names.length > 0 ? names : null;
           }
+          
           // Fetch roster details if roster exists
           if (team.roster && team.roster.length > 0) {
             const { data: rosterData, error: rosterError } = await supabase
@@ -499,7 +502,7 @@ export function TeamsTab() {
             league: team.leagues,
             captain_name: captainName,
             skill: team.skills, 
-            skill_names: skillNames && skillNames.length > 0 ? skillNames : null, // Add skill names from league skill_ids
+            skill_names: skillNames, // Add skill names from league skill_ids
             roster_details: rosterDetails,
             gyms: gyms
           };

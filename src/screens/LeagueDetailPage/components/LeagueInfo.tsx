@@ -158,7 +158,9 @@ export function LeagueInfo({ league, sport, skillLevels, onSpotsUpdate }: League
           {/* Skill Level */}
           {(skillLevels && skillLevels.length > 0) ? (
             <div className="flex items-start">
-              <Tag className="h-4 w-4 text-[#B20000] mr-2 mt-1 flex-shrink-0" />
+              <svg className="h-4 w-4 text-[#B20000] mr-2 mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M3,5H9V11H3V5M5,7V9H7V7H5M11,7H21V9H11V7M11,15H21V17H11V15M5,13V15H7V13H5M3,13H9V19H3V13Z" />
+              </svg>
               <div>
                 <p className="font-medium text-[#6F6F6F]">Skill Levels</p>
                 <div className="flex flex-wrap gap-1 mt-1">
