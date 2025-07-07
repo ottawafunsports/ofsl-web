@@ -62,7 +62,9 @@ export function TeamCard({
     <div className="bg-white border border-gray-200 rounded-lg p-4 md:p-6">
       <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-4">
         <div>
-          <h3 className="text-lg font-bold text-[#6F6F6F] mb-2">{team.league?.name || 'Unknown League'}</h3>
+          <Link to={`/leagues/${team.league?.id}`}>
+            <h3 className="text-lg font-bold text-[#6F6F6F] mb-2 hover:text-[#B20000] transition-colors">{team.league?.name || 'Unknown League'}</h3>
+          </Link>
           
           <TeamInfo 
             team={team} 
@@ -72,11 +74,6 @@ export function TeamCard({
         </div>
 
         <div className="flex flex-col items-end gap-2 mt-4 md:mt-0">
-          {/* Skill Levels */}
-          <SkillBadges 
-            skillNames={team.skill_names} 
-            fallbackSkill={team.skill?.name}
-          />
         </div>
       </div>
       
