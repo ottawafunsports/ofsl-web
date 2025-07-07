@@ -10,7 +10,7 @@ import { Users, Calendar, CheckCircle, AlertCircle, CreditCard, AlertTriangle, C
 import { Button } from '../../../../components/ui/button';
 import { TeamDetailsModal } from '../TeamDetailsModal';
 import { StatsCard } from './components/StatsCard';
-import { TeamCard } from './components/TeamCard';
+import { TeamCard } from './components/TeamCard'; 
 import { PaymentCard } from './components/PaymentCard';
 import { BalanceNotice } from './components/BalanceNotice';
 import { ConfirmationModal } from './components/ConfirmationModal';
@@ -593,20 +593,17 @@ export function TeamsTab() {
           ) : (
             <div className="space-y-4">
               {teams.map(team => (
-                <div key={team.id} className="bg-white border border-gray-200 rounded-lg p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <TeamCard
-                      team={team}
-                      currentUserId={userProfile?.id || ''}
-                      onManageTeam={handleManageTeam}
-                      onPayNow={handlePayNow}
-                      showDeleteTeamConfirmation={showDeleteTeamConfirmation}
-                      showLeaveTeamConfirmation={showLeaveTeamConfirmation}
-                      deletingTeam={deletingTeam}
-                      unregisteringPayment={unregisteringPayment}
-                    />
-                  </div>
-                </div>
+                <TeamCard
+                  key={team.id}
+                  team={team}
+                  currentUserId={userProfile?.id || ''}
+                  onManageTeam={handleManageTeam}
+                  onPayNow={handlePayNow}
+                  showDeleteTeamConfirmation={showDeleteTeamConfirmation}
+                  showLeaveTeamConfirmation={showLeaveTeamConfirmation}
+                  deletingTeam={deletingTeam}
+                  unregisteringPayment={unregisteringPayment}
+                />
               ))}
             </div>
           )}

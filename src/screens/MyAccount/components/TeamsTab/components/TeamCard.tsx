@@ -61,6 +61,13 @@ export function TeamCard({
       onPayNow(paymentId);
     }
   };
+  
+  // Function to get day name from day number
+  const getDayName = (day: number | null | undefined): string => {
+    if (day === null || day === undefined) return 'Day TBD';
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    return days[day] || 'Day TBD';
+  };
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-4 md:p-6">
@@ -168,6 +175,145 @@ export function TeamCard({
         <div>
           {team.skill?.name && (
             <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+              {team.skill.name}
+            </span>
+          )}
+        </div>
+        
+        {/* Action Buttons */}
+        <div className="flex gap-2">
+          <Button
+            onClick={handleManageTeam}
+            className="border border-[#B20000] bg-white hover:bg-[#B20000] hover:text-white text-[#B20000] rounded-lg px-3 py-1.5 text-sm transition-colors flex items-center gap-1 h-auto"
+          >
+            <Users className="h-3 w-3" />
+            {team.captain_id === currentUserId ? 'Manage' : 'View'}
+          </Button>
+          
+          {/* Pay Now Button */}
+          {team.payment && 
+           team.payment.amount_due > team.payment.amount_paid && 
+           team.captain_id === currentUserId && onPayNow && (
+            <Button
+              onClick={() => handlePayNow(team.payment!.id)}
+              className="bg-green-600 hover:bg-green-700 text-white rounded-lg px-3 py-1.5 text-sm transition-colors flex items-center gap-1 h-auto"
+            >
+              <DollarSign className="h-3 w-3" />
+              Pay
+            </Button>
+          )}
+    <div className="bg-white border border-gray-200 rounded-lg p-4 md:p-6">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-4">
+        <div>
+          <h3 className="text-lg font-bold text-[#6F6F6F] mb-2">{team.league?.name || 'Unknown League'}</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm mt-4">
+            {/* Captain */}
+            <div className="flex items-center gap-2" title="Captain">
+              <Crown className="h-5 w-5 text-yellow-500" />
+              <p className="text-[#6F6F6F]">{team.captain_id === currentUserId ? 'You' : (team.captain_name || 'Unknown')}</p>
+            </div>
+
+            {/* Team Size */}
+            <div className="flex items-center gap-2" title="Players">
+              <Users className="h-5 w-5 text-blue-500" />
+              <p className="text-[#6F6F6F]">{team.roster?.length || 0} players</p>
+            </div>
+
+            {/* Day */}
+            <div className="flex items-center gap-2" title="Day">
+              <Calendar className="h-5 w-5 text-green-500" />
+              <p className="text-[#6F6F6F]">{getDayName(team.league?.day_of_week) || 'Day TBD'}</p>
+            </div>
+
+            {/* Payment Info */}
+            <div className="flex items-center gap-2" title="Payment">
+              <DollarSign className="h-5 w-5 text-purple-500" />
+              {team.payment ? (
+                <div className="flex items-center gap-2">
+                  <p className="text-[#6F6F6F]">
+                    ${team.payment.amount_paid.toFixed(2)} / ${team.payment.amount_due.toFixed(2)}
+                  </p>
+                  <span className={`px-2 py-0.5 text-xs rounded-full ${
+                    team.payment.status === 'paid' ? 'bg-green-100 text-green-800' :
+                    team.payment.status === 'partial' ? 'bg-yellow-100 text-yellow-800' :
+                    team.payment.status === 'overdue' ? 'bg-red-100 text-red-800' :
+                    'bg-gray-100 text-gray-800'
+                  }`}>
+                    {team.payment.status.charAt(0).toUpperCase() + team.payment.status.slice(1)}
+                  </span>
+                </div>
+              ) : (
+                <p className="text-[#6F6F6F]">
+                  ${team.league?.cost ? parseFloat(team.league.cost.toString()).toFixed(2) : '0.00'}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-col items-end gap-2 mt-4 md:mt-0">
+          {/* Skill Level */}
+          {team.skill?.name && (
+            <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
+              {team.skill.name}
+            </span>
+          )}
+
+          {/* Payment Status */}
+          {team.payment?.status && (
+            <span className={`px-3 py-1 text-sm rounded-full ${
+              team.payment.status === 'paid' ? 'bg-green-100 text-green-800' :
+              team.payment.status === 'partial' ? 'bg-yellow-100 text-yellow-800' :
+              team.payment.status === 'overdue' ? 'bg-red-100 text-red-800' :
+              'bg-gray-100 text-gray-800'
+            }`}>
+              {team.payment.status.charAt(0).toUpperCase() + team.payment.status.slice(1)}
+            </span>
+          )}
+        </div>
+      </div>
+      
+      {/* Location and other details */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 text-sm text-[#6F6F6F]">
+        <div className="flex items-center gap-1">
+          <MapPin className="h-4 w-4 text-[#B20000]" />
+          <span>{team.league?.location || 'Location TBD'}</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <User className="h-4 w-4 text-[#B20000]" />
+          <span>Team: {team.name}</span>
+        </div>
+      </div>
+      
+      {/* Payment Due Notification */}
+      {team.payment && team.payment.amount_due > team.payment.amount_paid && team.captain_id === currentUserId && (
+        <div className="mb-4 p-2 bg-orange-50 border border-orange-200 rounded-lg text-sm">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <DollarSign className="h-4 w-4 text-orange-500 mr-1" />
+              <span className="text-orange-700 font-medium">
+                Payment due: ${(team.payment.amount_due - team.payment.amount_paid).toFixed(2)}
+              </span>
+            </div>
+            {onPayNow && (
+              <Button
+                onClick={() => handlePayNow(team.payment!.id)}
+                className="bg-green-600 hover:bg-green-700 text-white text-xs py-1 px-2 rounded h-auto"
+              >
+                Pay Now
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+      
+      {/* Action Buttons */}
+      <div className="flex flex-wrap items-center justify-between gap-2 mt-2">
+        {/* Skill Level Badge */}
+        <div>
+          {team.skill?.name && (
+            <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full md:hidden">
               {team.skill.name}
             </span>
           )}
