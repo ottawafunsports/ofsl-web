@@ -36,6 +36,7 @@ export function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log('Login form submitted');
     if (!email || !password) {
       setError("Please enter both email and password");
       return;
@@ -46,9 +47,11 @@ export function LoginPage() {
     setLoading(true);
     
     try {
+      console.log('Attempting to sign in with email:', email);
       const { error } = await signIn(email.trim(), password);
       
       if (error) {
+        console.error('Login error:', error.message);
         setError(error.message);
       }
       
@@ -65,12 +68,14 @@ export function LoginPage() {
   const handleGoogleSignIn = async () => {
     setError(null);
     setSuccessMessage(null);
+    console.log('Initiating Google sign-in');
     setGoogleLoading(true); 
     
     try {
       const { error } = await signInWithGoogle();
       
       if (error) {
+        console.error('Google sign-in error:', error.message);
         setError(error.message);
       }
       
@@ -156,11 +161,11 @@ export function LoginPage() {
                 <label
                   htmlFor="password"
                   className="block text-sm font-medium text-[#6F6F6F] mb-1"
-                >
+                > 
                   Password
                 </label>
                 <Link
-                  to="/forgot-password" 
+                  to="/forgot-password"
                   className="text-sm text-[#B20000] hover:underline font-bold"
                 >
                   Forgot password?
