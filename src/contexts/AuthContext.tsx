@@ -180,6 +180,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const handleAuthStateChange = async (event: string, session: Session | null) => {
     console.log('Auth state change:', event, session?.user?.email);
     console.log('Auth event details:', event);
+    
     if (session?.user) {
       console.log('Auth provider:', session.user.app_metadata?.provider);
       console.log('Auth metadata:', session.user.app_metadata);
@@ -200,6 +201,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
+    // Handle password recovery event
+    if (event === 'PASSWORD_RECOVERY') {
+      console.log('Password recovery event detected');
+      // Don't redirect, let the ResetPasswordPage component handle this
+      setLoading(false);
+      return;
+    }
+
     if (session?.user) {
       // Handle user profile for any signed-in user
       const profile = await handleUserProfileCreation(session.user);
@@ -215,7 +224,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Handle redirect only for explicit sign-in events (not initial session)
       if (event === 'SIGNED_IN') {
         // Check for redirect after login
-        const redirectPath = localStorage.getItem('redirectAfterLogin') || '/my-account/teams';
+        const redirectPath = localStorage.getItem('redirectAfterLogin') || '/my-account/profile';
         if (redirectPath) {
           localStorage.removeItem('redirectAfterLogin');
           // Use window.location.replace for immediate redirect without adding to history
@@ -255,6 +264,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Get initial session
     const getInitialSession = async () => {
       try {
+        // Keep loading true until we've processed everything
         setLoading(true);
         console.log('Getting initial session');
         
@@ -269,7 +279,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
         
         if (mounted) {
-          console.log('Initial session found:', session ? 'yes' : 'no');
+          console.log('Initial session found:', session ? 'yes' : 'no', session?.user?.id);
           await handleAuthStateChange('INITIAL_SESSION', session);
         }
       } catch (error) {
@@ -318,12 +328,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signInWithGoogle = async () => {
     try {
       setLoading(true);
-      console.log('Initiating Google sign-in with redirectTo:', `${window.location.origin}/my-account/profile`);
-      console.log('Initiating Google sign-in');
-      console.log('Starting Google sign-in process');
+      
+      // Store the current URL for redirect after login
+      const currentPath = window.location.pathname;
+      if (currentPath !== '/login' && currentPath !== '/signup') {
+        localStorage.setItem('redirectAfterLogin', currentPath);
+      }
+      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
+          // Use the current origin for the redirect URL
           redirectTo: `${window.location.origin}/my-account/profile`,
           queryParams: {
             access_type: 'offline',
@@ -347,6 +362,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signUp = async (email: string, password: string) => {
     try {
       setLoading(true);
+      
+      // Store the current URL for redirect after signup
+      const currentPath = window.location.pathname;
+      if (currentPath !== '/login' && currentPath !== '/signup') {
+        localStorage.setItem('redirectAfterLogin', currentPath);
+      }
+      
       const { data, error } = await supabase.auth.signUp({
         email, 
         password,
