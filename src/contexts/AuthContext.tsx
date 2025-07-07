@@ -70,8 +70,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Helper function to create user profile if it doesn't exist
   const handleUserProfileCreation = async (user: User) => {
     try {
-      console.log('Handling user profile creation for:', user.email, 'Provider:', provider);
       const provider = user.app_metadata?.provider || 'email';
+      console.log('Handling user profile creation for:', user.email, 'Provider:', provider);
       
       console.log('Creating user profile for:', user.email);
       console.log('User metadata:', user.user_metadata);
