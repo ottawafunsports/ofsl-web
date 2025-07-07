@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
 import { Input } from "../../components/ui/input";
-import { Eye, EyeOff, CheckCircle, AlertCircle } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Eye, EyeOff, CheckCircle, AlertCircle, ArrowLeft } from "lucide-react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 
 export function ResetPasswordPage() {
@@ -14,35 +14,56 @@ export function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [validatingToken, setValidatingToken] = useState(true);
+  const [tokenValid, setTokenValid] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState<{
     score: number;
     feedback: string;
   }>({ score: 0, feedback: "" });
   
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
-  // Check if we have a valid hash in the URL
+  // Check if we have a valid token in the URL
   useEffect(() => {
-    const hash = window.location.hash;
-    const query = new URLSearchParams(window.location.search);
-    const type = query.get('type');
-    
-    // Check if we're in a password reset flow
-    if (type !== 'recovery' && !hash.includes('type=recovery')) {
-      console.log('Not a recovery flow, checking session');
-      
-      // Check if user is already authenticated
-      const checkSession = async () => {
-        const { data } = await supabase.auth.getSession();
-        if (!data.session) {
-          setError("Invalid or expired password reset link. Please request a new password reset link.");
-          console.error("No active session and not a recovery flow", { hash, search: window.location.search });
+    const validateResetToken = async () => {
+      try {
+        setValidatingToken(true);
+        
+        // Get token from URL hash or query params
+        const hash = window.location.hash;
+        const type = searchParams.get('type');
+        
+        console.log('Validating reset token. Type:', type, 'Hash present:', !!hash);
+        
+        // Check if this is a password reset flow
+        if (type === 'recovery' || hash.includes('type=recovery')) {
+          console.log('Valid recovery flow detected');
+          setTokenValid(true);
+        } else {
+          // Check if user is already authenticated
+          const { data } = await supabase.auth.getSession();
+          
+          if (data.session) {
+            console.log('User is already authenticated, token is valid');
+            setTokenValid(true);
+          } else {
+            console.error("No active session and not a recovery flow");
+            setError("Invalid or expired password reset link. Please request a new password reset link.");
+            setTokenValid(false);
+          }
         }
-      };
-      
-      checkSession();
-    }
-  }, []);
+      } catch (error) {
+        console.error('Error validating token:', error);
+        setError("Failed to validate reset token. Please request a new password reset link.");
+        setTokenValid(false);
+      } finally {
+        setValidatingToken(false);
+      }
+    };
+    
+    validateResetToken();
+  }, [searchParams]);
 
   // Check password strength
   useEffect(() => {
@@ -72,6 +93,50 @@ export function ResetPasswordPage() {
     setPasswordStrength({ score, feedback });
   }, [password]);
 
+  // If token is invalid, show error message
+  if (!validatingToken && !tokenValid) {
+    return (
+      <div className="min-h-[calc(100vh-135px)] bg-gray-50 flex flex-col items-center justify-center p-4">
+        <Card className="w-full max-w-[460px] bg-white rounded-lg shadow-lg">
+          <CardContent className="p-8">
+            <h1 className="text-[32px] font-bold text-center mb-8 text-[#6F6F6F]">
+              Reset Password
+            </h1>
+            
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6 flex items-start">
+              <AlertCircle className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="font-medium">Invalid Reset Link</p>
+                <p>{error || "This password reset link is invalid or has expired."}</p>
+              </div>
+            </div>
+            
+            <div className="text-center mt-6">
+              <p className="text-[#6F6F6F] mb-4">
+                Please request a new password reset link from the login page.
+              </p>
+              <Link to="/forgot-password">
+                <Button className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] px-6 py-2">
+                  Request New Reset Link
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Show loading state while validating token
+  if (validatingToken) {
+    return (
+      <div className="min-h-[calc(100vh-135px)] bg-gray-50 flex flex-col items-center justify-center p-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#B20000] mb-4"></div>
+        <p className="text-[#6F6F6F]">Validating reset link...</p>
+      </div>
+    );
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -100,15 +165,19 @@ export function ResetPasswordPage() {
     
     try {
       const { error } = await supabase.auth.updateUser({ password });
+      console.log('Password update response received');
       
       if (error) {
+        console.error('Error updating password:', error);
         throw error;
       }
       
       setSuccess(true);
+      console.log('Password reset successful');
       
       // Redirect to login page after 3 seconds
       setTimeout(() => {
+        console.log('Redirecting to login page');
         navigate("/login", { 
           state: { 
             message: "Your password has been reset successfully. You can now log in with your new password." 
@@ -118,7 +187,7 @@ export function ResetPasswordPage() {
       
     } catch (err: any) {
       console.error("Error resetting password:", err);
-      setError(err.message || "Failed to reset password");
+      setError(err.message || "Failed to reset password. Please try again or request a new reset link.");
     } finally {
       setLoading(false);
     }
@@ -138,6 +207,10 @@ export function ResetPasswordPage() {
             Reset Password
           </h1>
           
+          <div className="mb-6 text-center text-[#6F6F6F]">
+            <p>Enter your new password below to reset your account password.</p>
+          </div>
+          
           {success ? (
             <div className="text-center">
               <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
@@ -145,7 +218,7 @@ export function ResetPasswordPage() {
               <p className="text-[#6F6F6F] mb-6">
                 Your password has been reset successfully. You will be redirected to the login page shortly.
               </p>
-              <Link to="/login">
+              <Link to="/login" className="inline-block">
                 <Button className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] px-6 py-2">
                   Go to Login
                 </Button>
@@ -157,7 +230,7 @@ export function ResetPasswordPage() {
                 <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6 flex items-start">
                   <AlertCircle className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
                   <div>
-                    <p className="font-medium">Error</p>
+                    <p className="font-medium">Error Resetting Password</p>
                     <p>{error}</p>
                   </div>
                 </div>
@@ -168,6 +241,7 @@ export function ResetPasswordPage() {
                   <label
                     htmlFor="password"
                     className="block text-sm font-medium text-[#6F6F6F]"
+                    id="password-label"
                   >
                     New Password
                   </label>
@@ -178,7 +252,12 @@ export function ResetPasswordPage() {
                       placeholder="Enter your new password"
                       className="w-full h-12 px-4 rounded-lg border border-[#D4D4D4] focus:border-[#B20000] focus:ring-[#B20000]"
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        // Clear error when user starts typing
+                        if (error) setError(null);
+                      }}
+                      aria-labelledby="password-label"
                       required
                     />
                     <button
@@ -208,6 +287,7 @@ export function ResetPasswordPage() {
                   <label
                     htmlFor="confirmPassword"
                     className="block text-sm font-medium text-[#6F6F6F]"
+                    id="confirm-password-label"
                   >
                     Confirm New Password
                   </label>
@@ -218,7 +298,12 @@ export function ResetPasswordPage() {
                       placeholder="Confirm your new password"
                       className="w-full h-12 px-4 rounded-lg border border-[#D4D4D4] focus:border-[#B20000] focus:ring-[#B20000]"
                       value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      onChange={(e) => {
+                        setConfirmPassword(e.target.value);
+                        // Clear error when user starts typing
+                        if (error) setError(null);
+                      }}
+                      aria-labelledby="confirm-password-label"
                       required
                     />
                     <button
@@ -242,6 +327,7 @@ export function ResetPasswordPage() {
                 </div>
                 
                 <Button
+                  aria-label="Reset Password"
                   type="submit"
                   className="w-full h-12 bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] font-medium text-base"
                   disabled={loading}
@@ -251,7 +337,8 @@ export function ResetPasswordPage() {
               </form>
               
               <div className="mt-6 text-center">
-                <Link to="/login" className="text-[#B20000] hover:underline font-medium">
+                <Link to="/login" className="text-[#B20000] hover:underline font-medium flex items-center justify-center gap-2">
+                  <ArrowLeft className="h-4 w-4" />
                   Back to Login
                 </Link>
               </div>

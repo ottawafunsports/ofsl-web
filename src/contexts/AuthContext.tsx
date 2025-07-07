@@ -70,15 +70,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Helper function to create user profile if it doesn't exist
   const handleUserProfileCreation = async (user: User) => {
     try {
-      console.log('Handling user profile creation for:', user.email, 'Provider:', user.app_metadata.provider);
+      const provider = user.app_metadata?.provider || 'email';
+      console.log('Handling user profile creation for:', user.email, 'Provider:', provider);
       
       console.log('Creating user profile for:', user.email);
       console.log('User metadata:', user.user_metadata);
       console.log('App metadata:', user.app_metadata);
       
-      // First check if user profile already exists
+      // Use the enhanced v3 function for better Google OAuth support
       let { data: existingProfile, error: fetchError } = await supabase
-        .rpc('check_and_fix_user_profile_v2', {
+        .rpc('check_and_fix_user_profile_v3', {
           p_auth_id: user.id,
           p_email: user.email,
           p_name: user.user_metadata?.full_name || user.user_metadata?.name || '',
@@ -90,53 +91,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return null;
       }
 
-      if (!existingProfile) {
-        console.log('No profile found by auth_id, checking by email');
-        
-        // Try to find by email as fallback
-        const { data: emailProfile, error: emailError } = await supabase
-          .from('users')
-          .select('*')
-          .eq('email', user.email)
-          .maybeSingle();
-        
-        if (emailProfile) {
-          console.log('Found existing profile by email, updating auth_id');
-          
-          // Update the existing profile with the auth_id
-          const { data: updatedProfile, error: updateError } = await supabase
-            .from('users')
-            .update({ auth_id: user.id })
-            .eq('id', emailProfile.id)
-            .select()
-            .single();
-            
-          if (updateError) {
-            console.error('Error updating existing profile with auth_id:', updateError);
-          } else {
-            return updatedProfile;
-          }
-        }
-        
-        // If we get here, we need to create a new profile
-        console.log('Creating new user profile for:', user.email);
-        
-        // Get provider from app_metadata
-        const provider = user.app_metadata?.provider || 'email';
-        console.log('Auth provider:', provider);
-        
-        const now = new Date().toISOString();
-        const newProfile = {
-          id: user.id,
-          auth_id: user.id,
-          name: user.user_metadata?.full_name || user.user_metadata?.name || user.user_metadata?.user_name || '',
-          phone: provider === 'google' ? '' : (user.user_metadata?.phone || ''), // Will be empty for Google sign-ups
-          email: user.email || '',
-          date_created: now,
-          date_modified: now,
-          is_admin: false,
-        }
-      }
       // After attempting to fix the profile, fetch the current profile
       const { data: profile, error: profileError } = await supabase
         .from('users')
@@ -185,6 +139,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.log('Auth provider:', session.user.app_metadata?.provider);
       console.log('Auth metadata:', session.user.app_metadata);
       console.log('Auth user metadata:', session.user.user_metadata);
+      
+      // For Google sign-ins, make an extra attempt to create the profile
+      if (session.user.app_metadata?.provider === 'google') {
+        console.log('Google sign-in detected, ensuring profile exists');
+        try {
+          const { data, error } = await supabase.rpc('check_and_fix_user_profile_v3', {
+            p_auth_id: session.user.id,
+            p_email: session.user.email,
+            p_name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || '',
+            p_phone: ''
+          });
+          
+          if (error) {
+            console.error('Error in Google profile creation:', error);
+          } else {
+            console.log('Google profile creation result:', data);
+          }
+        } catch (err) {
+          console.error('Exception in Google profile creation:', err);
+        }
+      }
     }
     
     if (event === 'SIGNED_OUT') {
@@ -270,6 +245,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Get initial session
     const getInitialSession = async () => {
       try {
+        console.log('AuthProvider: Getting initial session');
         // Keep loading true until we've processed everything
         setLoading(true);
         console.log('Getting initial session');
@@ -280,6 +256,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (error) {
           console.error('Error getting session:', error);
           if (mounted) {
+            console.log('No initial session found or error occurred');
             setLoading(false);
             setInitializing(false);
           }
@@ -288,6 +265,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         
         if (mounted) {
           console.log('Initial session found:', session ? `yes, user ID: ${session.user.id}` : 'no');
+          
+          if (session?.user) {
+            // For Google users, ensure profile exists
+            if (session.user.app_metadata?.provider === 'google') {
+              console.log('Initial Google session detected, ensuring profile exists');
+              try {
+                const { data, error } = await supabase.rpc('check_and_fix_user_profile_v3', {
+                  p_auth_id: session.user.id,
+                  p_email: session.user.email,
+                  p_name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || '',
+                  p_phone: ''
+                });
+                
+                if (error) {
+                  console.error('Error in initial Google profile creation:', error);
+                } else {
+                  console.log('Initial Google profile creation result:', data);
+                }
+              } catch (err) {
+                console.error('Exception in initial Google profile creation:', err);
+              }
+            }
+          }
+          
           await handleAuthStateChange('INITIAL_SESSION', session);
         }
       } catch (error) {
@@ -351,6 +352,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       // Store the current URL for redirect after login
       const currentPath = window.location.pathname;
+      console.log('Google sign-in: storing redirect path:', currentPath);
       if (currentPath !== '/login' && currentPath !== '/signup') {
         console.log('Storing redirect path:', currentPath);
         localStorage.setItem('redirectAfterLogin', currentPath);
@@ -399,7 +401,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
       
       return { user: data?.user || null, error };
-    } catch (error) {
+        console.log('Google sign-in initiated successfully, URL:', data.url);
       console.error('Error in signUp:', error);
       return { user: null, error: error as AuthError };
     } finally {

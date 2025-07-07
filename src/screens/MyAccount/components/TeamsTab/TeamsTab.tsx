@@ -551,6 +551,37 @@ export function TeamsTab() {
     }
   };
 
+  // Function to handle payment for virtual payments (not yet in database)
+  const handleVirtualPayment = (team: TeamWithPayment) => {
+    // Find the matching league payment or create a virtual one
+    const leagueId = team.league_id;
+    const leagueName = team.league?.name || 'Unknown League';
+    const leagueCost = team.league?.cost || 0;
+    
+    // Create a virtual payment object
+    const virtualPayment: LeaguePayment = {
+      id: -team.id, // Use negative team ID to indicate virtual payment
+      user_id: userProfile?.id || '',
+      team_id: team.id,
+      league_id: leagueId,
+      amount_due: leagueCost,
+      amount_paid: 0,
+      amount_outstanding: leagueCost,
+      status: 'pending',
+      due_date: new Date().toISOString(),
+      payment_method: null,
+      stripe_order_id: null,
+      notes: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      league_name: leagueName,
+      team_name: team.name
+    };
+    
+    setSelectedPayment(virtualPayment);
+    setShowPaymentModal(true);
+  };
+
   const handlePaymentSuccess = () => {
     // Reload payment data and teams
     loadPaymentData();
@@ -634,7 +665,7 @@ export function TeamsTab() {
                   team={team}
                   currentUserId={userProfile?.id || ''}
                   onManageTeam={handleManageTeam}
-                  onPayNow={handlePayNow}
+                  onPayNow={team.payment ? handlePayNow : handleVirtualPayment}
                   showDeleteTeamConfirmation={showDeleteTeamConfirmation}
                   showLeaveTeamConfirmation={showLeaveTeamConfirmation}
                   deletingTeam={deletingTeam}

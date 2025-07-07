@@ -87,7 +87,7 @@ serve(async (req: Request) => {
             
             <p style="color: #6F6F6F; font-size: 14px; line-height: 1.5;">
               If you have any questions, feel free to contact us at 
-              <a href="mailto:info@ofsl.ca" style="color: #B20000;">info@ofsl.ca</a>
+              <a href="mailto:payments@ofsl.ca" style="color: #B20000;">payments@ofsl.ca</a>
             </p>
           </div>
           

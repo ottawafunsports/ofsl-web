@@ -11,10 +11,13 @@ interface TeamActionsProps {
       amount_due: number;
       amount_paid: number;
     };
+    league?: {
+      cost: number | null;
+    };
   };
   isCaptain: boolean;
   onManageTeam: (team: any) => void;
-  onPayNow?: (paymentId: number) => void;
+  onPayNow?: (team: any) => void;
   showDeleteTeamConfirmation: (team: any) => void;
   showLeaveTeamConfirmation: (team: any) => void;
   deletingTeam: number | null;
@@ -36,8 +39,8 @@ export function TeamActions({
   };
 
   const handlePayNow = () => {
-    if (onPayNow && team.payment) {
-      onPayNow(team.payment.id);
+    if (onPayNow) {
+      onPayNow(team);
     }
   };
 
@@ -52,9 +55,9 @@ export function TeamActions({
       </Button>
       
       {/* Pay Now Button */}
-      {team.payment && 
-       team.payment.amount_due > team.payment.amount_paid && 
-       isCaptain && onPayNow && (
+      {isCaptain && onPayNow && 
+       ((team.payment && team.payment.amount_due > team.payment.amount_paid) || 
+        (!team.payment && team.league?.cost && team.league.cost > 0)) && (
         <Button
           onClick={handlePayNow}
           className="bg-green-600 hover:bg-green-700 text-white rounded-lg px-3 py-1.5 text-sm transition-colors flex items-center gap-1 h-auto"
