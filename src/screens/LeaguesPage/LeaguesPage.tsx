@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
-import { ChevronDown, X, MapPin, Calendar, Clock, Users, DollarSign } from "lucide-react";
+import { ChevronDown, X, MapPin, Calendar, Clock, Users, DollarSign, Filter } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { 
   fetchLeagues,
@@ -15,6 +15,7 @@ import {
 import { formatPrice } from '../../stripe-config';
 import { getStripeProductByLeagueId } from '../../lib/stripe';
 import { useAuth } from "../../contexts/AuthContext";
+import { MobileFilterDrawer } from "./components/MobileFilterDrawer";
 
 // Filter options data
 const filterOptions = {
@@ -46,6 +47,9 @@ export const LeaguesPage = (): JSX.Element => {
 
   // Open/close state for dropdowns
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  
+  // State for mobile filter drawer
+  const [showMobileFilterDrawer, setShowMobileFilterDrawer] = useState(false);
   
   // Refs for dropdown components
   const dropdownRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -263,8 +267,19 @@ export const LeaguesPage = (): JSX.Element => {
           Find a league
         </h1>
 
-        {/* Filters Section */}
-        <div className="mb-16">
+        {/* Mobile Filter Button */}
+        <div className="flex justify-center mb-8 md:hidden">
+          <Button
+            onClick={() => setShowMobileFilterDrawer(true)}
+            className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] px-6 py-2 flex items-center gap-2"
+          >
+            <Filter className="h-4 w-4" />
+            Filters {isAnyFilterActive() && <span className="ml-1 bg-white text-[#B20000] text-xs rounded-full w-5 h-5 flex items-center justify-center">!</span>}
+          </Button>
+        </div>
+
+        {/* Filters Section (Hidden on mobile, shown on desktop) */}
+        <div className="mb-16 hidden md:block">
           {/* First row - Sport Filter Buttons */}
           <div className="flex flex-wrap justify-center gap-3 mb-4">
             {/* Order sports as: Volleyball, Badminton, Basketball, Pickleball */}
@@ -485,6 +500,19 @@ export const LeaguesPage = (): JSX.Element => {
           </div>
         )}
       </div>
+
+      {/* Mobile Filter Drawer */}
+      <MobileFilterDrawer
+        isOpen={showMobileFilterDrawer}
+        onClose={() => setShowMobileFilterDrawer(false)}
+        filters={filters}
+        handleFilterChange={handleFilterChange}
+        clearFilters={clearFilters}
+        sports={sports}
+        skills={skills}
+        filterOptions={filterOptions}
+        isAnyFilterActive={isAnyFilterActive}
+      />
     </div>
   );
 };
