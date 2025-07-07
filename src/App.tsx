@@ -51,6 +51,7 @@ export function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            {/* Ensure reset-password route can handle both query params and hash fragments */}
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/about-us" element={<AboutUsPage />} />
             <Route path="/standards-of-play" element={<StandardsOfPlayPage />} />
