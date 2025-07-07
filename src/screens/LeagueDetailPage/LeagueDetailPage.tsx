@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Button } from '../../components/ui/button';
-import { ChevronLeft, Tag } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import '../../../src/styles/rich-text.css';
 import { 
@@ -133,27 +133,12 @@ export function LeagueDetailPage() {
         <div className="mb-8">
           <div className="flex items-center mb-2">
             <img
-              src={getSportIcon(league.sport_name || '')}
+              src={getSportIcon(league.sport_name)}
               alt={league.sport_name || 'Sport'}
               className="w-10 h-10 mr-3 flex-shrink-0"
             />
             <h1 className="text-3xl md:text-4xl font-bold text-[#6F6F6F]">{league.name}</h1>
           </div>
-          
-          {/* Display multiple skill levels if available */}
-          {league.skill_names && league.skill_names.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-2">
-              {league.skill_names.map((skillName, index) => (
-                <span 
-                  key={index} 
-                  className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-                >
-                  <Tag className="w-3 h-3 mr-1" />
-                  {skillName}
-                </span>
-              ))}
-            </div>
-          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -161,7 +146,8 @@ export function LeagueDetailPage() {
           <div className="md:col-span-1">
             <LeagueInfo 
               league={leagueForInfo} 
-              sport={league.sport_name || ''} 
+              sport={league.sport_name || ''}
+              skillLevels={league.skill_names}
               onSpotsUpdate={handleSpotsUpdate}
             />
           </div>
