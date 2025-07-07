@@ -441,6 +441,7 @@ export function TeamsTab() {
       const teamsWithFullDetails = await Promise.all(
         (teamsData || []).map(async (team) => {
           // Get captain name
+          // Get captain name
           let captainName = null;
           if (team.captain_id) {
             const { data: captainData, error: captainError } = await supabase
@@ -456,6 +457,19 @@ export function TeamsTab() {
           
           let rosterDetails: Array<{ id: string; name: string; email: string; }> = [];
           let gyms: Array<{ id: number; gym: string | null; address: string | null; }> = [];
+          let skillNames: string[] | null = null;
+          
+          // Get skill names from skill_ids array if available in the league
+          if (team.leagues?.skill_ids && team.leagues.skill_ids.length > 0) {
+            const { data: skillsData, error: skillsError } = await supabase
+              .from('skills')
+              .select('id, name')
+              .in('id', team.leagues.skill_ids);
+              
+            if (!skillsError && skillsData) {
+              skillNames = skillsData.map(skill => skill.name);
+            }
+          }
 
           // Fetch roster details if roster exists
           if (team.roster && team.roster.length > 0) {
@@ -497,8 +511,8 @@ export function TeamsTab() {
             ...team,
             league: team.leagues,
             captain_name: captainName,
-            skill: team.skills,
-            skill_names: skillNames,
+            skill: team.skills, 
+            skill_names: skillNames, // Add skill names from league skill_ids
             roster_details: rosterDetails,
             gyms: gyms
           };
