@@ -196,6 +196,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       // Handle redirect only for explicit sign-in events (not initial session)
       if (event === 'SIGNED_IN') {
+        // For Google sign-ins, redirect to the profile completion page if needed
+        if (session.user.app_metadata?.provider === 'google' && (!profile || !profile.phone || profile.phone === '')) {
+          console.log('Google user needs to complete profile, redirecting to profile completion page');
+          window.location.replace('/google-signup-redirect');
+          return;
+        }
+        
         // Check for redirect after login
         const redirectPath = localStorage.getItem('redirectAfterLogin') || '/my-account/teams';
         console.log('SIGNED_IN event detected, redirecting to:', redirectPath);
@@ -361,8 +368,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          // Use the current origin for the redirect URL
-          redirectTo: `${window.location.origin}/my-account/profile`,
+          // Redirect to the Google signup redirect page to complete profile
+          redirectTo: `${window.location.origin}/google-signup-redirect`,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
@@ -370,8 +377,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       });
 
-      if (data?.url) {
-        console.log('Google sign-in initiated, redirecting to OAuth provider');
+      if (data) {
+        console.log('Google sign-in initiated successfully');
+        console.log('Redirect URL:', data.url);
       }
       
       return { error };
