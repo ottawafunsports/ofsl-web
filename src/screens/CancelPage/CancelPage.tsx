@@ -48,8 +48,8 @@ export function CancelPage() {
           <p className="text-sm text-[#6F6F6F] mb-2">Need help?</p>
           <p className="text-sm text-[#6F6F6F]">
             Contact us at{' '}
-            <a href="mailto:info@ofsl.ca" className="text-[#B20000] underline">
-              info@ofsl.ca
+            <a href="mailto:payments@ofsl.ca" className="text-[#B20000] underline">
+              payments@ofsl.ca
             </a>
           </p>
         </div>

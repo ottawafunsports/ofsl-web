@@ -46,6 +46,9 @@ export function RegistrationSuccessModal({
             <p className="text-amber-700 text-sm mb-3">
               To fully secure your spot in this league, a deposit of $200 or full payment of ${leagueCost?.toFixed(2) || '0.00'} +HST is required.
             </p>
+            <p className="text-amber-700 text-sm">
+              If payment is not received, your spot is not guaranteed.
+            </p>
             <p className="text-amber-700 text-sm font-medium">
               If payment is not received, your spot is not guaranteed.
             </p>
@@ -55,7 +58,7 @@ export function RegistrationSuccessModal({
             <p>You can make your payment through:</p>
             <ul className="list-disc pl-5 mt-2 space-y-1">
               <li>The "My Teams" section in your account</li>
-              <li>E-transfer to <span className="font-medium">payments@ofsl.ca</span></li>
+              <li>E-transfer to <span className="font-medium text-[#B20000]">payments@ofsl.ca</span></li>
             </ul>
           </div>
           

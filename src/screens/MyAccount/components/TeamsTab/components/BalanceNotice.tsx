@@ -38,7 +38,7 @@ export function BalanceNotice({ outstandingBalance, paymentSummary }: BalanceNot
       )}
       
       <p className="text-orange-700 text-sm mt-2">
-        Please contact us at <a href="mailto:info@ofsl.ca" className="underline">info@ofsl.ca</a> to arrange payment.
+        Please contact us at <a href="mailto:payments@ofsl.ca" className="underline">payments@ofsl.ca</a> to arrange payment.
       </p>
     </div>
   );
