@@ -7,7 +7,7 @@ interface MobileFilterDrawerProps {
   filters: {
     sport: string;
     location: string;
-    skillLevel: string;
+    skillLevels: string[];
     day: string;
   };
   handleFilterChange: (filterType: string, value: string) => void;
@@ -127,17 +127,39 @@ export function MobileFilterDrawer({
           {/* Skill Level Filter */}
           <div>
             <h3 className="text-lg font-medium text-[#6F6F6F] mb-3">Skill Level</h3>
-            <select
-              value={filters.skillLevel}
-              onChange={(e) => handleFilterChange('skillLevel', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
-            >
+            <div className="space-y-2 max-h-40 overflow-y-auto border border-gray-300 rounded-lg p-3">
               {skillFilterOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
+                option === "All Skill Levels" ? (
+                  <button
+                    key={option}
+                    className={`block w-full text-left py-1 transition-colors duration-200 ${
+                      filters.skillLevels.length === 0 ? 'text-[#B20000] font-medium' : 'text-[#6F6F6F]'
+                    }`}
+                    onClick={() => setFilters(prev => ({ ...prev, skillLevels: [] }))}
+                  >
+                    {option}
+                  </button>
+                ) : (
+                  <div key={option} className="flex items-center py-1">
+                    <input
+                      type="checkbox"
+                      id={`mobile-skill-${option}`}
+                      checked={filters.skillLevels.includes(option)}
+                      onChange={() => handleFilterChange('skillLevel', option)}
+                      className="mr-2 h-4 w-4 rounded border-gray-300 text-[#B20000] focus:ring-[#B20000]"
+                    />
+                    <label
+                      htmlFor={`mobile-skill-${option}`}
+                      className={`flex-1 cursor-pointer ${
+                        filters.skillLevels.includes(option) ? 'text-[#B20000] font-medium' : 'text-[#6F6F6F]'
+                      }`}
+                    >
+                      {option}
+                    </label>
+                  </div>
+                )
               ))}
-            </select>
+            </div>
           </div>
 
           {/* Day Filter */}

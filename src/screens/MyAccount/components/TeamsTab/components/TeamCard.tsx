@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Button } from '../../../../../components/ui/button';
-import { Calendar, Crown, CreditCard, Users, DollarSign } from 'lucide-react';
+import { Calendar, Crown, Users, DollarSign, MapPin, User } from 'lucide-react';
 import { getDayName } from '../../../../../lib/leagues';
 
 interface TeamCardProps {
@@ -8,131 +8,212 @@ interface TeamCardProps {
     id: number;
     name: string;
     captain_id: string;
+    captain_name: string | null;
     league_id: number;
     league?: {
       id: number;
       name: string;
       day_of_week: number | null;
       cost: number | null;
+      location: string | null;
       sports?: {
         name: string;
       } | null;
     } | null;
-    gyms: Array<{
-      id: number;
-      gym: string | null;
-      address: string | null;
-    }>;
+    skill?: {
+      name: string;
+    } | null;
     payment?: {
       id: number;
       amount_due: number;
       amount_paid: number;
       status: string;
-      amount_due: number;
-      amount_paid: number;
-      status: string;
     };
+    roster: string[];
   };
   currentUserId: string;
-  onManageTeam: () => void;
+  onManageTeam: (team: any) => void;
   onPayNow?: (paymentId: number) => void;
+  showDeleteTeamConfirmation: (team: any) => void;
+  showLeaveTeamConfirmation: (team: any) => void;
+  deletingTeam: number | null;
+  unregisteringPayment: number | null;
 }
 
-export function TeamCard({ team, currentUserId, onManageTeam, onPayNow }: TeamCardProps) {
+export function TeamCard({ 
+  team, 
+  currentUserId, 
+  onManageTeam, 
+  onPayNow,
+  showDeleteTeamConfirmation,
+  showLeaveTeamConfirmation,
+  deletingTeam,
+  unregisteringPayment
+}: TeamCardProps) {
   const isCaptain = currentUserId === team.captain_id;
   
-  // Helper function to get primary gym location
-  const getPrimaryLocation = (gyms: Array<{ gym: string | null }>) => {
-    if (!gyms || gyms.length === 0) return 'Location TBD';
-    return gyms[0]?.gym || 'Location TBD';
+  const handleManageTeam = () => {
+    onManageTeam(team);
   };
 
-  // Helper function to format cost with icon
-  const formatCostWithIcon = (cost: number | null) => {
-    if (!cost) return 'Cost TBD';
-    return `$${cost}`;
+  const handlePayNow = (paymentId: number) => {
+    if (onPayNow) {
+      onPayNow(paymentId);
+    }
+  };
+  
+  // Function to get day name from day number
+  const getDayName = (day: number | null | undefined): string => {
+    if (day === null || day === undefined) return 'Day TBD';
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    return days[day] || 'Day TBD';
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-6">
-      <div className="flex justify-between items-start mb-4">
-        <div className="flex-1">
-          <Link 
-            to={`/leagues/${team.league_id}`}
-            className="block"
-          >
-            <h3 className="text-lg font-bold text-[#6F6F6F] mb-2 hover:text-[#B20000] transition-colors cursor-pointer">
-              {team.league?.name || 'Unknown League'}
-            </h3>
-          </Link>
+    <div className="bg-white border border-gray-200 rounded-lg p-4 md:p-6">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-4">
+        <div>
+          <h3 className="text-lg font-bold text-[#6F6F6F] mb-2">{team.league?.name || 'Unknown League'}</h3>
           
-          <div className="flex flex-wrap items-center gap-4 text-sm text-[#6F6F6F] mb-2">
-            <div className="flex items-center gap-1">
-              <Calendar className="h-4 w-4" />
-              <span>{getDayName(team.league?.day_of_week) || 'Day TBD'}</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm mt-4">
+            {/* Captain */}
+            <div className="flex items-center gap-2" title="Captain">
+              <Crown className="h-5 w-5 text-yellow-500" />
+              <p className="text-[#6F6F6F]">{team.captain_id === currentUserId ? 'You' : (team.captain_name || 'Unknown')}</p>
             </div>
-            <div className="flex items-center gap-1">
-              <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12,2C8.13,2 5,5.13 5,9c0,5.25 7,13 7,13s7,-7.75 7,-13C19,5.13 15.87,2 12,2zM7,9c0,-2.76 2.24,-5 5,-5s5,2.24 5,5c0,2.88 -2.88,7.19 -5,9.88C9.92,16.21 7,11.85 7,9z"/>
-                <circle cx="12" cy="9" r="2.5"/>
-              </svg>
-              <span>Location</span>
+
+            {/* Team Size */}
+            <div className="flex items-center gap-2" title="Players">
+              <Users className="h-5 w-5 text-blue-500" />
+              <p className="text-[#6F6F6F]">{team.roster?.length || 0} players</p>
             </div>
-            <div className="text-xs text-gray-500 ml-6">
-              {team.league?.location || 'TBD'}
+
+            {/* Day */}
+            <div className="flex items-center gap-2" title="Day">
+              <Calendar className="h-5 w-5 text-green-500" />
+              <p className="text-[#6F6F6F]">{getDayName(team.league?.day_of_week) || 'Day TBD'}</p>
             </div>
-            <div className="flex items-center gap-1">
-              <CreditCard className="h-4 w-4" />
-              <span>{formatCostWithIcon(team.league?.cost)} + HST</span>
+
+            {/* Payment Info */}
+            <div className="flex items-center gap-2" title="Payment">
+              <DollarSign className="h-5 w-5 text-purple-500" />
+              {team.payment ? (
+                <div className="flex items-center gap-2">
+                  <p className="text-[#6F6F6F]">
+                    ${team.payment.amount_paid.toFixed(2)} / ${team.payment.amount_due.toFixed(2)}
+                  </p>
+                  <span className={`px-2 py-0.5 text-xs rounded-full ${
+                    team.payment.status === 'paid' ? 'bg-green-100 text-green-800' :
+                    team.payment.status === 'partial' ? 'bg-yellow-100 text-yellow-800' :
+                    team.payment.status === 'overdue' ? 'bg-red-100 text-red-800' :
+                    'bg-gray-100 text-gray-800'
+                  }`}>
+                    {team.payment.status.charAt(0).toUpperCase() + team.payment.status.slice(1)}
+                  </span>
+                </div>
+              ) : (
+                <p className="text-[#6F6F6F]">
+                  ${team.league?.cost ? parseFloat(team.league.cost.toString()).toFixed(2) : '0.00'}
+                </p>
+              )}
             </div>
-            <div>
-              <span>Record: TBD</span>
-            </div>
-            
-            {/* Payment Status */}
-            {team.payment && team.payment.amount_due > team.payment.amount_paid && team.captain_id === currentUserId && (
-              <div className="mt-2 flex items-center gap-2 text-sm">
-                <DollarSign className="h-4 w-4 text-orange-500" />
-                <span className="text-orange-600 font-medium">
-                  Payment due: ${(team.payment.amount_due - team.payment.amount_paid).toFixed(2)}
-                </span>
-                {onPayNow && (
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation(); 
-                      onPayNow(team.payment!.id);
-                    }}
-                    className="ml-2 bg-green-600 hover:bg-green-700 text-white text-xs py-1 px-2 rounded"
-                  >
-                    Pay Now
-                  </Button>
-                )}
-              </div>
-            )}
-          </div>
-          
-          <div className="text-sm text-[#6F6F6F]">
-            <span className="font-medium">Next Game:</span> Schedule TBD
           </div>
         </div>
 
-        <div className="flex items-center gap-2 ml-4">
-          {isCaptain && (
-            <span className="flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
-              <Crown className="h-3 w-3" />
-              Captain
+        <div className="flex flex-col items-end gap-2 mt-4 md:mt-0">
+          {/* Skill Level */}
+          {team.skill?.name && (
+            <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
+              {team.skill.name}
             </span>
           )}
-          <span className="px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full">
-            Active
-          </span>
+        </div>
+      </div>
+      
+      {/* Location and other details */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 text-sm text-[#6F6F6F]">
+        <div className="flex items-center gap-1">
+          <MapPin className="h-4 w-4 text-[#B20000]" />
+          <span>{team.league?.location || 'Location TBD'}</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <User className="h-4 w-4 text-[#B20000]" />
+          <span>Team: {team.name}</span>
+        </div>
+      </div>
+      
+      {/* Payment Due Notification */}
+
+      {/* Action Buttons */}
+      <div className="flex flex-wrap items-center justify-between gap-2 mt-2">
+        {/* Skill Level Badge */}
+        <div></div>
+        
+        {/* Action Buttons */}
+        <div className="flex gap-2">
           <Button
-            onClick={onManageTeam}
-            className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-lg px-4 py-2 text-sm transition-colors"
+            onClick={handleManageTeam}
+            className="border border-[#B20000] bg-white hover:bg-[#B20000] hover:text-white text-[#B20000] rounded-lg px-3 py-1.5 text-sm transition-colors flex items-center gap-1 h-auto"
           >
-            Manage Players
+            <Users className="h-3 w-3" />
+            {team.captain_id === currentUserId ? 'Manage' : 'View'}
           </Button>
+          
+          {/* Pay Now Button */}
+          {team.payment && 
+           team.payment.amount_due > team.payment.amount_paid && 
+           team.captain_id === currentUserId && onPayNow && (
+            <Button
+              onClick={() => handlePayNow(team.payment!.id)}
+              className="bg-green-600 hover:bg-green-700 text-white rounded-lg px-3 py-1.5 text-sm transition-colors flex items-center gap-1 h-auto"
+            >
+              <DollarSign className="h-3 w-3" />
+              Pay
+            </Button>
+          )}
+          
+          {/* Delete/Leave Team Button */}
+          {team.captain_id === currentUserId ? (
+            <Button
+              onClick={() => showDeleteTeamConfirmation(team)}
+              disabled={deletingTeam === team.id}
+              className="bg-red-600 hover:bg-red-700 text-white rounded-lg px-3 py-1.5 text-sm transition-colors flex items-center gap-1 h-auto"
+            >
+              {deletingTeam === team.id ? (
+                'Deleting...'
+              ) : (
+                <>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
+                    <path d="M3 6h18"></path>
+                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                  </svg>
+                  Deregister
+                </>
+              )}
+            </Button>
+          ) : (
+            team.payment && (
+              <Button
+                onClick={() => showLeaveTeamConfirmation(team)}
+                disabled={unregisteringPayment === team.payment?.id}
+                className="bg-red-600 hover:bg-red-700 text-white rounded-lg px-3 py-1.5 text-sm transition-colors flex items-center gap-1 h-auto"
+              >
+                {unregisteringPayment === team.payment?.id ? (
+                  'Removing...'
+                ) : (
+                  <>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
+                      <path d="M3 6h18"></path>
+                      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                    </svg>
+                    Leave
+                  </>
+                )}
+              </Button>
+            )
+          )}
         </div>
       </div>
     </div>

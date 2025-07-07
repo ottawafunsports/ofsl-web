@@ -146,7 +146,8 @@ export function LeagueDetailPage() {
           <div className="md:col-span-1">
             <LeagueInfo 
               league={leagueForInfo} 
-              sport={league.sport_name || ''} 
+              sport={league.sport_name || ''}
+              skillLevels={league.skill_names}
               onSpotsUpdate={handleSpotsUpdate}
             />
           </div>

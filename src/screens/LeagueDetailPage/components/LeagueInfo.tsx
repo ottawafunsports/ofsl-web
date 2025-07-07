@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "../../../components/ui/button";
-import { MapPin, Calendar, Clock, DollarSign, Users } from "lucide-react";
+import { MapPin, Calendar, Clock, DollarSign, Users, Tag } from "lucide-react";
 import { useAuth } from "../../../contexts/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import { TeamRegistrationModal } from "./TeamRegistrationModal";
@@ -27,10 +27,11 @@ const getSpotsText = (spots: number) => {
 interface LeagueInfoProps {
   league: any;
   sport: string;
+  skillLevels?: string[];
   onSpotsUpdate?: (spots: number) => void;
 }
 
-export function LeagueInfo({ league, sport, onSpotsUpdate }: LeagueInfoProps) {
+export function LeagueInfo({ league, sport, skillLevels, onSpotsUpdate }: LeagueInfoProps) {
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
   const [actualSpotsRemaining, setActualSpotsRemaining] = useState(league.spotsRemaining || 0);
   const [stripeProduct, setStripeProduct] = useState<any>(null);
@@ -153,6 +154,36 @@ export function LeagueInfo({ league, sport, onSpotsUpdate }: LeagueInfoProps) {
               <p className="text-sm text-[#6F6F6F]">{league.dates}</p>
             </div>
           </div>
+
+          {/* Skill Level */}
+          {(skillLevels && skillLevels.length > 0) ? (
+            <div className="flex items-start">
+              <Tag className="h-4 w-4 text-[#B20000] mr-2 mt-1 flex-shrink-0" />
+              <div>
+                <p className="font-medium text-[#6F6F6F]">Skill Levels</p>
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {skillLevels.map((skill, index) => (
+                    <span 
+                      key={index}
+                      className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                    >
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : league.skillLevel ? (
+            <div className="flex items-start">
+              <svg className="h-4 w-4 text-[#B20000] mr-2 mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M3,5H9V11H3V5M5,7V9H7V7H5M11,7H21V9H11V7M11,15H21V17H11V15M5,13V15H7V13H5M3,13H9V19H3V13Z" />
+              </svg>
+              <div>
+                <p className="font-medium text-[#6F6F6F]">Skill Level</p>
+                <p className="text-sm text-[#6F6F6F]">{league.skillLevel}</p>
+              </div>
+            </div>
+          ) : null}
 
           {/* Price */}
           <div className="flex items-start">
