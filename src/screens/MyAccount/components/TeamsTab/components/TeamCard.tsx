@@ -167,14 +167,6 @@ export function TeamCard({
           )}
           
           {/* Payment Due Notification - Moved here */}
-          {team.payment && team.payment.amount_due > team.payment.amount_paid && team.captain_id === currentUserId && (
-            <div className="flex items-center mt-2 md:mt-0">
-              <DollarSign className="h-4 w-4 text-orange-500 mr-1" />
-              <span className="text-orange-700 text-xs font-medium">
-                Payment Due
-              </span>
-            </div>
-          )}
         </div>
         
         {/* Action Buttons */}
