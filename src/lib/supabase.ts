@@ -22,6 +22,15 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
 supabase.auth.onAuthStateChange((event, session) => {
   console.log('Supabase auth event:', event, session?.user?.id);
   
+  // Log detailed information for Google sign-ins
+  if (session?.user?.app_metadata?.provider === 'google') {
+    console.log('Google sign-in detected:', {
+      id: session.user.id,
+      email: session.user.email,
+      metadata: session.user.user_metadata
+    });
+  }
+  
   // Log additional information for debugging
   if (event === 'SIGNED_IN' && session?.user) {
     console.log('User signed in successfully:', {

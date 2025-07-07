@@ -144,8 +144,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Handle auth state changes
   const handleAuthStateChange = async (event: string, session: Session | null) => {
     console.log('Auth state change:', event, session?.user?.email);
-    console.log('Auth metadata:', session?.user?.app_metadata);
-    console.log('Auth user metadata:', session?.user?.user_metadata);
+    if (session?.user) {
+      console.log('Auth provider:', session.user.app_metadata?.provider);
+      console.log('Auth metadata:', session.user.app_metadata);
+      console.log('Auth user metadata:', session.user.user_metadata);
+    }
     
     setSession(session);
     setUser(session?.user ?? null);
@@ -164,9 +167,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (session?.user) {
       // Handle user profile for any signed-in user
       const profile = await handleUserProfileCreation(session.user);
-      setUserProfile(profile);
       
-      console.log('User profile after creation:', profile);
+      if (profile) {
+        console.log('User profile after creation:', profile);
+        setUserProfile(profile);
+      } else {
+        console.error('Failed to create or retrieve user profile');
+      }
 
       // Handle redirect only for explicit sign-in events (not initial session)
       if (event === 'SIGNED_IN') {
@@ -272,14 +279,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signInWithGoogle = async () => {
     try {
       setLoading(true);
+      console.log('Initiating Google sign-in with redirectTo:', `${window.location.origin}/my-account/profile`);
       console.log('Initiating Google sign-in');
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/my-account/profile`,
           queryParams: {
-            prompt: 'consent',
             access_type: 'offline',
+            prompt: 'consent',
           }
         }
       });
