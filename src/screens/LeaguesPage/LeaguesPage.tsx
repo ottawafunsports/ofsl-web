@@ -41,7 +41,7 @@ export const LeaguesPage = (): JSX.Element => {
   const [filters, setFilters] = useState({
     sport: "All Sports",
     location: "All Locations",
-    skillLevel: "All Skill Levels",
+    skillLevels: [] as string[],
     day: "All Days"
   });
 
@@ -148,6 +148,22 @@ export const LeaguesPage = (): JSX.Element => {
         ...prev,
         [filterType]: "All Sports"
       }));
+    } else if (filterType === 'skillLevel') {
+      // Toggle skill level in the array
+      setFilters(prev => {
+        const currentSkillLevels = [...prev.skillLevels];
+        if (currentSkillLevels.includes(value)) {
+          return {
+            ...prev,
+            skillLevels: currentSkillLevels.filter(skill => skill !== value)
+          };
+        } else {
+          return {
+            ...prev,
+            skillLevels: [...currentSkillLevels, value]
+          };
+        }
+      });
     } else {
       setFilters(prev => ({
         ...prev,
@@ -162,7 +178,7 @@ export const LeaguesPage = (): JSX.Element => {
     setFilters({
       sport: "All Sports",
       location: "All Locations",
-      skillLevel: "All Skill Levels",
+      skillLevels: [],
       day: "All Days"
     });
   };
@@ -171,7 +187,7 @@ export const LeaguesPage = (): JSX.Element => {
   const isAnyFilterActive = () => {
     return filters.sport !== "All Sports" ||
            filters.location !== "All Locations" ||
-           filters.skillLevel !== "All Skill Levels" ||
+           filters.skillLevels.length > 0 ||
            filters.day !== "All Days";
   };
 
@@ -183,7 +199,7 @@ export const LeaguesPage = (): JSX.Element => {
     return (
       (filters.sport === "All Sports" || league.sport_name === filters.sport) &&
       (filters.location === "All Locations" || primaryLocation.includes(filters.location)) &&
-      (filters.skillLevel === "All Skill Levels" || league.skill_name === filters.skillLevel) &&
+      (filters.skillLevels.length === 0 || (league.skill_name && filters.skillLevels.includes(league.skill_name))) &&
       (filters.day === "All Days" || dayName === filters.day)
     );
   });
@@ -339,24 +355,50 @@ export const LeaguesPage = (): JSX.Element => {
             {/* Skill Level Filter */}
             <div className="relative" ref={el => dropdownRefs.current['skillLevel'] = el}>
               <button
-                className="flex items-center justify-between w-full md:w-auto min-w-[160px] bg-white border border-[#D4D4D4] rounded-lg px-4 py-2.5 hover:border-[#B20000] transition-colors duration-200"
+                className="flex items-center justify-between w-full md:w-auto min-w-[180px] bg-white border border-[#D4D4D4] rounded-lg px-4 py-2.5 hover:border-[#B20000] transition-colors duration-200"
                 onClick={() => toggleDropdown('skillLevel')}
               >
-                <span className="text-[#6F6F6F]">{filters.skillLevel}</span>
+                <span className="text-[#6F6F6F]">
+                  {filters.skillLevels.length === 0 
+                    ? "All Skill Levels" 
+                    : filters.skillLevels.length === 1 
+                      ? filters.skillLevels[0] 
+                      : `${filters.skillLevels.length} Skill Levels`}
+                </span>
                 <ChevronDown className="h-5 w-5 text-[#6F6F6F] ml-2" />
               </button>
               {openDropdown === 'skillLevel' && (
                 <div className="absolute z-10 mt-1 w-full bg-white border border-[#D4D4D4] rounded-lg shadow-lg">
                   {skillFilterOptions.map((option) => (
-                    <button
-                      key={option}
-                      className={`block w-full text-left px-4 py-2 transition-colors duration-200 hover:bg-[#ffeae5] hover:text-[#B20000] ${
-                        filters.skillLevel === option ? 'bg-[#ffeae5] text-[#B20000] font-medium' : ''
-                      }`}
-                      onClick={() => handleFilterChange('skillLevel', option)}
-                    >
-                      {option}
-                    </button>
+                    option === "All Skill Levels" ? (
+                      <button
+                        key={option}
+                        className={`block w-full text-left px-4 py-2 transition-colors duration-200 hover:bg-[#ffeae5] hover:text-[#B20000] ${
+                          filters.skillLevels.length === 0 ? 'bg-[#ffeae5] text-[#B20000] font-medium' : ''
+                        }`}
+                        onClick={() => setFilters(prev => ({ ...prev, skillLevels: [] }))}
+                      >
+                        {option}
+                      </button>
+                    ) : (
+                      <div key={option} className="flex items-center px-4 py-2 hover:bg-[#ffeae5]">
+                        <input
+                          type="checkbox"
+                          id={`skill-${option}`}
+                          checked={filters.skillLevels.includes(option)}
+                          onChange={() => handleFilterChange('skillLevel', option)}
+                          className="mr-2 h-4 w-4 rounded border-gray-300 text-[#B20000] focus:ring-[#B20000]"
+                        />
+                        <label
+                          htmlFor={`skill-${option}`}
+                          className={`flex-1 cursor-pointer ${
+                            filters.skillLevels.includes(option) ? 'text-[#B20000] font-medium' : 'text-[#6F6F6F]'
+                          }`}
+                        >
+                          {option}
+                        </label>
+                      </div>
+                    )
                   ))}
                 </div>
               )}
