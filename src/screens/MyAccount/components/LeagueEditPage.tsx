@@ -31,6 +31,7 @@ export function LeagueEditPage() {
     location: string;
     sport_id: number | null;
     skill_id: number | null;
+    skill_ids: number[];
     day_of_week: number | null;
     start_date: string;
     end_date: string;
@@ -44,6 +45,7 @@ export function LeagueEditPage() {
     description: '',
     sport_id: null,
     skill_id: null,
+    skill_ids: [],
     day_of_week: null,
     start_date: '',
     end_date: '',
@@ -107,6 +109,7 @@ export function LeagueEditPage() {
           location: leagueData.location || '',
           sport_id: leagueData.sport_id,
           skill_id: leagueData.skill_id,
+          skill_ids: leagueData.skill_ids || [],
           day_of_week: leagueData.day_of_week,
           year: leagueData.year || '2025',
           start_date: leagueData.start_date || '',
@@ -143,6 +146,7 @@ export function LeagueEditPage() {
           location: editLeague.location,
           sport_id: editLeague.sport_id,
           skill_id: editLeague.skill_id,
+          skill_ids: editLeague.skill_ids,
           day_of_week: dayOfWeek,
           year: editLeague.year,
           start_date: editLeague.start_date,
@@ -262,17 +266,41 @@ export function LeagueEditPage() {
 
               <div>
                 <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Skill Level</label>
-                <select
-                  value={editLeague.skill_id || ''}
-                  onChange={(e) => setEditLeague({ ...editLeague, skill_id: e.target.value ? parseInt(e.target.value) : null })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
-                  required
-                >
-                  <option value="">Select skill level...</option>
+                <div className="space-y-2 max-h-40 overflow-y-auto border border-gray-300 rounded-lg p-3">
                   {skills.map(skill => (
-                    <option key={skill.id} value={skill.id}>{skill.name}</option>
+                    <label key={skill.id} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={editLeague.skill_ids.includes(skill.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setEditLeague({ 
+                              ...editLeague, 
+                              skill_ids: [...editLeague.skill_ids, skill.id],
+                              // Also update the primary skill_id if it's not set yet
+                              skill_id: editLeague.skill_id || skill.id
+                            });
+                          } else {
+                            const updatedSkillIds = editLeague.skill_ids.filter(id => id !== skill.id);
+                            setEditLeague({ 
+                              ...editLeague, 
+                              skill_ids: updatedSkillIds,
+                              // If we're removing the primary skill, set it to the first remaining skill or null
+                              skill_id: skill.id === editLeague.skill_id 
+                                ? (updatedSkillIds.length > 0 ? updatedSkillIds[0] : null)
+                                : editLeague.skill_id
+                            });
+                          }
+                        }}
+                        className="mr-2"
+                      />
+                      <span className="text-sm">{skill.name}</span>
+                    </label>
                   ))}
-                </select>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Select multiple skill levels that apply to this league.
+                </p>
               </div>
 
               <div>
