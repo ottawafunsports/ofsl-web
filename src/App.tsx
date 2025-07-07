@@ -29,6 +29,7 @@ import { LeagueEditPage } from "./screens/MyAccount/components/LeagueEditPage";
 import { TeamEditPage } from "./screens/MyAccount/components/TeamEditPage";
 import { Navigate } from "react-router-dom";
 import { LeagueNewPage } from "./screens/MyAccount/components/LeagueNewPage";
+import { GoogleSignupRedirect } from "./screens/SignupPage/GoogleSignupRedirect";
 
 // Create a catch-all route component to handle direct URL access
 // const CatchAllRoute = () => {
