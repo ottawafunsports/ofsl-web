@@ -278,11 +278,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         options: {
           redirectTo: `${window.location.origin}/my-account/profile`,
           queryParams: {
-            prompt: 'select_account',
-          }
-          queryParams: {
-            access_type: 'offline',
             prompt: 'consent',
+            access_type: 'offline',
           }
         }
       });
