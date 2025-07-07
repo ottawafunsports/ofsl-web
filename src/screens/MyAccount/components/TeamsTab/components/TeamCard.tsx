@@ -164,14 +164,6 @@ export function TeamCard({
                 Payment due: ${(team.payment.amount_due - team.payment.amount_paid).toFixed(2)}
               </span>
             </div>
-            {onPayNow && (
-              <Button
-                onClick={() => handlePayNow(team.payment!.id)}
-                className="bg-green-600 hover:bg-green-700 text-white text-xs py-1 px-2 rounded h-auto"
-              >
-                Pay Now
-              </Button>
-            )}
           </div>
         </div>
       )}
