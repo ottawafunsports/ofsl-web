@@ -186,7 +186,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUserProfile(null);
       // Clear any stored redirect paths
       localStorage.removeItem('redirectAfterLogin');
-     localStorage.removeItem('authRedirectPath');
       setLoading(false);
       return;
     }
@@ -214,10 +213,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Handle redirect only for explicit sign-in events (not initial session)
       if (event === 'SIGNED_IN') {
         // Check for redirect after login
-        const redirectPath = localStorage.getItem('redirectAfterLogin') || localStorage.getItem('authRedirectPath') || '/my-account/teams';
+        const redirectPath = localStorage.getItem('redirectAfterLogin') || '/my-account/teams';
         if (redirectPath) {
           localStorage.removeItem('redirectAfterLogin');
-         localStorage.removeItem('authRedirectPath');
           // Use setTimeout to ensure the state is fully updated before redirecting
           setTimeout(() => {
             window.location.href = redirectPath;
@@ -313,6 +311,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       
       // Don't set loading to false here - let the auth state change handler do it
+      // The redirect will happen in the auth state change handler
       return { error: null };
     } catch (error) {
       console.error('Error in signIn:', error);
