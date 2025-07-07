@@ -24,3 +24,15 @@ If you are satisfied with the result, you can finally build the project for rele
 ```
 npm run build
 ```
+
+## Environment Variables
+
+Create a `.env` file in the root directory with the following variables:
+
+```
+VITE_SUPABASE_URL=https://api.ofsl.ca
+VITE_SUPABASE_ANON_KEY=your-anon-key
+VITE_STRIPE_PUBLISHABLE_KEY=your-publishable-key
+```
+
+Note: The Supabase URL now uses the custom domain `api.ofsl.ca` instead of the default Supabase project URL.

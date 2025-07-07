@@ -52,7 +52,9 @@ export async function createCheckoutSession({
   }
 
   // Call the Stripe checkout edge function
-  const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-checkout`, {
+  // Use the custom domain URL for Supabase functions
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://api.ofsl.ca';
+  const response = await fetch(`${supabaseUrl}/functions/v1/stripe-checkout`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${session.access_token}`,
@@ -165,7 +167,9 @@ export async function syncStripeProducts() {
   }
 
   // Call the Stripe products sync edge function
-  const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-products-sync`, {
+  // Use the custom domain URL for Supabase functions
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://api.ofsl.ca';
+  const response = await fetch(`${supabaseUrl}/functions/v1/stripe-products-sync`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${session.access_token}`,
@@ -219,7 +223,9 @@ export async function createPaymentIntent(paymentId: number) {
     throw new Error('User not authenticated');
   }
 
-  const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-payment-intent`, {
+  // Use the custom domain URL for Supabase functions
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://api.ofsl.ca';
+  const response = await fetch(`${supabaseUrl}/functions/v1/stripe-payment-intent`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${session.access_token}`,
