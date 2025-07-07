@@ -23,6 +23,7 @@ interface TeamCardProps {
     skill?: {
       name: string;
     } | null;
+    skill_names?: string[] | null;
     payment?: {
       id: number;
       amount_due: number;
@@ -121,11 +122,21 @@ export function TeamCard({
         </div>
 
         <div className="flex flex-col items-end gap-2 mt-4 md:mt-0">
-          {/* Skill Level */}
-          {team.skill?.name && (
+          {/* Skill Levels */}
+          {team.skill_names && team.skill_names.length > 0 ? (
+            <div className="flex flex-wrap gap-1 justify-end">
+              {team.skill_names.map((skillName, index) => (
+                <span key={index} className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
+                  {skillName}
+                </span>
+              ))}
+            </div>
+          ) : team.skill?.name ? (
             <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
               {team.skill.name}
             </span>
+          ) : (
+            null
           )}
         </div>
       </div>
