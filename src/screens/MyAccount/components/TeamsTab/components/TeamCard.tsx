@@ -159,15 +159,7 @@ export function TeamCard({
       {/* Action Buttons */}
       <div className="flex flex-wrap items-center justify-between gap-2 mt-2">
         {/* Skill Level Badge */}
-        <div>
-          {team.skill?.name && (
-            <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full md:hidden">
-              {team.skill.name}
-            </span>
-          )}
-          
-          {/* Payment Due Notification - Moved here */}
-        </div>
+        <div></div>
         
         {/* Action Buttons */}
         <div className="flex gap-2">
