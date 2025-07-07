@@ -12,10 +12,25 @@ if (!supabaseUrl || !supabaseAnonKey) {
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
     autoRefreshToken: true,
-    persistSession: true,
+    persistSession: true, 
     detectSessionInUrl: true,
     flowType: 'pkce',
-    debug: true // Enable debug mode to see more detailed auth logs
+    storage: {
+      getItem: (key) => {
+        const value = localStorage.getItem(key);
+        console.log('Auth storage getItem:', key, value ? 'exists' : 'missing');
+        return value;
+      },
+      setItem: (key, value) => {
+        console.log('Auth storage setItem:', key);
+        localStorage.setItem(key, value);
+      },
+      removeItem: (key) => {
+        console.log('Auth storage removeItem:', key);
+        localStorage.removeItem(key);
+      }
+    },
+    debug: true
   }
 });
 

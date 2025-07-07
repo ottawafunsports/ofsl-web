@@ -1,5 +1,5 @@
 import { ReactNode, useEffect } from 'react';
-import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 interface ProtectedRouteProps {
@@ -10,7 +10,6 @@ interface ProtectedRouteProps {
 export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRouteProps) {
   const { user, userProfile, loading } = useAuth();
   const location = useLocation();
-  const navigate = useNavigate();
 
   useEffect(() => {
     // Store the attempted location for redirect after login
@@ -28,9 +27,22 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
   }
 
   // Handle case where user is logged in but profile is missing
-  if (user && !userProfile) {
-    console.warn('User is logged in but profile is missing, redirecting to login');
-    return <Navigate to="/login" state={{ from: location }} replace />;
+  if (user && !userProfile && !loading) {
+    console.warn('User is logged in but profile is missing, redirecting to login', user.id);
+    
+    // Store the current path for redirect after login
+    localStorage.setItem('redirectAfterLogin', location.pathname + location.search);
+    
+    // Force a reload to clear any stale auth state
+    setTimeout(() => {
+      window.location.href = '/login';
+    }, 100);
+    
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#B20000]"></div>
+      </div>
+    );
   }
 
   if (!user) {

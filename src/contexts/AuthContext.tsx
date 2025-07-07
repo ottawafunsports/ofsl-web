@@ -179,7 +179,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Handle auth state changes
   const handleAuthStateChange = async (event: string, session: Session | null) => {
     console.log('Auth state change:', event, session?.user?.email);
-    console.log('Auth event details:', event);
+    console.log('Auth event details:', event, 'Time:', new Date().toISOString());
     
     if (session?.user) {
       console.log('Auth provider:', session.user.app_metadata?.provider);
@@ -224,11 +224,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Handle redirect only for explicit sign-in events (not initial session)
       if (event === 'SIGNED_IN') {
         // Check for redirect after login
-        const redirectPath = localStorage.getItem('redirectAfterLogin') || '/my-account/profile';
+        const redirectPath = localStorage.getItem('redirectAfterLogin') || '/my-account/teams';
         if (redirectPath) {
           localStorage.removeItem('redirectAfterLogin');
-          // Use window.location.replace for immediate redirect without adding to history
-          window.location.replace(redirectPath);
+          // Use setTimeout to ensure the state is fully updated before redirecting
+          setTimeout(() => {
+            window.location.href = redirectPath;
+          }, 100);
           return;
         }
         
@@ -239,14 +241,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           
           if (!isProfileComplete) {
             // Redirect to account page for profile completion
-            window.location.replace('/my-account/profile?complete=true');
+            window.location.href = '/my-account/profile?complete=true';
           } else {
             // Redirect to teams page by default
-            window.location.replace('/my-account/profile');
+            window.location.href = '/my-account/teams';
           }
         } else {
           // Fallback redirect to teams page
-          window.location.replace('/my-account/profile');
+          window.location.href = '/my-account/teams';
         }
       }
     }
@@ -407,7 +409,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.log('User signed out successfully');
       
       // Force page reload to ensure clean state
-      window.location.replace('/');
+      window.location.href = '/';
     } catch (error) {
       console.error('Error in signOut:', error);
       // Even if there's an error, clear the local state

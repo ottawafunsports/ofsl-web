@@ -16,10 +16,7 @@ export function LoginPage() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const { signIn, signInWithGoogle, user } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-
-  // Get the redirect path from location state or localStorage
-  const from = location.state?.from?.pathname || localStorage.getItem('redirectAfterLogin') || '/';
+  const location = useLocation(); 
 
   // Check for success message from signup
   useEffect(() => {
@@ -31,9 +28,10 @@ export function LoginPage() {
   // Redirect if user is already logged in
   useEffect(() => {
     if (user) {
-      navigate(from, { replace: true });
+      const redirectPath = localStorage.getItem('redirectAfterLogin') || '/my-account/teams';
+      navigate(redirectPath, { replace: true });
     }
-  }, [user, navigate, from]);
+  }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,13 +50,11 @@ export function LoginPage() {
       
       if (error) {
         setError(error.message);
-        setLoading(false);
-      } else {
-        // On successful login, we'll redirect in the auth context
-        // But add a fallback redirect here in case that fails
-        // No need for additional redirect logic here as the auth context handles it
       }
-      // Don't set loading to false on success - the redirect will handle it
+      
+      // Set loading to false regardless of success or failure
+      // This prevents the loading indicator from getting stuck
+      setLoading(false);
     } catch (err) {
       setError("An unexpected error occurred");
       console.error(err);
@@ -76,10 +72,10 @@ export function LoginPage() {
       
       if (error) {
         setError(error.message);
-        setGoogleLoading(false);
       }
-      // Note: Don't set loading to false here as the user will be redirected
-      // The loading state will be reset when the component unmounts
+      
+      // Set loading to false regardless of success or failure
+      setGoogleLoading(false);
     } catch (err) {
       setError("An unexpected error occurred");
       console.error(err);
