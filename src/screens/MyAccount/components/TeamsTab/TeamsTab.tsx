@@ -163,7 +163,7 @@ export function TeamsTab() {
   const handleUnregister = async (paymentId: number, leagueName: string) => {
     try {
       setUnregisteringPayment(paymentId);
-      
+      console.log('Unregistering payment:', paymentId, 'for league:', leagueName);
       // Get the league payment details first to find associated team
       const { data: paymentData, error: paymentError } = await supabase
         .from('league_payments')
@@ -242,9 +242,9 @@ export function TeamsTab() {
       // Reload all data to update the UI and amounts
       await loadPaymentData();
       await loadUserTeams();
-      
-      // Reload the page to stay on current tab and refresh all data
-      window.location.reload();
+
+      // Show success message
+      showToast('Successfully unregistered from league', 'success');
       
     } catch (error: any) {
       console.error('Error deleting league registration:', error);
