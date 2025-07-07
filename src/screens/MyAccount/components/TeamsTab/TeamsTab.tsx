@@ -485,13 +485,6 @@ export function TeamsTab() {
             }
           }
 
-          // Get skill names from skill_ids array if available
-          let skillNames: string[] | null = null;
-          if (team.leagues?.skill_ids && team.leagues.skill_ids.length > 0) {
-            skillNames = team.leagues.skill_ids
-              .map((id: number) => skillsMap.get(id)?.name)
-              .filter((name: string | undefined) => name !== undefined) as string[];
-          }
 
           // Fetch gym details if gym_ids exist in league
           if (team.leagues?.gym_ids && team.leagues.gym_ids.length > 0) {
