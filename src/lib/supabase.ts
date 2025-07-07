@@ -21,6 +21,16 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
 supabase.auth.onAuthStateChange((event, session) => {
   console.log('Supabase auth event:', event, session?.user?.id);
   
+  // Log additional information for debugging
+  if (event === 'SIGNED_IN' && session?.user) {
+    console.log('User signed in successfully:', {
+      id: session.user.id,
+      email: session.user.email,
+      provider: session.user.app_metadata.provider,
+      metadata: session.user.user_metadata
+    });
+  }
+  
   // Handle session refresh failures
   if (event === 'TOKEN_REFRESHED' && !session) {
     console.warn('Token refresh failed, user will need to sign in again');
