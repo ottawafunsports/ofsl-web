@@ -111,3 +111,5 @@ export function TeamCard({
     </div>
   );
 }
+  )
+}
