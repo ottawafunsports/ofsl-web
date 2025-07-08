@@ -6,10 +6,11 @@ import { supabase } from '../lib/supabase';
 interface ProtectedRouteProps {
   children: ReactNode;
   requireAdmin?: boolean;
+  requireCompleteProfile?: boolean;
 }
 
-export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRouteProps) {
-  const { user, userProfile, loading, refreshUserProfile } = useAuth();
+export function ProtectedRoute({ children, requireAdmin = false, requireCompleteProfile = true }: ProtectedRouteProps) {
+  const { user, userProfile, loading, profileComplete, refreshUserProfile } = useAuth();
   const [fixingProfile, setFixingProfile] = useState(false);
   const [profileFixed, setProfileFixed] = useState(false);
   const location = useLocation();
@@ -19,6 +20,7 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
     console.log('ProtectedRoute rendered with auth state:', {
       isAuthenticated: !!user,
       hasProfile: !!userProfile,
+      isProfileComplete: profileComplete,
       isLoading: loading,
       path: location.pathname
     });
@@ -36,8 +38,10 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
     }
     
     // If user exists but profile is missing, try to fix it
-    if (user && !userProfile && !loading) {
+    if (user && !userProfile && !loading && !fixingProfile) {
       console.log('User exists but profile is missing, attempting to fix');
+      console.log('User ID:', user.id);
+      console.log('User email:', user.email);
       
       // Determine if this is a Google user
       const isGoogleUser = user.app_metadata?.provider === 'google';
@@ -46,6 +50,7 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
       
       const fixUserProfile = async (retryCount = 0) => {
         try {
+          console.log(`Attempting to fix missing user profile (attempt ${retryCount + 1}), user ID: ${user.id}`);
           console.log(`Attempting to fix missing user profile (attempt ${retryCount + 1}) for:`, user.id);
           
           // Use the enhanced v3 function for better Google OAuth support
@@ -92,14 +97,16 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
       if (user && !userProfile && !loading && !fixingProfile && !profileFixed) {
         try {
           console.log('Attempting to fix missing user profile with RPC for:', user.id);
+          console.log('User metadata:', JSON.stringify(user.user_metadata));
+          console.log('App metadata:', JSON.stringify(user.app_metadata));
           setFixingProfile(true);
           
           // Call the RPC function to fix the user profile
-          const { data, error } = await supabase.rpc('check_and_fix_user_profile_v2', {
-            p_auth_id: user.id,
-            p_email: user.email || '',
-            p_name: user.user_metadata?.name || user.user_metadata?.full_name || '',
-            p_phone: user.user_metadata?.phone || ''
+          const { data, error } = await supabase.rpc('check_and_fix_user_profile_v3', {
+            p_auth_id: user.id.toString(),
+            p_email: user.email || null,
+            p_name: user.user_metadata?.name || user.user_metadata?.full_name || null,
+            p_phone: user.user_metadata?.phone || null
           });
           
           if (error) {
@@ -136,8 +143,8 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
     );
   }
 
-  // Handle case where user is logged in but profile is missing
-  if (user && !userProfile && !loading) {
+  // Handle case where user is logged in but profile is missing or incomplete
+  if (user && (!userProfile || (requireCompleteProfile && !profileComplete)) && !loading) {
     console.warn('User is logged in but profile is missing, redirecting to login. User ID:', user.id);
     console.log('Auth provider:', user.app_metadata?.provider);
     
@@ -153,15 +160,21 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
       <div className="min-h-screen flex items-center justify-center text-center">
         <div className="flex flex-col items-center max-w-md">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#B20000] mb-6"></div>
-          <h2 className="text-xl font-bold text-[#6F6F6F] mb-3">Account Setup Required</h2>
+          <h2 className="text-xl font-bold text-[#6F6F6F] mb-3">Profile Setup Required</h2>
           <p className="text-[#6F6F6F] mb-4 max-w-sm">
-            We need to complete your account setup. Redirecting you to complete your profile...
+            {!userProfile 
+              ? "We need to complete your profile setup." 
+              : "Your profile is incomplete. Please add your sports interests and skill levels."}
           </p>
           <Button
-            onClick={() => window.location.replace('/google-signup-redirect')}
+            onClick={() => window.location.replace(
+              user.app_metadata?.provider === 'google' 
+                ? '/google-signup-redirect' 
+                : '/my-account/profile?complete=true'
+            )}
             className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] px-6 py-2"
           >
-            Complete Setup Now
+            Complete Profile Setup
           </Button>
         </div>
       </div>

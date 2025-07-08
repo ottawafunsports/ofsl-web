@@ -7,6 +7,7 @@ interface AuthContextType {
   user: User | null;
   userProfile: any | null;
   loading: boolean;
+  profileComplete: boolean;
   signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>;
   signInWithGoogle: () => Promise<{ error: AuthError | null }>;
   signUp: (email: string, password: string) => Promise<{ 
@@ -25,6 +26,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [userProfile, setUserProfile] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  const [profileComplete, setProfileComplete] = useState(false);
   const [initializing, setInitializing] = useState(true);
 
   // Helper function to check if profile is complete
@@ -32,10 +34,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!userProfile) return false;
     
     // Check if required fields are filled
-    const requiredFields = ['name', 'phone'];
-    return requiredFields.every(field => 
+    const requiredFields = ['name', 'phone', 'user_sports_skills'];
+    const basicFieldsComplete = requiredFields.filter(field => field !== 'user_sports_skills').every(field => 
       userProfile[field] && userProfile[field].toString().trim() !== ''
     );
+    
+    // Check if user has selected at least one sport and skill level
+    const hasSportsSkills = userProfile.user_sports_skills && 
+                           Array.isArray(userProfile.user_sports_skills) && 
+                           userProfile.user_sports_skills.length > 0;
+    
+    return basicFieldsComplete && hasSportsSkills;
   };
 
   // Function to fetch user profile
@@ -143,17 +152,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // For Google sign-ins, make an extra attempt to create the profile
       if (session.user.app_metadata?.provider === 'google') {
         console.log('Google sign-in detected, ensuring profile exists');
+        const provider = session.user.app_metadata?.provider || 'google';
         try {
           const { data, error } = await supabase.rpc('check_and_fix_user_profile_v3', {
-            p_auth_id: session.user.id,
-            p_email: session.user.email || '',
-            p_name: session.user.user_metadata?.name || session.user.user_metadata?.full_name || '',
-            p_phone: ''
+            p_auth_id: session.user.id.toString(),
+            p_email: session.user.email || null,
+            p_name: session.user.user_metadata?.name || session.user.user_metadata?.full_name || null,
+            p_phone: null
           });
           
           if (error) {
             console.error('Error in Google profile creation:', error);
-          } else {
+          } else if (data) {
             console.log('Google profile creation result:', data);
           }
         } catch (err) {
@@ -190,6 +200,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (profile) {
         console.log('User profile after creation:', profile);
         setUserProfile(profile);
+        
+        // Check if profile is complete
+        const isComplete = profile.name && profile.phone && 
+                          profile.name.trim() !== '' && profile.phone.trim() !== '' &&
+                          profile.user_sports_skills && 
+                          Array.isArray(profile.user_sports_skills) && 
+                          profile.user_sports_skills.length > 0;
+        
+        setProfileComplete(isComplete);
       } else {
         console.error('Failed to create or retrieve user profile');
       }
@@ -197,10 +216,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Handle redirect only for explicit sign-in events (not initial session)
       if (event === 'SIGNED_IN') {
         // For Google sign-ins, redirect to the profile completion page if needed
-        if (session.user.app_metadata?.provider === 'google' && 
-            (!profile || !profile.phone || profile.phone === '' || profile.phone.trim() === '')) {
-          console.log('Google user needs to complete profile, redirecting to profile completion page');
-          window.location.replace('/google-signup-redirect');
+        const isGoogleUser = session.user.app_metadata?.provider === 'google';
+        const isProfileIncomplete = !profile || 
+                                   !profile.phone || 
+                                   profile.phone === '' || 
+                                   profile.phone.trim() === '' ||
+                                   !profile.user_sports_skills ||
+                                   !Array.isArray(profile.user_sports_skills) ||
+                                   profile.user_sports_skills.length === 0;
+        
+        if (isGoogleUser && isProfileIncomplete) {
+          console.log('Google user needs to complete profile, redirecting to signup redirect page');
+          // Store the current path for redirect after profile completion
+          if (location.pathname !== '/login' && location.pathname !== '/signup' && 
+              location.pathname !== '/google-signup-redirect') {
+            localStorage.setItem('redirectAfterLogin', location.pathname + location.search);
+          }
+          setTimeout(() => {
+            window.location.replace('/google-signup-redirect');
+          }, 100);
           return;
         }
         
@@ -220,7 +254,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // Check if this is a first-time sign in or incomplete profile
         else if (profile) {
           const isProfileComplete = profile.name && profile.phone && profile.name.trim() !== '' && profile.phone.trim() !== '';
-          
+          const hasSportsSkills = profile.user_sports_skills && 
+                                 Array.isArray(profile.user_sports_skills) && 
+                                 profile.user_sports_skills.length > 0;
           if (!isProfileComplete) {
             // Redirect to account page for profile completion
             window.location.replace('/my-account/profile?complete=true');
@@ -277,11 +313,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             if (session.user.app_metadata?.provider === 'google') {
               console.log('Initial Google session detected, ensuring profile exists for user:', session.user.id);
               try {
-                const { data, error } = await supabase.rpc('check_and_fix_user_profile_v3', {
-                  p_auth_id: session.user.id,
-                  p_email: session.user.email || '',
-                  p_name: session.user.user_metadata?.name || session.user.user_metadata?.full_name || '',
-                  p_phone: ''
+                const { data, error } = await supabase.rpc('check_and_fix_user_profile_v2', {
+                  p_auth_id: session.user.id.toString(),
+                  p_email: session.user.email || null,
+                  p_name: session.user.user_metadata?.name || session.user.user_metadata?.full_name || null,
+                  p_phone: null
                 });
                 
                 if (error) {
@@ -353,6 +389,47 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signInWithGoogle = async () => {
+    try {
+      setLoading(true);
+      
+      // Store the current URL for redirect after login
+      const currentPath = window.location.pathname;
+      console.log('Google sign-in: storing redirect path:', currentPath);
+      if (currentPath !== '/login' && currentPath !== '/signup' && currentPath !== '/google-signup-redirect') {
+        console.log('Storing redirect path:', currentPath);
+        localStorage.setItem('redirectAfterLogin', currentPath);
+      }
+      
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/google-signup-redirect`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          }
+        }
+      });
+
+      if (data) {
+        console.log('Google sign-in initiated successfully');
+        if (data.url) {
+          console.log('Redirect URL:', data.url);
+          // Redirect to Google OAuth page
+          window.location.href = data.url;
+        }
+      }
+      
+      return { error };
+    } catch (error) {
+      console.error('Error in signInWithGoogle:', error);
+      setLoading(false);
+      return { error: error as AuthError };
+    }
+  };
+
+  // Legacy Google sign-in method (kept for backward compatibility)
+  const _signInWithGoogle = async () => {
     try {
       setLoading(true);
       
@@ -466,7 +543,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       session, 
       user, 
       userProfile,
-      loading, 
+      loading,
+      profileComplete,
       signIn, 
       signInWithGoogle, 
       signUp, 
@@ -491,6 +569,7 @@ export const useAuth = () => {
       isAuthenticated: !!context.user,
       userId: context.user?.id,
       profileId: context.userProfile?.id,
+      profileComplete: context.profileComplete,
       loading: context.loading
     });
   }
