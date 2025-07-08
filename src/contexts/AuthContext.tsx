@@ -150,8 +150,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (session.user.app_metadata?.provider === 'google') {
         console.log('Google sign-in detected, ensuring profile exists');
         const provider = session.user.app_metadata?.provider || 'google';
-        try {
-          const { data, error } = await supabase.rpc('check_and_fix_user_profile_v4', {
+          const { data, error } = await supabase.rpc('check_and_fix_user_profile_v3', {
+          const { data, error } = await supabase.rpc('check_and_fix_user_profile_v3', {
             p_auth_id: session.user.id.toString(),
             p_email: session.user.email || null,
             p_name: session.user.user_metadata?.name || session.user.user_metadata?.full_name || null,
@@ -290,7 +290,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
        
         const { data, error } = await supabase.auth.getSession();
         const session = data?.session;
-
+        const { data, error } = await supabase.rpc('check_and_fix_user_profile_v3', {
         if (error) {
           console.error('Error getting session:', error);
           if (mounted) {
