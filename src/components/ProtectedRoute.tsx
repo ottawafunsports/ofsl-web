@@ -84,8 +84,8 @@ export function ProtectedRoute({ children, requireAdmin = false, requireComplete
           
           if (error) {
           } else {
-            // Force a page reload to get the updated profile
-            setTimeout(() => window.location.reload(), 500);
+            // Refresh the user profile in AuthContext instead of forcing a page reload
+            await refreshUserProfile();
           }
         } catch (err) {
         } finally {
