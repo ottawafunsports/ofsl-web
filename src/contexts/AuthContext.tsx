@@ -39,12 +39,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       userProfile[field] && userProfile[field].toString().trim() !== ''
     );
     
-    // Check if user has selected at least one sport and skill level
-    const hasSportsSkills = userProfile.user_sports_skills && 
-                           Array.isArray(userProfile.user_sports_skills) && 
-                           userProfile.user_sports_skills.length > 0;
-    
-    return basicFieldsComplete && hasSportsSkills;
+    // Don't require sports and skills for profile completion
+    // This allows users to access their account even without selecting sports
+    return basicFieldsComplete;
   };
 
   // Function to fetch user profile
@@ -220,10 +217,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const isProfileIncomplete = !profile || 
                                    !profile.phone || 
                                    profile.phone === '' || 
-                                   profile.phone.trim() === '' ||
-                                   !profile.user_sports_skills ||
-                                   !Array.isArray(profile.user_sports_skills) ||
-                                   profile.user_sports_skills.length === 0;
+                                   profile.phone.trim() === '';
         
         if (isGoogleUser && isProfileIncomplete) {
           console.log('Google user needs to complete profile, redirecting to signup redirect page');
@@ -254,15 +248,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // Check if this is a first-time sign in or incomplete profile
         else if (profile) {
           const isProfileComplete = profile.name && profile.phone && profile.name.trim() !== '' && profile.phone.trim() !== '';
-          const hasSportsSkills = profile.user_sports_skills && 
-                                 Array.isArray(profile.user_sports_skills) && 
-                                 profile.user_sports_skills.length > 0;
           if (!isProfileComplete) {
             // Redirect to account page for profile completion
             window.location.replace('/my-account/profile?complete=true');
-          } else {
+          } else if (profile.user_sports_skills && 
+                    Array.isArray(profile.user_sports_skills) && 
+                    profile.user_sports_skills.length > 0) {
             // Redirect to teams page by default
             window.location.replace('/my-account/teams');
+          } else {
+            // Redirect to profile page to encourage adding sports preferences
+            window.location.replace('/my-account/profile');
           }
           return;
         } else {
