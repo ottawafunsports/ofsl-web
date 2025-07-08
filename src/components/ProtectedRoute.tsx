@@ -54,7 +54,7 @@ export function ProtectedRoute({ children, requireAdmin = false, requireComplete
           console.log(`Attempting to fix missing user profile (attempt ${retryCount + 1}) for:`, user.id);
           
           // Use the enhanced v3 function for better Google OAuth support
-          const { data, error } = await supabase.rpc('check_and_fix_user_profile_v3', {
+          const { data, error } = await supabase.rpc('check_and_fix_user_profile_v4', {
             p_auth_id: user.id,
             p_email: user.email || '',
             p_name: user.user_metadata?.name || user.user_metadata?.full_name || '',
@@ -102,7 +102,7 @@ export function ProtectedRoute({ children, requireAdmin = false, requireComplete
           setFixingProfile(true);
           
           // Call the RPC function to fix the user profile
-          const { data, error } = await supabase.rpc('check_and_fix_user_profile_v3', {
+          const { data, error } = await supabase.rpc('check_and_fix_user_profile_v4', {
             p_auth_id: user.id.toString(),
             p_email: user.email || null,
             p_name: user.user_metadata?.name || user.user_metadata?.full_name || null,

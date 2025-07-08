@@ -99,7 +99,7 @@ supabase.auth.onAuthStateChange((event, session) => {
     });
     
     // Check if user profile exists and create it if needed
-    supabase.rpc('check_and_fix_user_profile_v3', {
+    supabase.rpc('check_and_fix_user_profile_v4', {
       p_auth_id: session.user.id.toString(),
       p_email: session.user.email || null,
       p_name: session.user.user_metadata?.name || session.user.user_metadata?.full_name || null,
@@ -117,7 +117,7 @@ supabase.auth.onAuthStateChange((event, session) => {
       setTimeout(async () => {
         try {
           // Use RPC to check and fix user profile - basic info only
-          const { data, error } = await supabase.rpc('check_and_fix_user_profile_v3', {
+          const { data, error } = await supabase.rpc('check_and_fix_user_profile_v4', {
             p_auth_id: session.user.id.toString(),
             p_email: session.user.email || null,
             p_name: session.user.user_metadata?.name || session.user.user_metadata?.full_name || null,
