@@ -57,9 +57,14 @@ export function GoogleSignupRedirect() {
   // If user already has a complete profile, redirect to teams page
   useEffect(() => {
     if (userProfile && !loading && !initialLoading) {
-      const isComplete = userProfile.name && userProfile.phone && 
-        userProfile.name.trim() !== '' && userProfile.phone.trim() !== '' &&
-        userProfile.user_sports_skills && userProfile.user_sports_skills.length > 0;
+      // Check if profile is complete - both basic info and sports/skills
+      const hasBasicInfo = userProfile.name && userProfile.phone && 
+                          userProfile.name.trim() !== '' && userProfile.phone.trim() !== '';
+      const hasSportsSkills = userProfile.user_sports_skills && 
+                             Array.isArray(userProfile.user_sports_skills) && 
+                             userProfile.user_sports_skills.length > 0;
+      
+      const isComplete = hasBasicInfo && hasSportsSkills;
       
       if (isComplete) {
         setFormCompleted(true);
@@ -92,7 +97,8 @@ export function GoogleSignupRedirect() {
   const handleStep2Submit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (formData.sports_skills.length === 0) {
+    // Validate that at least one sport and skill level is selected
+    if (!formData.sports_skills || formData.sports_skills.length === 0) {
       setSportSkillError("Please select at least one sport and skill level");
       return;
     }
@@ -119,11 +125,21 @@ export function GoogleSignupRedirect() {
       // Refresh the user profile
       await refreshUserProfile();
       setFormCompleted(true);
+      showToast('Profile completed successfully!', 'success');
       
-      // Redirect to the intended destination
-      const redirectPath = localStorage.getItem('redirectAfterLogin') || '/my-account/teams';
-      localStorage.removeItem('redirectAfterLogin');
-      navigate(redirectPath);
+      // Redirect based on the complete parameter or go to teams page
+      const isCompletion = searchParams.get('complete') === 'true';
+      const redirectPath = localStorage.getItem('redirectAfterLogin');
+      
+      if (redirectPath && redirectPath !== '/my-account/profile' && 
+          redirectPath !== '/google-signup-redirect' && redirectPath !== '/complete-profile') {
+        localStorage.removeItem('redirectAfterLogin');
+        navigate(redirectPath);
+      } else if (isCompletion) {
+        navigate('/my-account/profile');
+      } else {
+        navigate('/my-account/teams');
+      }
       
     } catch (err: any) {
       console.error('Error updating profile:', err);
