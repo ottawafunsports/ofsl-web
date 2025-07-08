@@ -649,31 +649,27 @@ export function TeamsTab() {
         paymentSummary={paymentSummary} 
       />
 
-      {/* League Payments Section */}
-      {leaguePayments.length > 0 && (
-        <div className="mb-8">
-          {teams.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-[#6F6F6F] text-lg mb-4">You haven't joined any teams yet.</p>
-              <p className="text-[#6F6F6F]">Browse our leagues and register a team to get started!</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {teams.map(team => (
-                <TeamCard
-                  key={team.id}
-                  team={team}
-                  currentUserId={userProfile?.id || ''}
-                  onManageTeam={handleManageTeam}
-                  onPayNow={team.payment ? handlePayNow : handleVirtualPayment}
-                  showDeleteTeamConfirmation={showDeleteTeamConfirmation}
-                  showLeaveTeamConfirmation={showLeaveTeamConfirmation}
-                  deletingTeam={deletingTeam}
-                  unregisteringPayment={unregisteringPayment}
-                />
-              ))}
-            </div>
-          )}
+      {/* Teams Section */}
+      {teams.length === 0 ? (
+        <div className="text-center py-12">
+          <p className="text-[#6F6F6F] text-lg mb-4">You haven't joined any teams yet.</p>
+          <p className="text-[#6F6F6F]">Browse our leagues and register a team to get started!</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {teams.map(team => (
+            <TeamCard
+              key={team.id}
+              team={team}
+              currentUserId={userProfile?.id || ''}
+              onManageTeam={handleManageTeam}
+              onPayNow={team.payment ? handlePayNow : handleVirtualPayment}
+              showDeleteTeamConfirmation={showDeleteTeamConfirmation}
+              showLeaveTeamConfirmation={showLeaveTeamConfirmation}
+              deletingTeam={deletingTeam}
+              unregisteringPayment={unregisteringPayment}
+            />
+          ))}
         </div>
       )}
 
