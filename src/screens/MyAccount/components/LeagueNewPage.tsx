@@ -30,7 +30,6 @@ export function LeagueNewPage() {
     sport_id: number | null;
     skill_id: number | null;
     skill_ids: number[];
-    skill_ids: number[];
     day_of_week: number | null;
     start_date: string;
     end_date: string;
@@ -45,7 +44,6 @@ export function LeagueNewPage() {
     location: '',
     sport_id: null,
     skill_id: null,
-    skill_ids: [],
     skill_ids: [],
     day_of_week: null,
     start_date: '',

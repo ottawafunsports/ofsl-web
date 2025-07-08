@@ -28,7 +28,6 @@ interface TeamCardProps {
       name: string;
     } | null;
     skill_names?: string[] | null;
-    skill_names?: string[] | null;
     payment?: {
       id: number;
       amount_due: number;

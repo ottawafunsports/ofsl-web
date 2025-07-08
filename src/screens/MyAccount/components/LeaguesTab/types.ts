@@ -26,7 +26,6 @@ export interface NewLeague {
   name: string;
   description: string;
   sport_id: number | null;
-  skill_id: number | null;
   skill_ids: number[];
   day_of_week: number | null;
   year: string;
