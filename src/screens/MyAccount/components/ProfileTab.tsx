@@ -142,10 +142,16 @@ export function ProfileTab() {
 
       await refreshUserProfile();
       
-      // If this was a profile completion after Google sign-in, redirect to teams page
+      // If this was a profile completion, redirect appropriately
       const searchParams = new URLSearchParams(window.location.search);
       if (searchParams.get('complete') === 'true') {
-        navigate('/my-account/teams');
+        const redirectPath = localStorage.getItem('redirectAfterLogin');
+        if (redirectPath && redirectPath !== '/my-account/profile') {
+          localStorage.removeItem('redirectAfterLogin');
+          window.location.replace(redirectPath);
+        } else {
+          window.location.replace('/my-account/teams');
+        }
       }
       
       setIsEditing(false);

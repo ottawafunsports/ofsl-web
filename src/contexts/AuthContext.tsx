@@ -39,12 +39,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       userProfile[field] && userProfile[field].toString().trim() !== ''
     );
     
-    // Check if user has selected at least one sport and skill level
-    const hasSportsSkills = userProfile.user_sports_skills && 
-                           Array.isArray(userProfile.user_sports_skills) && 
-                           userProfile.user_sports_skills.length > 0;
-    
-    return basicFieldsComplete && hasSportsSkills;
+    // Don't require sports and skills for profile completion
+    // This allows users to access their account even without selecting sports
+    return basicFieldsComplete;
   };
 
   // Function to fetch user profile
@@ -123,7 +120,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Handle auth state changes
   const handleAuthStateChange = async (event: string, session: Session | null) => {
-    console.log('Auth state change:', event, session?.user?.email);
+          console.log('Auth state change detected:', {
+            event,
+            userEmail: session?.user?.email,
+            userId: session?.user?.id,
+            session
+          });
     
     // Set session and user state immediately to ensure UI updates
     if (session) {
@@ -152,9 +154,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // For Google sign-ins, make an extra attempt to create the profile
       if (session.user.app_metadata?.provider === 'google') {
         console.log('Google sign-in detected, ensuring profile exists');
-        const provider = session.user.app_metadata?.provider || 'google';
         try {
-          const { data, error } = await supabase.rpc('check_and_fix_user_profile_v4', {
+          const { data, error } = await supabase.rpc('check_and_fix_user_profile_v3', {
             p_auth_id: session.user.id.toString(),
             p_email: session.user.email || null,
             p_name: session.user.user_metadata?.name || session.user.user_metadata?.full_name || null,
@@ -220,23 +221,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const isProfileIncomplete = !profile || 
                                    !profile.phone || 
                                    profile.phone === '' || 
-                                   profile.phone.trim() === '' ||
-                                   !profile.user_sports_skills ||
-                                   !Array.isArray(profile.user_sports_skills) ||
-                                   profile.user_sports_skills.length === 0;
+                                   profile.phone.trim() === '';
         
-        if (isGoogleUser && isProfileIncomplete) {
-          console.log('Google user needs to complete profile, redirecting to signup redirect page');
-          // Store the current path for redirect after profile completion
-          if (location.pathname !== '/login' && location.pathname !== '/signup' && 
-              location.pathname !== '/google-signup-redirect') {
-            localStorage.setItem('redirectAfterLogin', location.pathname + location.search);
-          }
-          setTimeout(() => {
-            window.location.replace('/google-signup-redirect');
-          }, 100);
-          return;
-        }
+        // Removed Google profile completion redirect - allow access regardless of profile completion
         
         // Check for redirect after login
         const redirectPath = localStorage.getItem('redirectAfterLogin') || '/my-account/teams';
@@ -251,22 +238,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           return;
         }
         
-        // Check if this is a first-time sign in or incomplete profile
-        else if (profile) {
-          const isProfileComplete = profile.name && profile.phone && profile.name.trim() !== '' && profile.phone.trim() !== '';
-          const hasSportsSkills = profile.user_sports_skills && 
-                                 Array.isArray(profile.user_sports_skills) && 
-                                 profile.user_sports_skills.length > 0;
-          if (!isProfileComplete) {
-            // Redirect to account page for profile completion
-            window.location.replace('/my-account/profile?complete=true');
-          } else {
-            // Redirect to teams page by default
-            window.location.replace('/my-account/teams');
-          }
-          return;
-        } else {
-          // Fallback redirect to teams page
+        // Always redirect to teams page by default - removed profile completion checks
+        else {
           window.location.replace('/my-account/teams');
           return;
         }
@@ -294,7 +267,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
        
         const { data, error } = await supabase.auth.getSession();
         const session = data?.session;
-
+        
         if (error) {
           console.error('Error getting session:', error);
           if (mounted) {
