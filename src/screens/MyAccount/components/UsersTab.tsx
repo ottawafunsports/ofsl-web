@@ -44,6 +44,7 @@ export function UsersTab() {
   const [editForm, setEditForm] = useState<Partial<User>>({});
   const [userRegistrations, setUserRegistrations] = useState<Array<{
     id: number, 
+ const [deleting, setDeleting] = useState<string | null>(null);
     name: string, 
     sport_name: string | null,
     role: 'captain' | 'player'
@@ -275,11 +276,36 @@ export function UsersTab() {
       return;
     }
 
+   setDeleting(userId);
     try {
-      const { error } = await supabase
-        .from('users')
-        .delete()
-        .eq('id', userId);
+     // First, get the auth_id from the public users table
+     const { data: userData, error: fetchError } = await supabase
+       .from('users')
+       .select('auth_id')
+       .eq('id', userId)
+       .single();
+
+     if (fetchError) throw fetchError;
+     
+     if (!userData || !userData.auth_id) {
+       throw new Error('Could not find auth_id for this user');
+     }
+     
+     // Delete the user from the auth.users table using admin API
+     const { error: authDeleteError } = await supabase.auth.admin.deleteUser(
+       userData.auth_id
+     );
+     
+     if (authDeleteError) {
+       console.error('Error deleting auth user:', authDeleteError);
+       // Continue with public user deletion even if auth deletion fails
+     }
+
+     // Delete the user from the public.users table
+     const { error } = await supabase
+       .from('users')
+       .delete()
+       .eq('id', userId);
 
       if (error) throw error;
 
@@ -288,6 +314,8 @@ export function UsersTab() {
     } catch (error) {
       console.error('Error deleting user:', error);
       showToast('Failed to delete user', 'error');
+   } finally {
+     setDeleting(null);
     }
   };
 
@@ -664,9 +692,14 @@ export function UsersTab() {
                         </Button>
                         <Button
                           onClick={() => handleDeleteUser(user.id)}
+                         disabled={deleting === user.id}
                           className="bg-transparent hover:bg-red-50 text-red-500 hover:text-red-600 rounded-lg p-2 transition-colors" 
                         >
-                          <Trash2 className="h-3 w-3" />
+                         {deleting === user.id ? (
+                           <div className="h-3 w-3 border-t-2 border-red-500 rounded-full animate-spin"></div>
+                         ) : (
+                           <Trash2 className="h-3 w-3" />
+                         )}
                         </Button>
                       </div>
                     </td>
