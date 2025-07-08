@@ -77,11 +77,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const handleUserProfileCreation = async (user: User) => {
     try {
       const provider = user.app_metadata?.provider || 'email';
-      console.log('Handling user profile creation for:', user.email, 'Provider:', provider);
-      
-      console.log('Creating user profile for:', user.email);
-      console.log('User metadata:', user.user_metadata);
-      console.log('App metadata:', user.app_metadata);
       
       // Use the v3 function for better Google OAuth support
       let { data: existingProfile, error: fetchError } = await supabase
@@ -109,7 +104,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return null;
       }
       
-      console.log('Existing profile found');
 
       return profile;
     } catch (error) {
@@ -120,40 +114,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Handle auth state changes
   const handleAuthStateChange = async (event: string, session: Session | null) => {
-          console.log('Auth state change detected:', {
-            event,
-            userEmail: session?.user?.email,
-            userId: session?.user?.id,
-            session
-          });
     
     // Set session and user state immediately to ensure UI updates
     if (session) {
-      console.log('Setting session and user state with session ID:', session.user.id);
       setSession(session);
       setUser(session.user);
     } else {
-      console.log('Clearing session and user state');
       setSession(null);
       setUser(null);
     }
     
-    // Add more detailed logging for debugging
     if (session?.user) {
-      console.log('User ID:', session.user.id);
-      console.log('User email:', session.user.email);
-      console.log('User metadata:', JSON.stringify(session.user.user_metadata));
-    }
-    console.log('Auth event details:', event, 'Time:', new Date().toISOString());
-    
-    if (session?.user) {
-      console.log('Auth provider:', session.user.app_metadata?.provider);
-      console.log('Auth metadata:', session.user.app_metadata);
-      console.log('Auth user metadata:', JSON.stringify(session.user.user_metadata));
-      
       // For Google sign-ins, make an extra attempt to create the profile
       if (session.user.app_metadata?.provider === 'google') {
-        console.log('Google sign-in detected, ensuring profile exists');
         try {
           const { data, error } = await supabase.rpc('check_and_fix_user_profile_v3', {
             p_auth_id: session.user.id.toString(),
@@ -164,8 +137,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           
           if (error) {
             console.error('Error in Google profile creation:', error);
-          } else if (data) {
-            console.log('Google profile creation result:', data);
           }
         } catch (err) {
           console.error('Exception in Google profile creation:', err);
@@ -181,13 +152,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Clear any stored redirect paths
       localStorage.removeItem('redirectAfterLogin');
       setLoading(false);
-      console.log('Sign out complete, state cleared');
       return;
     }
 
     // Handle password recovery event
     if (event === 'PASSWORD_RECOVERY') {
-      console.log('Password recovery event detected');
       // Don't redirect, let the ResetPasswordPage component handle this
       setLoading(false);
       return;
@@ -196,10 +165,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (session?.user) {
       // Handle user profile for any signed-in user
       const profile = await handleUserProfileCreation(session.user);
-      console.log('User profile after creation/update:', profile ? 'exists' : 'missing');
-      
       if (profile) {
-        console.log('User profile after creation:', profile);
         setUserProfile(profile);
         
         // Check if profile is complete
@@ -227,12 +193,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         
         // Check for redirect after login
         const redirectPath = localStorage.getItem('redirectAfterLogin') || '/my-account/teams';
-        console.log('SIGNED_IN event detected, redirecting to:', redirectPath);
         if (redirectPath && redirectPath !== '/google-signup-redirect') {
           localStorage.removeItem('redirectAfterLogin');
           // Use setTimeout to ensure the state is fully updated before redirecting
           setTimeout(() => {
-            console.log('Executing redirect to:', redirectPath);
             window.location.replace(redirectPath);
           }, 500); // Increased timeout to ensure state is fully updated
           return;
@@ -256,12 +220,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     let mounted = true;
 
-    console.log('AuthProvider mounted, initializing auth state');
 
     // Get initial session
     const getInitialSession = async () => {
       try {
-        console.log('AuthProvider: Getting initial session');
         // Keep loading true until we've processed everything
         setLoading(true);
        
@@ -271,7 +233,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (error) {
           console.error('Error getting session:', error);
           if (mounted) {
-            console.log('No initial session found or error occurred');
             setLoading(false);
             setInitializing(false);
           }
@@ -279,12 +240,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
         
         if (mounted) {
-          console.log('Initial session found:', session ? `yes, user ID: ${session.user.id}` : 'no');
           
           if (session?.user) {
             // For Google users, ensure profile exists
             if (session.user.app_metadata?.provider === 'google') {
-              console.log('Initial Google session detected, ensuring profile exists for user:', session.user.id);
               try {
                 const { data, error } = await supabase.rpc('check_and_fix_user_profile_v4', {
                   p_auth_id: session.user.id.toString(),
@@ -296,7 +255,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 if (error) {
                   console.error('Error in initial Google profile creation:', error);
                 } else {
-                  console.log('Initial Google profile creation result:', data);
                 }
               } catch (err) {
                 console.error('Exception in initial Google profile creation:', err);
@@ -320,7 +278,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Subscribe to auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (mounted && !initializing) {
-        console.log('Auth state change event:', event);
         await handleAuthStateChange(event, session);
       }
     });
@@ -334,7 +291,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signIn = async (email: string, password: string) => {
     try {
       setLoading(true);
-      console.log('Attempting to sign in with email:', email);
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       
       if (error) {
@@ -343,11 +299,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return { error };
       }
 
-      console.log('Sign in successful, user ID:', data.user?.id);
-      
       // Don't set loading to false here - let the auth state change handler do it
       // The redirect will happen in the auth state change handler
-      console.log('Waiting for auth state change event...');
       
       // Force a state update to trigger UI refresh
       setUser(data.user);
@@ -367,9 +320,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       // Store the current URL for redirect after login
       const currentPath = window.location.pathname;
-      console.log('Google sign-in: storing redirect path:', currentPath);
       if (currentPath !== '/login' && currentPath !== '/signup' && currentPath !== '/google-signup-redirect') {
-        console.log('Storing redirect path:', currentPath);
         localStorage.setItem('redirectAfterLogin', currentPath);
       }
       
@@ -385,9 +336,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
 
       if (data) {
-        console.log('Google sign-in initiated successfully');
         if (data.url) {
-          console.log('Redirect URL:', data.url);
           // Redirect to Google OAuth page
           window.location.href = data.url;
         }
@@ -408,9 +357,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       // Store the current URL for redirect after login
       const currentPath = window.location.pathname;
-      console.log('Google sign-in: storing redirect path:', currentPath);
       if (currentPath !== '/login' && currentPath !== '/signup' && currentPath !== '/google-signup-redirect') {
-        console.log('Storing redirect path:', currentPath);
         localStorage.setItem('redirectAfterLogin', currentPath);
       }
       
@@ -427,9 +374,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
 
       if (data) {
-        console.log('Google sign-in initiated successfully');
         if (data.url) {
-          console.log('Redirect URL:', data.url);
         }
       }
       
@@ -470,8 +415,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = async () => {
     try {
-      console.log('Signing out user...');
-      
       // Set loading state
       setLoading(true);
       
@@ -486,7 +429,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Clear local storage items
       localStorage.removeItem('redirectAfterLogin');
       
-      console.log('User signed out successfully');
       
       // Force page reload to ensure clean state
       window.location.href = '/';
@@ -537,15 +479,6 @@ export const useAuth = () => {
   }
   
   // Log auth state when hook is used (helps with debugging)
-  if (process.env.NODE_ENV === 'development') {
-    console.log('useAuth hook called, auth state:', {
-      isAuthenticated: !!context.user,
-      userId: context.user?.id,
-      profileId: context.userProfile?.id,
-      profileComplete: context.profileComplete,
-      loading: context.loading
-    });
-  }
   
   return context;
 };

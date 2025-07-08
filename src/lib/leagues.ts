@@ -5,6 +5,7 @@ export interface League {
   name: string;
   description: string | null;
   additional_info: string | null;
+  location: string | null;
   sport_id: number | null;
   skill_id: number | null;
   skill_ids: number[] | null;
@@ -16,6 +17,7 @@ export interface League {
   max_teams: number | null;
   gym_ids: number[] | null;
   active: boolean | null;
+  hide_day: boolean | null;
   created_at: string;
   
   // Joined data

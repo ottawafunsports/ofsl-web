@@ -16,16 +16,6 @@ export function ProtectedRoute({ children, requireAdmin = false, requireComplete
   const [profileFixed, setProfileFixed] = useState(false);
   const location = useLocation();
   
-  // Debug logging
-  useEffect(() => {
-    console.log('ProtectedRoute rendered with auth state:', {
-      isAuthenticated: !!user,
-      hasProfile: !!userProfile,
-      isProfileComplete: profileComplete,
-      isLoading: loading,
-      path: location.pathname
-    });
-  }, [user, userProfile, loading, location]);
 
   useEffect(() => {
     // Store the attempted location for redirect after login
@@ -33,27 +23,18 @@ export function ProtectedRoute({ children, requireAdmin = false, requireComplete
       // Only store non-login/signup paths
       if (location.pathname !== '/login' && location.pathname !== '/signup') {
         const redirectPath = location.pathname + location.search;
-        console.log('ProtectedRoute: Storing redirect path:', redirectPath);
-        console.log('Setting redirectAfterLogin in localStorage:', redirectPath);
         localStorage.setItem('redirectAfterLogin', redirectPath);
       }
     }
     
     // If user exists but profile is missing, try to fix it
     if (user && !userProfile && !loading && !fixingProfile) {
-      console.log('User exists but profile is missing, attempting to fix');
-      console.log('User ID:', user.id);
-      console.log('User email:', user.email);
       
       // Determine if this is a Google user
       const isGoogleUser = user.app_metadata?.provider === 'google';
-      console.log('Is Google user:', isGoogleUser);
-      console.log('User metadata:', JSON.stringify(user.user_metadata));
       
       const fixUserProfile = async (retryCount = 0) => {
         try {
-          console.log(`Attempting to fix missing user profile (attempt ${retryCount + 1}), user ID: ${user.id}`);
-          console.log(`Attempting to fix missing user profile (attempt ${retryCount + 1}) for:`, user.id);
           
           // Use the enhanced v3 function for better Google OAuth support
           const { data, error } = await supabase.rpc('check_and_fix_user_profile_v3', {
@@ -64,26 +45,19 @@ export function ProtectedRoute({ children, requireAdmin = false, requireComplete
           });
           
           if (error) {
-            console.error(`Error fixing user profile (attempt ${retryCount + 1}):`, error);
-            
             // Retry up to 3 times with exponential backoff for Google users
             if (isGoogleUser && retryCount < 3) {
               const delay = Math.pow(2, retryCount) * 1000; // 1s, 2s, 4s
-              console.log(`Retrying in ${delay}ms...`);
               setTimeout(() => fixUserProfile(retryCount + 1), delay);
             }
           } else if (data) {
-            console.log(`User profile was created or fixed (attempt ${retryCount + 1}), refreshing profile`);
             // Refresh the user profile
             await refreshUserProfile();
           }
         } catch (err) {
-          console.error(`Error in fixUserProfile (attempt ${retryCount + 1}):`, err);
-          
           // Retry for Google users
           if (isGoogleUser && retryCount < 3) {
             const delay = Math.pow(2, retryCount) * 1000;
-            console.log(`Retrying after error in ${delay}ms...`);
             setTimeout(() => fixUserProfile(retryCount + 1), delay);
           }
         }
@@ -98,9 +72,6 @@ export function ProtectedRoute({ children, requireAdmin = false, requireComplete
     const attemptProfileFix = async () => {
       if (user && !userProfile && !loading && !fixingProfile && !profileFixed) {
         try {
-          console.log('Attempting to fix missing user profile with RPC for:', user.id);
-          console.log('User metadata:', JSON.stringify(user.user_metadata));
-          console.log('App metadata:', JSON.stringify(user.app_metadata));
           setFixingProfile(true);
           
           // Call the RPC function to fix the user profile
@@ -112,15 +83,11 @@ export function ProtectedRoute({ children, requireAdmin = false, requireComplete
           });
           
           if (error) {
-            console.error('Error fixing user profile:', error);
           } else {
-            console.log('Profile fix attempt result:', data);
             // Force a page reload to get the updated profile
-            console.log('Reloading page to refresh user profile');
             setTimeout(() => window.location.reload(), 500);
           }
         } catch (err) {
-          console.error('Error in profile fix attempt:', err);
         } finally {
           setFixingProfile(false);
           setProfileFixed(true);
