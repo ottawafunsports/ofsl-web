@@ -145,10 +145,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         console.log('Google sign-in detected, ensuring profile exists');
         try {
           const { data, error } = await supabase.rpc('check_and_fix_user_profile_v3', {
-            p_auth_id: session.user.id,
-            p_email: session.user.email || '',
-            p_name: session.user.user_metadata?.name || session.user.user_metadata?.full_name || '',
-            p_phone: ''
+            p_auth_id: session.user.id.toString(),
+            p_email: session.user.email || null,
+            p_name: session.user.user_metadata?.name || session.user.user_metadata?.full_name || null,
+            p_phone: null
           });
           
           if (error) {
@@ -199,8 +199,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // For Google sign-ins, redirect to the profile completion page if needed
         if (session.user.app_metadata?.provider === 'google' && 
             (!profile || !profile.phone || profile.phone === '' || profile.phone.trim() === '')) {
-          console.log('Google user needs to complete profile, redirecting to profile completion page');
-          window.location.replace('/google-signup-redirect');
+          console.log('Google user needs to complete profile, redirecting to signup redirect page');
+          // Store the current path for redirect after profile completion
+          if (location.pathname !== '/login' && location.pathname !== '/signup' && 
+              location.pathname !== '/google-signup-redirect') {
+            localStorage.setItem('redirectAfterLogin', location.pathname + location.search);
+          }
+          setTimeout(() => {
+            window.location.replace('/google-signup-redirect');
+          }, 100);
           return;
         }
         
@@ -277,11 +284,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             if (session.user.app_metadata?.provider === 'google') {
               console.log('Initial Google session detected, ensuring profile exists for user:', session.user.id);
               try {
-                const { data, error } = await supabase.rpc('check_and_fix_user_profile_v3', {
-                  p_auth_id: session.user.id,
-                  p_email: session.user.email || '',
-                  p_name: session.user.user_metadata?.name || session.user.user_metadata?.full_name || '',
-                  p_phone: ''
+                const { data, error } = await supabase.rpc('check_and_fix_user_profile_v2', {
+                  p_auth_id: session.user.id.toString(),
+                  p_email: session.user.email || null,
+                  p_name: session.user.user_metadata?.name || session.user.user_metadata?.full_name || null,
+                  p_phone: null
                 });
                 
                 if (error) {
@@ -353,6 +360,47 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signInWithGoogle = async () => {
+    try {
+      setLoading(true);
+      
+      // Store the current URL for redirect after login
+      const currentPath = window.location.pathname;
+      console.log('Google sign-in: storing redirect path:', currentPath);
+      if (currentPath !== '/login' && currentPath !== '/signup' && currentPath !== '/google-signup-redirect') {
+        console.log('Storing redirect path:', currentPath);
+        localStorage.setItem('redirectAfterLogin', currentPath);
+      }
+      
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/google-signup-redirect`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          }
+        }
+      });
+
+      if (data) {
+        console.log('Google sign-in initiated successfully');
+        if (data.url) {
+          console.log('Redirect URL:', data.url);
+          // Redirect to Google OAuth page
+          window.location.href = data.url;
+        }
+      }
+      
+      return { error };
+    } catch (error) {
+      console.error('Error in signInWithGoogle:', error);
+      setLoading(false);
+      return { error: error as AuthError };
+    }
+  };
+
+  // Legacy Google sign-in method (kept for backward compatibility)
+  const _signInWithGoogle = async () => {
     try {
       setLoading(true);
       

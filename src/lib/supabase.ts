@@ -101,9 +101,9 @@ supabase.auth.onAuthStateChange((event, session) => {
     // Check if user profile exists and create it if needed
     supabase.rpc('check_and_fix_user_profile_v2', {
       p_auth_id: session.user.id,
-      p_email: session.user.email || '',
-      p_name: session.user.user_metadata?.name || session.user.user_metadata?.full_name || '',
-      p_phone: session.user.user_metadata?.phone || ''
+      p_email: session.user.email || null,
+      p_name: session.user.user_metadata?.name || session.user.user_metadata?.full_name || null,
+      p_phone: session.user.user_metadata?.phone || null
     }).then(({ data, error }) => {
       if (error) {
         console.error('Error checking/fixing user profile:', error);
@@ -118,10 +118,10 @@ supabase.auth.onAuthStateChange((event, session) => {
         try {
           // Use RPC to check and fix user profile
           const { data, error } = await supabase.rpc('check_and_fix_user_profile_v3', {
-            p_auth_id: session.user.id,
-            p_email: session.user.email || '',
-            p_name: session.user.user_metadata?.name || session.user.user_metadata?.full_name || '',
-            p_phone: session.user.user_metadata?.phone || ''
+            p_auth_id: session.user.id.toString(),
+            p_email: session.user.email || null,
+            p_name: session.user.user_metadata?.name || session.user.user_metadata?.full_name || null,
+            p_phone: session.user.user_metadata?.phone || null
           });
           
           if (error) {
