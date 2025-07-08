@@ -209,15 +209,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                           profile.user_sports_skills.length > 0;
         
         setProfileComplete(isComplete);
-        
-        // Check if profile is complete
-        const isComplete = profile.name && profile.phone && 
-                          profile.name.trim() !== '' && profile.phone.trim() !== '' &&
-                          profile.user_sports_skills && 
-                          Array.isArray(profile.user_sports_skills) && 
-                          profile.user_sports_skills.length > 0;
-        
-        setProfileComplete(isComplete);
       } else {
         console.error('Failed to create or retrieve user profile');
       }
@@ -272,7 +263,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           } else {
             // Redirect to teams page by default
             window.location.replace('/my-account/teams');
-          updates.active = false;
+          }
           return;
         } else {
           // Fallback redirect to teams page
