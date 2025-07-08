@@ -116,7 +116,7 @@ supabase.auth.onAuthStateChange((event, session) => {
     if (session.user.id) {
       setTimeout(async () => {
         try {
-          // Use RPC to check and fix user profile
+          // Use RPC to check and fix user profile - basic info only
           const { data, error } = await supabase.rpc('check_and_fix_user_profile_v3', {
             p_auth_id: session.user.id.toString(),
             p_email: session.user.email || null,
@@ -127,7 +127,39 @@ supabase.auth.onAuthStateChange((event, session) => {
           if (error) {
             console.error('Error checking/fixing user profile:', error);
           } else if (data) {
-            console.log('User profile was created or fixed, result:', data);
+            console.log('User profile was created or fixed (basic info), result:', data);
+            
+            // Check if user has sports and skills preferences
+            const { data: userProfile, error: profileError } = await supabase
+              .from('users')
+              .select('user_sports_skills')
+              .eq('auth_id', session.user.id)
+              .single();
+              
+            if (!profileError && userProfile) {
+              const hasSportsSkills = userProfile.user_sports_skills && 
+                                     Array.isArray(userProfile.user_sports_skills) && 
+                                     userProfile.user_sports_skills.length > 0;
+                                     
+              if (!hasSportsSkills) {
+                console.log('User profile is missing sports and skills preferences');
+                
+                // If Google user, redirect to complete profile
+                if (session.user.app_metadata?.provider === 'google') {
+                  const currentPath = window.location.pathname;
+                  if (currentPath !== '/google-signup-redirect') {
+                    localStorage.setItem('redirectAfterLogin', currentPath);
+                    console.log('Redirecting to complete profile with sports and skills');
+                    // Don't redirect if already on the redirect page to avoid loops
+                    if (currentPath !== '/google-signup-redirect') {
+                      setTimeout(() => {
+                        window.location.replace('/google-signup-redirect');
+                      }, 500);
+                    }
+                  }
+                }
+              }
+            }
           }
         } catch (err) {
           console.error('Error in profile check:', err);

@@ -6,9 +6,20 @@ import { Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { supabase } from "../../lib/supabase";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowRight } from "lucide-react";
+import { SportSkillSelector } from "./SportSkillSelector";
+
+interface SportSkill {
+  sport_id: number;
+  skill_id: number;
+  sport_name?: string;
+  skill_name?: string;
+}
 
 export function SignupPage() {
+  // Form steps
+  const [currentStep, setCurrentStep] = useState(1);
+  
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -16,6 +27,8 @@ export function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [sportsSkills, setSportsSkills] = useState<SportSkill[]>([]);
+  const [sportSkillError, setSportSkillError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [emailChecking, setEmailChecking] = useState(false);
@@ -43,6 +56,46 @@ export function SignupPage() {
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formattedPhone = formatPhoneNumber(e.target.value);
     setPhone(formattedPhone);
+  };
+
+  const handleStep1Submit = (e: FormEvent) => {
+    e.preventDefault();
+    
+    // Form validation
+    if (!name || !email || !phone || !password) {
+      console.log('Form validation failed: missing required fields');
+      setError("All fields are required");
+      return;
+    }
+    
+    // Validate phone number format
+    const phoneDigits = phone.replace(/\D/g, '');
+    if (phoneDigits.length !== 10) {
+      console.log('Phone validation failed: not 10 digits');
+      setError("Please enter a valid 10-digit phone number");
+      return;
+    }
+    
+    if (emailError) {
+      console.log('Email validation failed:', emailError);
+      setError(emailError);
+      return;
+    }
+    
+    if (password !== confirmPassword) {
+      console.log('Password validation failed: passwords do not match');
+      setError("Passwords do not match");
+      return;
+    }
+    
+    if (password.length < 12) {
+      console.log('Password validation failed: too short');
+      setError("Password must be at least 12 characters");
+      return;
+    }
+    
+    setError(null);
+    setCurrentStep(2);
   };
 
   const handleGoogleSignUp = async () => {
@@ -106,40 +159,14 @@ export function SignupPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     
-    // Form validation
-    if (!name || !email || !phone || !password) {
-      console.log('Form validation failed: missing required fields');
-      setError("All fields are required");
-      return;
-    }
-    
-    // Validate phone number format
-    const phoneDigits = phone.replace(/\D/g, '');
-    if (phoneDigits.length !== 10) {
-      console.log('Phone validation failed: not 10 digits');
-      setError("Please enter a valid 10-digit phone number");
-      return;
-    }
-    
-    if (emailError) {
-      console.log('Email validation failed:', emailError);
-      setError(emailError);
-      return;
-    }
-    
-    if (password !== confirmPassword) {
-      console.log('Password validation failed: passwords do not match');
-      setError("Passwords do not match");
-      return;
-    }
-    
-    if (password.length < 12) {
-      console.log('Password validation failed: too short');
-      setError("Password must be at least 12 characters");
+    // Validate sports and skills
+    if (sportsSkills.length === 0) {
+      setSportSkillError("Please select at least one sport and skill level");
       return;
     }
     
     setError(null);
+    setSportSkillError(null);
     setLoading(true);
     
     try {
@@ -177,13 +204,31 @@ export function SignupPage() {
         return;
       }
       
-      if (!authData.user) {
+      if (!authData.user || !authData.user.id) {
         console.error('No user returned from signup');
         setError("Failed to create user account");
         return;
       }
 
       console.log('User account created successfully, user ID:', authData.user.id);
+      
+      // Step 2: Create user profile with sports and skills
+      try {
+        const { error: profileError } = await supabase
+          .from('users')
+          .update({
+            user_sports_skills: sportsSkills
+          })
+          .eq('auth_id', authData.user.id);
+          
+        if (profileError) {
+          console.error('Error updating user sports and skills:', profileError);
+          // Continue anyway, as the basic account was created
+        }
+      } catch (profileError) {
+        console.error('Error updating user profile:', profileError);
+        // Continue anyway, as the basic account was created
+      }
       
       // Step 2: Account created successfully, let AuthContext handle profile creation
       // Navigate to login page with success message
@@ -210,8 +255,26 @@ export function SignupPage() {
       <Card className="w-full max-w-[560px] bg-white rounded-lg shadow-lg">
         <CardContent className="p-8">
           <h1 className="text-[32px] font-bold text-center mb-8 text-[#6F6F6F]">
-            Create Account
+            {currentStep === 1 ? "Create Account" : "Select Your Sports"}
           </h1>
+          
+          {/* Step indicator */}
+          <div className="flex items-center justify-center mb-6">
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+              currentStep === 1 ? 'bg-[#B20000] text-white' : 'bg-gray-200 text-gray-700'
+            }`}>
+              1
+            </div>
+            <div className={`h-1 w-16 ${
+              currentStep === 2 ? 'bg-[#B20000]' : 'bg-gray-200'
+            }`}></div>
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+              currentStep === 2 ? 'bg-[#B20000] text-white' : 'bg-gray-200 text-gray-700'
+            }`}>
+              2
+            </div>
+          </div>
+          
           {error && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
               {error}
@@ -240,157 +303,199 @@ export function SignupPage() {
             )}
           </Button>
 
-          {/* Divider */}
-          <div className="relative mb-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-[#D4D4D4]"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-[#6F6F6F]">Or continue with email</span>
-            </div>
-          </div>
+          {currentStep === 1 ? (
+            <>
+              {/* Divider */}
+              <div className="relative mb-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-[#D4D4D4]"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-white text-[#6F6F6F]">Or continue with email</span>
+                </div>
+              </div>
 
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            <div className="space-y-2">
-              <label
-                htmlFor="name"
-                className="block text-sm font-medium text-[#6F6F6F]"
-              >
-                Full Name
-              </label>
-              <Input
-                id="name"
-                type="text"
-                placeholder="Enter your full name"
-                className="w-full h-12 px-4 rounded-lg border border-[#D4D4D4] focus:border-[#B20000] focus:ring-[#B20000]"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-[#6F6F6F]"
-              >
-                Email
-              </label>
-              <div className="relative">
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="Enter your email"
-                  className={`w-full h-12 px-4 rounded-lg border ${
-                    emailError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border-[#D4D4D4] focus:border-[#B20000] focus:ring-[#B20000]'
-                  }`}
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  onBlur={() => checkEmailExists(email)}
-                  required
-                />
-                {emailChecking && (
-                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                    <Loader2 className="h-5 w-5 text-gray-400 animate-spin" />
+              <form className="space-y-6" onSubmit={handleStep1Submit}>
+                <div className="space-y-2">
+                  <label
+                    htmlFor="name"
+                    className="block text-sm font-medium text-[#6F6F6F]"
+                  >
+                    Full Name
+                  </label>
+                  <Input
+                    id="name"
+                    type="text"
+                    placeholder="Enter your full name"
+                    className="w-full h-12 px-4 rounded-lg border border-[#D4D4D4] focus:border-[#B20000] focus:ring-[#B20000]"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium text-[#6F6F6F]"
+                  >
+                    Email
+                  </label>
+                  <div className="relative">
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="Enter your email"
+                      className={`w-full h-12 px-4 rounded-lg border ${
+                        emailError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border-[#D4D4D4] focus:border-[#B20000] focus:ring-[#B20000]'
+                      }`}
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      onBlur={() => checkEmailExists(email)}
+                      required
+                    />
+                    {emailChecking && (
+                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                        <Loader2 className="h-5 w-5 text-gray-400 animate-spin" />
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-              {emailError && (
-                <p className="mt-1 text-sm text-red-600">{emailError}</p>
-              )}
-            </div>
-            
-            <div className="space-y-2">
-              <label
-                htmlFor="phone"
-                className="block text-sm font-medium text-[#6F6F6F]"
-              >
-                Phone Number
-              </label>
-              <Input
-                id="phone"
-                type="tel"
-                placeholder="###-###-####"
-                className="w-full h-12 px-4 rounded-lg border border-[#D4D4D4] focus:border-[#B20000] focus:ring-[#B20000]"
-                value={phone}
-                onChange={handlePhoneChange}
-                maxLength={12} // Limit to formatted length
-                required
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-[#6F6F6F]"
-              >
-                Password (minimum 12 characters)
-              </label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Create a password (min 12 characters)"
-                  className="w-full h-12 px-4 rounded-lg border border-[#D4D4D4] focus:border-[#B20000] focus:ring-[#B20000]"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-                <button
-                  type="button"
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                  onClick={() => setShowPassword(!showPassword)}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                >
-                  {showPassword ? (
-                    <Eye className="h-5 w-5" />
-                  ) : (
-                    <EyeOff className="h-5 w-5" />
+                  {emailError && (
+                    <p className="mt-1 text-sm text-red-600">{emailError}</p>
                   )}
-                </button>
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <label
-                htmlFor="confirmPassword"
-                className="block text-sm font-medium text-[#6F6F6F]"
-              >
-                Confirm Password
-              </label>
-              <div className="relative">
-                <Input
-                  id="confirmPassword"
-                  type={showConfirmPassword ? "text" : "password"}
-                  placeholder="Confirm your password"
-                  className="w-full h-12 px-4 rounded-lg border border-[#D4D4D4] focus:border-[#B20000] focus:ring-[#B20000]"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                />
-                <button
-                  type="button"
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                </div>
+                
+                <div className="space-y-2">
+                  <label
+                    htmlFor="phone"
+                    className="block text-sm font-medium text-[#6F6F6F]"
+                  >
+                    Phone Number
+                  </label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="###-###-####"
+                    className="w-full h-12 px-4 rounded-lg border border-[#D4D4D4] focus:border-[#B20000] focus:ring-[#B20000]"
+                    value={phone}
+                    onChange={handlePhoneChange}
+                    maxLength={12} // Limit to formatted length
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <label
+                    htmlFor="password"
+                    className="block text-sm font-medium text-[#6F6F6F]"
+                  >
+                    Password (minimum 12 characters)
+                  </label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Create a password (min 12 characters)"
+                      className="w-full h-12 px-4 rounded-lg border border-[#D4D4D4] focus:border-[#B20000] focus:ring-[#B20000]"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                      onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? (
+                        <Eye className="h-5 w-5" />
+                      ) : (
+                        <EyeOff className="h-5 w-5" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <label
+                    htmlFor="confirmPassword"
+                    className="block text-sm font-medium text-[#6F6F6F]"
+                  >
+                    Confirm Password
+                  </label>
+                  <div className="relative">
+                    <Input
+                      id="confirmPassword"
+                      type={showConfirmPassword ? "text" : "password"}
+                      placeholder="Confirm your password"
+                      className="w-full h-12 px-4 rounded-lg border border-[#D4D4D4] focus:border-[#B20000] focus:ring-[#B20000]"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                    >
+                      {showConfirmPassword ? (
+                        <Eye className="h-5 w-5" />
+                      ) : (
+                        <EyeOff className="h-5 w-5" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+                
+                <Button
+                  type="submit"
+                  className="w-full h-12 bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] font-medium text-base"
+                  disabled={loading || googleLoading}
                 >
-                  {showConfirmPassword ? (
-                    <Eye className="h-5 w-5" />
-                  ) : (
-                    <EyeOff className="h-5 w-5" />
-                  )}
-                </button>
+                  Continue <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </form>
+            </>
+          ) : (
+            <>
+              <div className="mb-6 text-center">
+                <p className="text-[#6F6F6F] mb-2">
+                  <span className="font-medium">Tell us about your sports interests</span>
+                </p>
+                <p className="text-[#6F6F6F]">
+                  Select the sports you're interested in playing and your skill level for each one.
+                </p>
               </div>
-            </div>
-            
-            <Button
-              type="submit"
-              className="w-full h-12 bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] font-medium text-base"
-              disabled={loading || googleLoading}
-            >
-              {loading ? "Creating Account..." : "Create Account"}
-            </Button>
-          </form>
+              
+              <form className="space-y-6" onSubmit={handleSubmit}>
+                <SportSkillSelector 
+                  value={sportsSkills}
+                  onChange={setSportsSkills}
+                  error={sportSkillError}
+                />
+                
+                <div className="flex gap-4">
+                  <Button
+                    type="button"
+                    onClick={() => setCurrentStep(1)}
+                    className="flex-1 bg-gray-500 hover:bg-gray-600 text-white rounded-[10px] font-medium text-base"
+                  >
+                    Back
+                  </Button>
+                  
+                  <Button
+                    type="submit"
+                    className="flex-1 h-12 bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] font-medium text-base"
+                    disabled={loading || googleLoading}
+                  >
+                    {loading ? "Creating Account..." : "Create Account"}
+                  </Button>
+                </div>
+              </form>
+            </>
+          )}
+          
           <div className="mt-6 text-center">
             <span className="text-[#6F6F6F]">Already have an account? </span>
             <Link to="/login" className="text-[#B20000] hover:underline font-bold">
