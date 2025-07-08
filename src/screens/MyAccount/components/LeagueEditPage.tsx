@@ -7,8 +7,8 @@ import { Input } from '../../../components/ui/input';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../components/ui/toast';
 import { supabase } from '../../../lib/supabase';
-import { fetchSports, fetchSkills, fetchLeagueById, type League } from '../../../lib/leagues';
-import { ChevronLeft, Save, X } from 'lucide-react';
+import { fetchSports, fetchSkills, fetchLeagueById } from '../../../lib/leagues';
+import { ChevronLeft, Save } from 'lucide-react';
 import { RichTextEditor } from '../../../components/ui/rich-text-editor';
 import { StripeProductSelector } from './LeaguesTab/components/StripeProductSelector';
 
@@ -43,6 +43,7 @@ export function LeagueEditPage() {
   }>({
     name: '',
     description: '',
+    location: '',
     sport_id: null,
     skill_id: null,
     skill_ids: [],
@@ -80,23 +81,24 @@ export function LeagueEditPage() {
       setSports(sportsData);
       setSkills(skillsData);
 
-      // Load gyms
+      // Load gyms - only show active gyms
       const { data: gymsData, error: gymsError } = await supabase
         .from('gyms')
         .select('*')
+        .eq('active', true)
         .order('gym');
 
       if (gymsError) throw gymsError;
       if (gymsData) setGyms(gymsData);
 
       // Load specific league
-      const leagueData = await fetchLeagueById(parseInt(id));
+      const leagueData = await fetchLeagueById(parseInt(id!));
       
       if (!leagueData) {
         throw new Error('League not found');
       } else {
         // Get the Stripe product linked to this league
-        const linkedProduct = await getStripeProductByLeagueId(parseInt(id));
+        const linkedProduct = await getStripeProductByLeagueId(parseInt(id!));
         if (linkedProduct) {
           setSelectedProductId(linkedProduct.id);
         }
@@ -443,7 +445,7 @@ export function LeagueEditPage() {
               <div>
                 <StripeProductSelector
                   selectedProductId={selectedProductId}
-                  leagueId={parseInt(id)}
+                  leagueId={parseInt(id!)}
                   onChange={setSelectedProductId}
                 />
               </div>

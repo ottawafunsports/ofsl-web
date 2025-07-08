@@ -77,10 +77,11 @@ export function LeagueNewPage() {
       setSports(sportsData);
       setSkills(skillsData);
 
-      // Load gyms
+      // Load gyms - only show active gyms
       const { data: gymsData, error: gymsError } = await supabase
         .from('gyms')
         .select('*')
+        .eq('active', true)
         .order('gym');
 
       if (gymsError) throw gymsError;
