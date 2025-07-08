@@ -115,6 +115,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Handle auth state changes
   const handleAuthStateChange = async (event: string, session: Session | null) => {
     
+    // Store the current path for potential redirect after profile completion
+    const currentPath = window.location.pathname;
+    
     // Set session and user state immediately to ensure UI updates
     if (session) {
       setSession(session);
@@ -168,14 +171,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (profile) {
         setUserProfile(profile);
         
-        // Check if profile is complete
-        const isComplete = profile.name && profile.phone && 
-                          profile.name.trim() !== '' && profile.phone.trim() !== '' &&
-                          profile.user_sports_skills && 
-                          Array.isArray(profile.user_sports_skills) && 
-                          profile.user_sports_skills.length > 0;
+        // Check if profile is complete - basic info and sports/skills
+        const hasBasicInfo = profile.name && profile.phone && 
+                            profile.name.trim() !== '' && profile.phone.trim() !== '';
+        const hasSportsSkills = profile.user_sports_skills && 
+                               Array.isArray(profile.user_sports_skills) && 
+                               profile.user_sports_skills.length > 0;
+        
+        const isComplete = hasBasicInfo && hasSportsSkills;
         
         setProfileComplete(isComplete);
+        
+        // For Google users with incomplete profiles, force redirect to profile completion
+        if (session.user.app_metadata?.provider === 'google' && !isComplete) {
+          // Don't redirect if already on the redirect page to avoid loops
+          if (currentPath !== '/google-signup-redirect' && currentPath !== '/complete-profile') {
+            console.log('Google user with incomplete profile detected, redirecting to profile completion');
+            localStorage.setItem('redirectAfterLogin', currentPath);
+            window.location.replace('/google-signup-redirect');
+            return;
+          }
+        }
       } else {
         console.error('Failed to create or retrieve user profile');
       }
@@ -183,29 +199,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Handle redirect only for explicit sign-in events (not initial session)
       if (event === 'SIGNED_IN') {
         // For Google sign-ins, redirect to the profile completion page if needed
-        const isGoogleUser = session.user.app_metadata?.provider === 'google';
-        const isProfileIncomplete = !profile || 
-                                   !profile.phone || 
-                                   profile.phone === '' || 
-                                   profile.phone.trim() === '';
-        
-        // Removed Google profile completion redirect - allow access regardless of profile completion
-        
-        // Check for redirect after login
-        const redirectPath = localStorage.getItem('redirectAfterLogin') || '/my-account/teams';
-        if (redirectPath && redirectPath !== '/google-signup-redirect') {
-          localStorage.removeItem('redirectAfterLogin');
-          // Use setTimeout to ensure the state is fully updated before redirecting
-          setTimeout(() => {
-            window.location.replace(redirectPath);
-          }, 500); // Increased timeout to ensure state is fully updated
-          return;
-        }
-        
-        // Always redirect to teams page by default - removed profile completion checks
-        else {
-          window.location.replace('/my-account/teams');
-          return;
+        // Only handle redirects if the profile is complete or this is not a Google user
+        if (profileComplete || session.user.app_metadata?.provider !== 'google') {
+          // Check for redirect after login
+          const redirectPath = localStorage.getItem('redirectAfterLogin') || '/my-account/teams';
+          if (redirectPath && redirectPath !== '/google-signup-redirect' && redirectPath !== '/complete-profile') {
+            localStorage.removeItem('redirectAfterLogin');
+            // Use setTimeout to ensure the state is fully updated before redirecting
+            setTimeout(() => {
+              window.location.replace(redirectPath);
+            }, 500); // Increased timeout to ensure state is fully updated
+            return;
+          }
+          
+          // Default redirect to teams page
+          else {
+            window.location.replace('/my-account/teams');
+            return;
+          }
         }
       }
     }
