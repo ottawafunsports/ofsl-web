@@ -661,7 +661,6 @@ export function ProfileTab() {
           </div>
         </div>
       </div>
-    </div>
       {/* Sports and Skills Section */}
       <div className="bg-white border border-gray-200 rounded-lg p-6 mb-8">
         <div className="flex items-center justify-between mb-6">
@@ -836,6 +835,7 @@ export function ProfileTab() {
           </div>
         )}
       </div>
+    </div>
 
   );
 }
