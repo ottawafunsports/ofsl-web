@@ -1,6 +1,7 @@
 import { ReactNode, useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { Button } from './ui/button';
 import { supabase } from '../lib/supabase';
 
 interface ProtectedRouteProps {
@@ -33,6 +34,7 @@ export function ProtectedRoute({ children, requireAdmin = false, requireComplete
       if (location.pathname !== '/login' && location.pathname !== '/signup') {
         const redirectPath = location.pathname + location.search;
         console.log('ProtectedRoute: Storing redirect path:', redirectPath);
+        console.log('Setting redirectAfterLogin in localStorage:', redirectPath);
         localStorage.setItem('redirectAfterLogin', redirectPath);
       }
     }
@@ -130,6 +132,10 @@ export function ProtectedRoute({ children, requireAdmin = false, requireComplete
   }, [user, userProfile, loading, fixingProfile, profileFixed]);
 
   if (loading || fixingProfile) {
+    console.log('ProtectedRoute: Either loading or fixing profile is in progress.', {
+      loading,
+      fixingProfile
+    });
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center text-center">
@@ -143,43 +149,8 @@ export function ProtectedRoute({ children, requireAdmin = false, requireComplete
     );
   }
 
-  // Handle case where user is logged in but profile is missing or incomplete
-  if (user && (!userProfile || (requireCompleteProfile && !profileComplete)) && !loading) {
-    console.warn('User is logged in but profile is missing, redirecting to login. User ID:', user.id);
-    console.log('Auth provider:', user.app_metadata?.provider);
-    
-    // Store the current path for redirect after login
-    localStorage.setItem('redirectAfterLogin', location.pathname + location.search);
-    
-    // Force a reload to clear any stale auth state
-    setTimeout(() => {
-      window.location.replace('/my-account/profile?complete=true');
-    }, 500);
-    
-    return (
-      <div className="min-h-screen flex items-center justify-center text-center">
-        <div className="flex flex-col items-center max-w-md">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#B20000] mb-6"></div>
-          <h2 className="text-xl font-bold text-[#6F6F6F] mb-3">Profile Setup Required</h2>
-          <p className="text-[#6F6F6F] mb-4 max-w-sm">
-            {!userProfile 
-              ? "We need to complete your profile setup." 
-              : "Your profile is incomplete. Please add your sports interests and skill levels."}
-          </p>
-          <Button
-            onClick={() => window.location.replace(
-              user.app_metadata?.provider === 'google' 
-                ? '/google-signup-redirect' 
-                : '/my-account/profile?complete=true'
-            )}
-            className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] px-6 py-2"
-          >
-            Complete Profile Setup
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  // Allow access even if profile is incomplete - removed profile completion requirement
+  // This allows users to access their account without being forced to complete profile
 
   if (!user) {
     // Redirect to login if not authenticated
@@ -187,6 +158,10 @@ export function ProtectedRoute({ children, requireAdmin = false, requireComplete
   }
 
   if (requireAdmin && !userProfile?.is_admin) {
+    console.warn('Admin access required. Redirecting to profile page.', {
+      userProfile,
+      isAdmin: userProfile?.is_admin
+    });
     // Redirect to profile page if user is not an admin
     return <Navigate to="/my-account/profile" replace />;
   }
