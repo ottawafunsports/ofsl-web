@@ -5,7 +5,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../components/ui/toast';
 import { supabase } from '../../../lib/supabase';
 import { fetchSports } from '../../../lib/leagues';
-import { Plus, X, MapPin, Edit2, Save, Search, Filter, SlidersHorizontal } from 'lucide-react';
+import { Plus, X, MapPin, Edit2, Save, Search, Filter, SlidersHorizontal, Trash2 } from 'lucide-react';
 import { MobileFilterDrawer } from './SchoolsTab/components/MobileFilterDrawer';
 
 interface Gym {
@@ -42,6 +42,7 @@ export function SchoolsTab() {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showMobileFilterDrawer, setShowMobileFilterDrawer] = useState(false);
+  const [deleting, setDeleting] = useState<number | null>(null);
   
   // Filter state
   const [filters, setFilters] = useState<SchoolFilters>({
@@ -271,6 +272,30 @@ export function SchoolsTab() {
           ? prev.availableSports.filter(id => id !== sportId)
           : [...prev.availableSports, sportId]
       }));
+    }
+  };
+
+  const handleDeleteGym = async (gymId: number) => {
+    if (!confirm('Are you sure you want to delete this school/gym? This action cannot be undone.')) {
+      return;
+    }
+
+    setDeleting(gymId);
+    try {
+      const { error } = await supabase
+        .from('gyms')
+        .delete()
+        .eq('id', gymId);
+
+      if (error) throw error;
+
+      showToast('School/Gym deleted successfully!', 'success');
+      loadData();
+    } catch (error) {
+      console.error('Error deleting gym:', error);
+      showToast('Failed to delete school/gym', 'error');
+    } finally {
+      setDeleting(null);
     }
   };
 
@@ -789,12 +814,25 @@ export function SchoolsTab() {
               <div>
                 <div className="flex justify-between items-start mb-4">
                   <h3 className="text-xl font-bold text-[#6F6F6F]">{gym.gym}</h3>
-                  <Button
-                    onClick={() => handleEditGym(gym)}
-                    className="bg-transparent hover:bg-blue-50 text-blue-500 hover:text-blue-600 rounded-lg p-2 transition-colors flex items-center gap-1"
-                  >
-                    <Edit2 className="h-3 w-3" />
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      onClick={() => handleEditGym(gym)}
+                      className="bg-transparent hover:bg-blue-50 text-blue-500 hover:text-blue-600 rounded-lg p-2 transition-colors"
+                    >
+                      <Edit2 className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      onClick={() => handleDeleteGym(gym.id)}
+                      disabled={deleting === gym.id}
+                      className="bg-transparent hover:bg-red-50 text-red-500 hover:text-red-600 rounded-lg p-2 transition-colors"
+                    >
+                      {deleting === gym.id ? (
+                        <div className="h-3 w-3 border-t-2 border-red-500 rounded-full animate-spin"></div>
+                      ) : (
+                        <Trash2 className="h-3 w-3" />
+                      )}
+                    </Button>
+                  </div>
                 </div>
                 
                 <div className="text-[#6F6F6F] mb-4">{gym.address}</div>

@@ -2,17 +2,19 @@ import { X } from 'lucide-react';
 import { Button } from '../../../../../components/ui/button';
 import { Input } from '../../../../../components/ui/input';
 
+interface UserFilters {
+  administrator: boolean;
+  facilitator: boolean;
+  activePlayer: boolean;
+}
+
 interface MobileFilterDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   searchTerm: string;
   setSearchTerm: (value: string) => void;
-  filters: {
-    administrator: boolean;
-    facilitator: boolean;
-    activePlayer: boolean;
-  };
-  handleFilterChange: (filterKey: keyof typeof filters) => void;
+  filters: UserFilters;
+  handleFilterChange: (filterKey: keyof UserFilters) => void;
   clearFilters: () => void;
   isAnyFilterActive: () => boolean;
 }
