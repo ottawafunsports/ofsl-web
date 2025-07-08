@@ -86,10 +86,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.log('User metadata:', user.user_metadata);
       console.log('App metadata:', user.app_metadata);
       
-      // Use the enhanced v3 function for better Google OAuth support
+      // Use the v3 function for better Google OAuth support
       let { data: existingProfile, error: fetchError } = await supabase
-        .rpc('check_and_fix_user_profile_v2', {
-          p_auth_id: user.id,
+        .rpc('check_and_fix_user_profile_v3', {
+          p_auth_id: user.id.toString(),
           p_email: user.email,
           p_name: user.user_metadata?.full_name || user.user_metadata?.name || '',
           p_phone: user.user_metadata?.phone || ''
@@ -313,7 +313,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             if (session.user.app_metadata?.provider === 'google') {
               console.log('Initial Google session detected, ensuring profile exists for user:', session.user.id);
               try {
-                const { data, error } = await supabase.rpc('check_and_fix_user_profile_v2', {
+                const { data, error } = await supabase.rpc('check_and_fix_user_profile_v3', {
                   p_auth_id: session.user.id.toString(),
                   p_email: session.user.email || null,
                   p_name: session.user.user_metadata?.name || session.user.user_metadata?.full_name || null,
