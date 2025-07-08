@@ -5,7 +5,7 @@ import { Input } from '../../../components/ui/input';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../components/ui/toast';
 import { supabase } from '../../../lib/supabase';
-import { Users, Search, Edit2, Trash2, Crown, Mail, Phone, Calendar, ChevronUp, ChevronDown, Filter, Key, SlidersHorizontal } from 'lucide-react';
+import { Users, Search, Edit2, Trash2, Crown, Mail, Phone, Calendar, ChevronUp, ChevronDown, Key, SlidersHorizontal } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { MobileFilterDrawer } from './UsersTab/components/MobileFilterDrawer';
 
@@ -44,11 +44,11 @@ export function UsersTab() {
   const [editForm, setEditForm] = useState<Partial<User>>({});
   const [userRegistrations, setUserRegistrations] = useState<Array<{
     id: number, 
- const [deleting, setDeleting] = useState<string | null>(null);
     name: string, 
     sport_name: string | null,
     role: 'captain' | 'player'
   }>>([]);
+  const [deleting, setDeleting] = useState<string | null>(null);
   const [resettingPassword, setResettingPassword] = useState(false);
   const [showMobileFilterDrawer, setShowMobileFilterDrawer] = useState(false);
   
@@ -216,19 +216,19 @@ export function UsersTab() {
       teamsData?.forEach(team => {
         if (team.leagues) {
           const league = team.leagues;
-          const isCaptain = team.captain_id === editingUser;
-          const sportName = league.sports?.name;
+          const isCaptain = editingUser ? team.captain_id === editingUser : false;
+          const sportName = (league as any).sports?.name;
           
           // If we already have this league, update role if user is captain
-          if (leagueMap.has(league.id)) {
-            const existing = leagueMap.get(league.id);
+          if (leagueMap.has((league as any).id)) {
+            const existing = leagueMap.get((league as any).id);
             if (isCaptain) {
               existing.role = 'captain';
             }
           } else {
-            leagueMap.set(league.id, {
-              id: league.id,
-              name: league.name,
+            leagueMap.set((league as any).id, {
+              id: (league as any).id,
+              name: (league as any).name,
               sport_name: sportName,
               role: isCaptain ? 'captain' : 'player'
             });
@@ -624,7 +624,7 @@ export function UsersTab() {
                               {user.name || 'No Name'}
                             </div>
                             {user.is_admin && (
-                              <Crown className="h-4 w-4 text-yellow-500" title="Admin" />
+                                          <Crown className="h-4 w-4 text-yellow-500" />
                             )}
                             {user.is_facilitator && (
                               <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center" title="Facilitator">

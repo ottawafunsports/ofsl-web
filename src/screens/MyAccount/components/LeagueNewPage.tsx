@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { getStripeProductByLeagueId, updateStripeProductLeagueId } from '../../../lib/stripe';
+import { updateStripeProductLeagueId } from '../../../lib/stripe';
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent } from '../../../components/ui/card';
 import { Input } from '../../../components/ui/input';
@@ -29,6 +29,7 @@ export function LeagueNewPage() {
     location: string;
     sport_id: number | null;
     skill_id: number | null;
+    skill_ids: number[];
     day_of_week: number | null;
     start_date: string;
     end_date: string;
@@ -43,6 +44,7 @@ export function LeagueNewPage() {
     location: '',
     sport_id: null,
     skill_id: null,
+    skill_ids: [],
     day_of_week: null,
     start_date: '',
     end_date: '',
@@ -267,8 +269,8 @@ export function LeagueNewPage() {
               <div>
                 <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Day of Week</label>
                 <select
-                  value={newLeague.day_of_week || ''}
-                  onChange={(e) => setNewLeague({ ...newLeague, day_of_week: e.target.value ? parseInt(e.target.value) : null })}
+                  value={newLeague.day_of_week !== null ? newLeague.day_of_week.toString() : ''}
+                  onChange={(e) => setNewLeague({ ...newLeague, day_of_week: e.target.value !== '' ? parseInt(e.target.value) : null })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
                   required
                 >
@@ -402,7 +404,7 @@ export function LeagueNewPage() {
               
               <div>
                 <StripeProductSelector
-                  leagueId={null}
+                  leagueId={undefined}
                   selectedProductId={selectedProductId}
                   onChange={setSelectedProductId}
                 />
