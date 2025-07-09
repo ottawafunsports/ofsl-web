@@ -48,6 +48,7 @@ export function TeamRegistrationModal({
   useEffect(() => {
     if (showModal) {
       loadSkills();
+      setError(null);
     }
   }, [showModal]);
 
@@ -166,6 +167,7 @@ export function TeamRegistrationModal({
   const handleClose = () => {
     setTeamName('');
     setSkillLevelId(null);
+    setError(null);
     closeModal();
   };
 
@@ -187,7 +189,7 @@ export function TeamRegistrationModal({
               {error && (
                 <div className="p-6">
                   <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-2xl font-bold text-[#6F6F6F]">Register Team</h2>
+                    <h2 className="text-2xl font-bold text-[#6F6F6F]">Unable to Register</h2>
                     <button 
                       onClick={handleClose}
                       className="text-gray-500 hover:text-gray-700 bg-transparent hover:bg-gray-100 rounded-full p-2 transition-colors"
