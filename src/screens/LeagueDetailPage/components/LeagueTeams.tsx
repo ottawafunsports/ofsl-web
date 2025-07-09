@@ -298,11 +298,12 @@ export function LeagueTeams({ leagueId, onTeamsUpdate }: LeagueTeamsProps) {
                           </span>
                         </div>
                       )}
+                    </div>
                   </div>
                 </div>
               </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
         ))}
       </div>
     </div>
