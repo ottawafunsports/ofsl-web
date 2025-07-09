@@ -267,11 +267,9 @@ export function TeamRegistrationModal({
                         <option 
                           key={skill.id} 
                           value={skill.id} 
-                          disabled={skill.name === 'Beginner'}
                         >
                           {skill.name}
                           {skill.description && ` - ${skill.description}`}
-                          {skill.name === 'Beginner' && ' (not available)'}
                         </option>
                       ))}
                     </select>
@@ -282,9 +280,12 @@ export function TeamRegistrationModal({
                   <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg flex items-start gap-3">
                     <AlertCircle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-sm text-amber-800 font-medium">Payment Required</p>
+                      <p className="text-sm text-amber-800 font-medium">Registration Information</p>
                       <p className="text-sm text-amber-700 mt-1">
                         To secure your spot in this league, a deposit of $200 or full payment of ${league.cost.toFixed(2)} +HST will be required after registration.
+                      </p>
+                      <p className="text-sm text-amber-700 mt-1">
+                        All skill levels including Beginner are welcome to register.
                       </p>
                     </div>
                   </div>
