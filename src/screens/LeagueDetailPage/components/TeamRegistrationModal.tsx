@@ -339,9 +339,6 @@ export function TeamRegistrationModal({
                       </Button>
                     </div>
                   </form>
-                  <p className="text-amber-700 text-sm font-medium">
-                    If payment is not received, your spot is not guaranteed.
-                  </p>
                 </>
               )}
             </div>
