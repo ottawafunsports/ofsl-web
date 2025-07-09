@@ -249,9 +249,16 @@ export function LeagueTeams({ leagueId, onTeamsUpdate }: LeagueTeamsProps) {
               <div className="flex justify-between items-start mb-4">
                 <div className="flex-1">
                   <h3 className="text-lg font-bold text-[#6F6F6F] mb-2">{team.name}</h3>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm mt-4">
-                    {/* Captain */}
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm text-gray-600">{team.league?.name}</p>
+                    {/* Skill Level moved here */}
+                    {team.skill_name && (
+                      <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
+                        {team.skill_name}
+                      </span>
+                    )}
+                  </div>
+                  <div className="mt-2 space-y-2 text-sm text-gray-600">
                     <div className="flex items-center gap-2" title="Captain">
                       <Crown className="h-5 w-5 text-yellow-500" />
                       <p className="text-[#6F6F6F]">{team.captain_name || 'Unknown'}</p>
@@ -291,32 +298,7 @@ export function LeagueTeams({ leagueId, onTeamsUpdate }: LeagueTeamsProps) {
                           </span>
                         </div>
                       )}
-                    </div>
                   </div>
-                </div>
-
-                <div className="flex flex-col items-end gap-2 ml-4">
-                  {/* Skill Level */}
-                  {team.skill_name && (
-                    <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
-                      {team.skill_name}
-                    </span>
-                  )}
-
-                  {/* Payment Status */}
-                  {team.payment_status && (
-                    <span className={`px-3 py-1 text-sm rounded-full ${getPaymentStatusColor(team.payment_status)}`}>
-                      {team.payment_status.charAt(0).toUpperCase() + team.payment_status.slice(1)}
-                    </span>
-                  )}
-
-                  {/* Edit Registration Link */}
-                  <Link 
-                    to={`/my-account/teams/edit/${team.id}`}
-                    className="text-[#B20000] hover:text-[#8A0000] text-sm hover:underline"
-                  >
-                    Edit registration
-                  </Link>
                 </div>
               </div>
           </CardContent>
