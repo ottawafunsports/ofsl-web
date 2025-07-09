@@ -6,7 +6,6 @@ import { Eye, EyeOff, Loader2, ArrowRight } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { supabase } from "../../lib/supabase";
-import { Loader2, ArrowRight } from "lucide-react";
 import { SportSkillSelector } from "./SportSkillSelector";
 
 interface SportSkill {
