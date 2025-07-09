@@ -319,7 +319,6 @@ export function LeagueTeams({ leagueId, onTeamsUpdate }: LeagueTeamsProps) {
                   </Link>
                 </div>
               </div>
-            </div>
           </CardContent>
         </Card>
         ))}
