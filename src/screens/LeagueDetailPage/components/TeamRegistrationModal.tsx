@@ -310,9 +310,6 @@ export function TeamRegistrationModal({
                           <p className="text-sm text-amber-700 mt-1">
                             To secure your spot in this league, a deposit of $200 or full payment of ${league.cost.toFixed(2)} +HST will be required after registration.
                           </p>
-                          <p className="text-sm text-amber-700 mt-1">
-                            All skill levels including Beginner are welcome to register.
-                          </p>
                         </div>
                       </div>
                     )}
