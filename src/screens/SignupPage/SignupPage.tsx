@@ -1,8 +1,8 @@
 import { useState, FormEvent } from "react";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
-import { Input } from "../../components/ui/input";
-import { Eye, EyeOff } from "lucide-react";
+import { Input } from "../../components/ui/input"; 
+import { Eye, EyeOff, Loader2, ArrowRight } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { supabase } from "../../lib/supabase";
@@ -232,10 +232,10 @@ export function SignupPage() {
       
       // Step 2: Account created successfully, let AuthContext handle profile creation
       // Navigate to login page with success message
-      console.log('Redirecting to login page with success message');
-      navigate('/login', {
+      console.log('Redirecting to confirmation page');
+      navigate('/signup-confirmation', {
         state: { 
-          message: "Account created successfully! Please check your email for verification instructions and then log in with your credentials." 
+          email: email
         } 
       });
       

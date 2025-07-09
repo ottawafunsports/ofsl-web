@@ -7,6 +7,7 @@ import { LoginPage } from "./screens/LoginPage";
 import { SignupPage } from "./screens/SignupPage";
 import { ForgotPasswordPage } from "./screens/ForgotPasswordPage";
 import { ResetPasswordPage } from "./screens/ResetPasswordPage";
+import { SignupConfirmation } from "./screens/SignupPage";
 import { AboutUsPage } from "./screens/AboutUsPage";
 import { StandardsOfPlayPage } from "./screens/StandardsOfPlayPage";
 import { SuccessPage } from "./screens/SuccessPage";
@@ -56,6 +57,7 @@ export function App() {
             <Route path="/leagues/:id" element={<LeagueDetailPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
+            <Route path="/signup-confirmation" element={<SignupConfirmation />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             {/* Ensure reset-password route can handle both query params and hash fragments */}
             <Route path="/reset-password" element={<ResetPasswordPage />} />
