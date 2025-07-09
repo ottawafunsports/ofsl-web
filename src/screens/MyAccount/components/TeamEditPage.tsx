@@ -1125,7 +1125,7 @@ export function TeamEditPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-medium text-[#6F6F6F] mb-2">
-                        Deposit Amount ($)
+                        Amount ($)
                       </label>
                       <Input
                         type="number"
