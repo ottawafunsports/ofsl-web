@@ -183,142 +183,168 @@ export function TeamRegistrationModal({
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-[#6F6F6F]">Register Team</h2>
-                <button 
-                  onClick={handleClose}
-                  className="text-gray-500 hover:text-gray-700 bg-transparent hover:bg-gray-100 rounded-full p-2 transition-colors"
-                >
-                  <X className="h-6 w-6" />
-                </button>
-              </div>
-
-              <div className="mb-4 p-4 bg-gray-50 rounded-lg">
-                <p className="text-sm text-[#6F6F6F]">
-                  <span className="font-medium">League:</span> {leagueName}
-                </p>
-                {league && (
-                  <>
-                    {league.day_of_week !== null && (
-                      <p className="text-sm text-[#6F6F6F] mt-1">
-                        <span className="font-medium">Day:</span> {getDayName(league.day_of_week)}
-                      </p>
-                    )}
-                    {league.gyms && league.gyms.length > 0 && (
-                      <p className="text-sm text-[#6F6F6F] mt-1">
-                        <span className="font-medium">School:</span> {getPrimaryLocation(league.gyms)}
-                      </p>
-                    )}
-                    {(league.start_date || league.end_date) && (
-                      <p className="text-sm text-[#6F6F6F] mt-1">
-                        <span className="font-medium">Season:</span> {formatLeagueDates(league.start_date, league.end_date, league.hide_day)}
-                      </p>
-                    )}
-                    {league.cost && (
-                      <p className="text-sm text-[#6F6F6F] mt-1">
-                        <span className="font-medium">Cost:</span> ${league.cost.toFixed(2)}
-                      </p>
-                    )}
-                  </>
-                )}
-                <p className="text-sm text-[#6F6F6F] mt-1">
-                  <span className="font-medium">Captain:</span> {userProfile?.name || 'Current User'}
-                </p>
-              </div>
-
               {/* Error message */}
               {error && (
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold text-[#6F6F6F]">Register Team</h2>
+                  <button 
+                    onClick={handleClose}
+                    className="text-gray-500 hover:text-gray-700 bg-transparent hover:bg-gray-100 rounded-full p-2 transition-colors"
+                  >
+                    <X className="h-6 w-6" />
+                  </button>
+                </div>
+                
                 <div className="bg-red-50 border border-red-200 text-red-800 p-4 rounded-lg mb-6">
                   {error.split('\n').map((line, i) => (
                     <p key={i} className={i > 0 ? "mt-2" : ""}>{line}</p>
                   ))}
                 </div>
-              )}
-
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-[#6F6F6F] mb-2">
-                    Team Name *
-                  </label>
-                  <Input
-                    value={teamName}
-                    onChange={(e) => setTeamName(e.target.value)}
-                    placeholder="Enter your team name"
-                    className="w-full"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-[#6F6F6F] mb-2">
-                    Team Skill Level *
-                  </label>
-                  {skillsLoading ? (
-                    <div className="text-sm text-[#6F6F6F]">Loading skill levels...</div>
-                  ) : (
-                    <select
-                      value={skillLevelId || ''}
-                      onChange={(e) => setSkillLevelId(e.target.value ? parseInt(e.target.value) : null)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
-                      required
-                    >
-                      <option value="">Select skill level...</option>
-                      {skills.map(skill => (
-                        <option 
-                          key={skill.id} 
-                          value={skill.id} 
-                        >
-                          {skill.name}
-                          {skill.description && ` - ${skill.description}`}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                </div>
-
-                {league && league.cost && league.cost > 0 && (
-                  <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg flex items-start gap-3">
-                    <AlertCircle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-sm text-amber-800 font-medium">Registration Information</p>
-                      <p className="text-sm text-amber-700 mt-1">
-                        To secure your spot in this league, a deposit of $200 or full payment of ${league.cost.toFixed(2)} +HST will be required after registration.
-                      </p>
-                      <p className="text-sm text-amber-700 mt-1">
-                        All skill levels including Beginner are welcome to register.
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <p className="text-sm text-blue-800">
-                    <strong>Note:</strong> You will be automatically added as the team captain and first player. 
-                    After registration, you can add more players to your team from the "My Teams\" page.
-                    Registration fees will be tracked and due within 30 days.
-                  </p>
-                </div>
-
-                <div className="flex gap-4">
-                  <Button
-                    type="submit"
-                    disabled={loading || skillsLoading}
-                    className="flex-1 border-[#B20000] bg-white hover:bg-[#B20000] text-[#B20000] hover:text-white rounded-[10px] px-6 py-2"
-                  >
-                    {loading ? 'Registering...' : 'Register Team'}
-                  </Button>
+                
+                <div className="flex justify-end">
                   <Button
                     type="button"
                     onClick={handleClose}
-                    className="flex-1 bg-gray-500 hover:bg-gray-600 text-white rounded-[10px] px-6 py-2"
+                    className="bg-gray-500 hover:bg-gray-600 text-white rounded-[10px] px-6 py-2"
                   >
-                    Cancel
+                    Close
                   </Button>
                 </div>
-              </form>
-              <p className="text-amber-700 text-sm font-medium">
-                If payment is not received, your spot is not guaranteed.
               </p>
+            </div>
+            )}
+            
+            {!error && (
+              <>
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold text-[#6F6F6F]">Register Team</h2>
+                  <button 
+                    onClick={handleClose}
+                    className="text-gray-500 hover:text-gray-700 bg-transparent hover:bg-gray-100 rounded-full p-2 transition-colors"
+                  >
+                    <X className="h-6 w-6" />
+                  </button>
+                </div>
+
+                <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+                  <p className="text-sm text-[#6F6F6F]">
+                    <span className="font-medium">League:</span> {leagueName}
+                  </p>
+                  {league && (
+                    <>
+                      {league.day_of_week !== null && (
+                        <p className="text-sm text-[#6F6F6F] mt-1">
+                          <span className="font-medium">Day:</span> {getDayName(league.day_of_week)}
+                        </p>
+                      )}
+                      {league.gyms && league.gyms.length > 0 && (
+                        <p className="text-sm text-[#6F6F6F] mt-1">
+                          <span className="font-medium">School:</span> {getPrimaryLocation(league.gyms)}
+                        </p>
+                      )}
+                      {(league.start_date || league.end_date) && (
+                        <p className="text-sm text-[#6F6F6F] mt-1">
+                          <span className="font-medium">Season:</span> {formatLeagueDates(league.start_date, league.end_date, league.hide_day)}
+                        </p>
+                      )}
+                      {league.cost && (
+                        <p className="text-sm text-[#6F6F6F] mt-1">
+                          <span className="font-medium">Cost:</span> ${league.cost.toFixed(2)}
+                        </p>
+                      )}
+                    </>
+                  )}
+                  <p className="text-sm text-[#6F6F6F] mt-1">
+                    <span className="font-medium">Captain:</span> {userProfile?.name || 'Current User'}
+                  </p>
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-[#6F6F6F] mb-2">
+                      Team Name *
+                    </label>
+                    <Input
+                      value={teamName}
+                      onChange={(e) => setTeamName(e.target.value)}
+                      placeholder="Enter your team name"
+                      className="w-full"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-[#6F6F6F] mb-2">
+                      Team Skill Level *
+                    </label>
+                    {skillsLoading ? (
+                      <div className="text-sm text-[#6F6F6F]">Loading skill levels...</div>
+                    ) : (
+                      <select
+                        value={skillLevelId || ''}
+                        onChange={(e) => setSkillLevelId(e.target.value ? parseInt(e.target.value) : null)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#B20000] focus:ring-[#B20000]"
+                        required
+                      >
+                        <option value="">Select skill level...</option>
+                        {skills.map(skill => (
+                          <option 
+                            key={skill.id} 
+                            value={skill.id} 
+                          >
+                            {skill.name}
+                            {skill.description && ` - ${skill.description}`}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
+
+                  {league && league.cost && league.cost > 0 && (
+                    <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg flex items-start gap-3">
+                      <AlertCircle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm text-amber-800 font-medium">Registration Information</p>
+                        <p className="text-sm text-amber-700 mt-1">
+                          To secure your spot in this league, a deposit of $200 or full payment of ${league.cost.toFixed(2)} +HST will be required after registration.
+                        </p>
+                        <p className="text-sm text-amber-700 mt-1">
+                          All skill levels including Beginner are welcome to register.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <p className="text-sm text-blue-800">
+                      <strong>Note:</strong> You will be automatically added as the team captain and first player. 
+                      After registration, you can add more players to your team from the "My Teams\" page.
+                      Registration fees will be tracked and due within 30 days.
+                    </p>
+                  </div>
+
+                  <div className="flex gap-4">
+                    <Button
+                      type="submit"
+                      disabled={loading || skillsLoading}
+                      className="flex-1 border-[#B20000] bg-white hover:bg-[#B20000] text-[#B20000] hover:text-white rounded-[10px] px-6 py-2"
+                    >
+                      {loading ? 'Registering...' : 'Register Team'}
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={handleClose}
+                      className="flex-1 bg-gray-500 hover:bg-gray-600 text-white rounded-[10px] px-6 py-2"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </form>
+                <p className="text-amber-700 text-sm font-medium">
+                  If payment is not received, your spot is not guaranteed.
+                </p>
+              </>
             </div>
           </div>
         </div>
