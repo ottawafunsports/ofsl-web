@@ -248,24 +248,14 @@ export function LeagueTeams({ leagueId, onTeamsUpdate }: LeagueTeamsProps) {
             <CardContent className="p-6">
               <div className="flex justify-between items-start mb-4">
                 <div className="flex-1">
-                  <h3 className="text-lg font-bold text-[#6F6F6F] mb-2">{team.name}</h3>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm mt-4">
-                    {/* Captain */}
-                    <div className="flex items-center gap-2" title="Captain">
-                      <Crown className="h-5 w-5 text-yellow-500" />
-                      <p className="text-[#6F6F6F]">{team.captain_name || 'Unknown'}</p>
-                    </div>
-
-                    {/* Team Size */}
-                    <div className="flex items-center gap-2" title="Players">
-                      <Users className="h-5 w-5 text-blue-500" />
-                      <p className="text-[#6F6F6F]">{team.roster.length}</p>
-                    </div>
-
-                    {/* Registration Date */}
-                    <div className="flex items-center gap-2" title="Registration Date">
-                      <Calendar className="h-5 w-5 text-green-500" />
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-lg font-bold text-[#6F6F6F]">{team.name}</h3>
+                    {/* Skill Level Tag - Moved here from below */}
+                    {team.skill_name && (
+                      <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
+                        {team.skill_name}
+                      </span>
+                    )}
                       <p className="text-[#6F6F6F]">{formatDate(team.created_at)}</p>
                     </div>
 
@@ -293,31 +283,30 @@ export function LeagueTeams({ leagueId, onTeamsUpdate }: LeagueTeamsProps) {
                       )}
                     </div>
                   </div>
+                  <div className="flex items-center gap-4 text-sm text-[#6F6F6F] mt-1">
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-4 w-4" />
+                      <span>Due: {new Date(payment.due_date).toLocaleDateString()}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <DollarSign className="h-4 w-4" />
+                      <span>${payment.amount_paid.toFixed(2)} / ${payment.amount_due.toFixed(2)}</span>
+                    </div>
+                    <span className={`px-2 py-0.5 text-xs rounded-full ${
+                      payment.status === 'paid' ? 'bg-green-100 text-green-800' :
+                      payment.status === 'partial' ? 'bg-yellow-100 text-yellow-800' :
+                  <p className="text-[#6F6F6F]">
+                    ${team.payment?.amount_paid.toFixed(2) || '0.00'} / ${team.payment?.amount_due.toFixed(2) || team.league?.cost?.toFixed(2) || '0.00'}
+                  </p>
                 </div>
-
-                <div className="flex flex-col items-end gap-2 ml-4">
-                  {/* Skill Level */}
-                  {team.skill_name && (
-                    <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
-                      {team.skill_name}
-                    </span>
-                  )}
-
-                  {/* Payment Status */}
-                  {team.payment_status && (
-                    <span className={`px-3 py-1 text-sm rounded-full ${getPaymentStatusColor(team.payment_status)}`}>
-                      {team.payment_status.charAt(0).toUpperCase() + team.payment_status.slice(1)}
-                    </span>
-                  )}
-
-                  {/* Edit Registration Link */}
-                  <Link 
-                    to={`/my-account/teams/edit/${team.id}`}
-                    className="text-[#B20000] hover:text-[#8A0000] text-sm hover:underline"
-                  >
-                    Edit registration
-                  </Link>
-                </div>
+                
+                {/* Edit Registration Link - Moved to top right */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm mt-4">
+                  to={`/my-account/teams/edit/${team.id}`}
+                  className="text-[#B20000] hover:text-[#8A0000] text-sm hover:underline"
+                >
+                  Edit registration
+                </Link>
               </div>
           </CardContent>
         </Card>
