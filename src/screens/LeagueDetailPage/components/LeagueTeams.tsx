@@ -266,27 +266,28 @@ export function LeagueTeams({ leagueId, onTeamsUpdate }: LeagueTeamsProps) {
                 </div>
               </div>
               
-              <div className="mt-2 space-y-2 text-sm text-gray-600">
-                <div className="flex items-center gap-2" title="Captain">
+              <div className="mt-2 text-sm text-gray-600">
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+                  <div className="flex items-center gap-2" title="Captain">
                   <Crown className="h-5 w-5 text-yellow-500" />
-                  <p className="text-[#6F6F6F]">{team.captain_name || 'Unknown'}</p>
-                </div>
-
-                <div className="flex items-center gap-2">
+                  <span className="text-[#6F6F6F]">{team.captain_name || 'Unknown'}</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
                   <Users className="h-5 w-5 text-blue-500" />
-                  <p className="text-[#6F6F6F]">{team.roster.length}</p>
-                </div>
-
-                <div className="flex items-center gap-2" title="Registration Date">
+                  <span className="text-[#6F6F6F]">{team.roster.length} players</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2" title="Registration Date">
                   <Calendar className="h-5 w-5 text-green-500" />
-                  <p className="text-[#6F6F6F]">{formatDate(team.created_at)}</p>
-                </div>
-
-                <div className="flex items-center gap-2" title="Payment">
+                  <span className="text-[#6F6F6F]">{formatDate(team.created_at)}</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2" title="Payment">
                   <DollarSign className="h-5 w-5 text-purple-500" />
                   {team.amount_due && team.amount_paid !== null ? (
                     <div className="flex items-center gap-2">
-                      <span className="text-[#6F6F6F]">
+                      <span className="text-[#6F6F6F] whitespace-nowrap">
                         ${team.amount_paid.toFixed(2)} / ${team.amount_due.toFixed(2)}
                       </span>
                       <span className={`px-2 py-0.5 text-xs rounded-full ${getPaymentStatusColor(team.payment_status)}`}>
@@ -295,7 +296,7 @@ export function LeagueTeams({ leagueId, onTeamsUpdate }: LeagueTeamsProps) {
                     </div>
                   ) : (
                     <div className="flex items-center gap-2">
-                      <span className="text-[#6F6F6F]">
+                      <span className="text-[#6F6F6F] whitespace-nowrap">
                         $0.00 / ${team.league?.cost ? parseFloat(team.league.cost.toString()).toFixed(2) : '0.00'}
                       </span>
                       <span className="px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-800">
@@ -303,6 +304,7 @@ export function LeagueTeams({ leagueId, onTeamsUpdate }: LeagueTeamsProps) {
                       </span>
                     </div>
                   )}
+                  </div>
                 </div>
               </div>
             </CardContent>
