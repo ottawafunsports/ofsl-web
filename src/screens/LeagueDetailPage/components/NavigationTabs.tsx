@@ -1,6 +1,6 @@
 interface NavigationTabsProps {
-  activeView: 'info' | 'schedule' | 'standings';
-  setActiveView: (view: 'info' | 'schedule' | 'standings') => void;
+  activeView: 'info' | 'schedule' | 'standings' | 'teams';
+  setActiveView: (view: 'info' | 'schedule' | 'standings' | 'teams') => void;
   sport: string;
   isAdmin?: boolean;
 }
