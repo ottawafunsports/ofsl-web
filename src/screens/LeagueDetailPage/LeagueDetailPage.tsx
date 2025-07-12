@@ -1,25 +1,31 @@
-import { useState, useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { Button } from '../../components/ui/button';
-import { ChevronLeft } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
-import '../../../src/styles/rich-text.css';
-import { 
-  mockStandings, 
-  mockSchedule, 
-  getSportIcon, 
-  getTeamNameFromPosition 
-} from './utils/leagueUtils';
-import { fetchLeagueById, getDayName, formatLeagueDates, getPrimaryLocation, type League } from '../../lib/leagues';
-import { useActiveView, useScoreSubmissionModal } from './hooks/useLeagueDetail';
-import { NavigationTabs } from './components/NavigationTabs';
-import { LeagueInfo } from './components/LeagueInfo';
-import { LeagueSchedule } from './components/LeagueSchedule';
-import { LeagueStandings } from './components/LeagueStandings';
-import { SkillLevelRequirements } from './components/SkillLevelRequirements';
-import { AdditionalLeagueInfo } from './components/AdditionalLeagueInfo';
-import { ScoreSubmissionModal } from './components/ScoreSubmissionModal';
-import { LeagueTeams } from './components/LeagueTeams';
+import { useState, useEffect } from "react";
+import { Link, useParams } from "react-router-dom";
+import { Button } from "../../components/ui/button";
+import { ChevronLeft } from "lucide-react";
+import { useAuth } from "../../contexts/AuthContext";
+import "../../styles/rich-text.css";
+import {
+  mockStandings,
+  mockSchedule,
+  getSportIcon,
+  getTeamNameFromPosition,
+} from "./utils/leagueUtils";
+import {
+  fetchLeagueById,
+  getDayName,
+  formatLeagueDates,
+  type League,
+} from "../../lib/leagues";
+import {
+  useActiveView,
+  useScoreSubmissionModal,
+} from "./hooks/useLeagueDetail";
+import { NavigationTabs } from "./components/NavigationTabs";
+import { LeagueInfo } from "./components/LeagueInfo";
+import { LeagueSchedule } from "./components/LeagueSchedule";
+import { LeagueStandings } from "./components/LeagueStandings";
+import { ScoreSubmissionModal } from "./components/ScoreSubmissionModal";
+import { LeagueTeams } from "./components/LeagueTeams";
 
 export function LeagueDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -30,11 +36,11 @@ export function LeagueDetailPage() {
   const [spotsRemaining, setSpotsRemaining] = useState(0);
 
   const { activeView, setActiveView } = useActiveView();
-  const { 
-    showScoreSubmissionModal, 
-    selectedTier, 
-    openScoreSubmissionModal, 
-    closeScoreSubmissionModal 
+  const {
+    showScoreSubmissionModal,
+    selectedTier,
+    openScoreSubmissionModal,
+    closeScoreSubmissionModal,
   } = useScoreSubmissionModal();
 
   useEffect(() => {
@@ -43,7 +49,7 @@ export function LeagueDetailPage() {
 
   const loadLeague = async () => {
     if (!id) {
-      setError('League ID is required');
+      setError("League ID is required");
       setLoading(false);
       return;
     }
@@ -51,15 +57,15 @@ export function LeagueDetailPage() {
     try {
       setLoading(true);
       const leagueData = await fetchLeagueById(parseInt(id));
-      
+
       if (!leagueData) {
-        setError('League not found');
+        setError("League not found");
       } else {
         setLeague(leagueData);
       }
     } catch (err) {
-      console.error('Error loading league:', err);
-      setError('Failed to load league data');
+      console.error("Error loading league:", err);
+      setError("Failed to load league data");
     } finally {
       setLoading(false);
     }
@@ -80,8 +86,13 @@ export function LeagueDetailPage() {
   if (error || !league) {
     return (
       <div className="max-w-[1280px] mx-auto px-4 py-16 text-center">
-        <h1 className="text-3xl font-bold text-[#6F6F6F] mb-6">League Not Found</h1>
-        <p className="text-lg text-[#6F6F6F] mb-8">{error || 'The league you\'re looking for doesn\'t exist or has been removed.'}</p>
+        <h1 className="text-3xl font-bold text-[#6F6F6F] mb-6">
+          League Not Found
+        </h1>
+        <p className="text-lg text-[#6F6F6F] mb-8">
+          {error ||
+            "The league you're looking for doesn't exist or has been removed."}
+        </p>
         <Link to="/leagues">
           <Button className="bg-[#B20000] hover:bg-[#8A0000] text-white rounded-[10px] px-6 py-3">
             Back to Leagues
@@ -95,13 +106,17 @@ export function LeagueDetailPage() {
   const leagueForInfo = {
     ...league,
     day: getDayName(league.day_of_week),
-    location: league.location || 'Location TBD',
+    location: league.location || "Location TBD",
     hide_day: league.hide_day || false,
     specificLocation: league.gyms[0]?.address || undefined,
-    dates: formatLeagueDates(league.start_date, league.end_date, league.hide_day),
-    skillLevel: league.skill_name || 'Not specified',
+    dates: formatLeagueDates(
+      league.start_date,
+      league.end_date,
+      league.hide_day || false,
+    ),
+    skillLevel: league.skill_name || "Not specified",
     price: league.cost || 0,
-    spotsRemaining: league.max_teams ? Math.max(0, league.max_teams - 0) : 0 // TODO: Calculate from actual team count
+    spotsRemaining: league.max_teams ? Math.max(0, league.max_teams - 0) : 0, // TODO: Calculate from actual team count
   };
 
   const handleSpotsUpdate = (spots: number) => {
@@ -113,14 +128,17 @@ export function LeagueDetailPage() {
       <div className="max-w-[1280px] mx-auto px-4 py-12">
         {/* Back button */}
         <div className="mb-8 flex justify-between items-center">
-          <Link to="/leagues" className="flex items-center text-[#B20000] hover:underline">
+          <Link
+            to="/leagues"
+            className="flex items-center text-[#B20000] hover:underline"
+          >
             <ChevronLeft className="h-5 w-5 mr-1" />
             Back to Leagues
           </Link>
-          
+
           {/* Admin Edit Link */}
           {userProfile?.is_admin && (
-            <Link 
+            <Link
               to={`/my-account/leagues/edit/${league.id}`}
               className="text-[#B20000] hover:underline text-sm"
             >
@@ -134,20 +152,22 @@ export function LeagueDetailPage() {
           <div className="flex items-center mb-2">
             <img
               src={getSportIcon(league.sport_name)}
-              alt={league.sport_name || 'Sport'}
+              alt={league.sport_name || "Sport"}
               className="w-10 h-10 mr-3 flex-shrink-0"
             />
-            <h1 className="text-3xl md:text-4xl font-bold text-[#6F6F6F]">{league.name}</h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-[#6F6F6F]">
+              {league.name}
+            </h1>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Sidebar */}
           <div className="md:col-span-1">
-            <LeagueInfo 
-              league={leagueForInfo} 
-              sport={league.sport_name || ''}
-              skillLevels={league.skill_names}
+            <LeagueInfo
+              league={leagueForInfo}
+              sport={league.sport_name || ""}
+              skillLevels={league.skill_name ? [league.skill_name] : undefined}
               onSpotsUpdate={handleSpotsUpdate}
             />
           </div>
@@ -155,44 +175,47 @@ export function LeagueDetailPage() {
           {/* Main content area */}
           <div className="md:col-span-3">
             {/* Navigation tabs */}
-            <NavigationTabs 
-              activeView={activeView} 
-              setActiveView={setActiveView} 
-              sport={league.sport_name || ''}
+            <NavigationTabs
+              activeView={activeView}
+              setActiveView={setActiveView}
+              sport={league.sport_name || ""}
               isAdmin={userProfile?.is_admin || false}
             />
 
             {/* League Info View */}
-            {activeView === 'info' && (
+            {activeView === "info" && (
               <div className="space-y-8">
                 <div>
-                  <h2 className="text-2xl font-bold text-[#6F6F6F] mb-4">League Description</h2>
-                  <div 
-                    className="text-[#6F6F6F] league-description prose prose-ul:pl-0 prose-li:pl-0 max-w-none prose-headings:text-[#6F6F6F] prose-headings:font-bold" 
-                    dangerouslySetInnerHTML={{ __html: league.description || 'No description available.' }}
+                  <h2 className="text-2xl font-bold text-[#6F6F6F] mb-4">
+                    League Description
+                  </h2>
+                  <div
+                    className="text-[#6F6F6F] league-description prose prose-ul:pl-0 prose-li:pl-0 max-w-none prose-headings:text-[#6F6F6F] prose-headings:font-bold"
+                    dangerouslySetInnerHTML={{
+                      __html: league.description || "No description available.",
+                    }}
                   />
                 </div>
-                
               </div>
             )}
 
             {/* Schedule View - Only for Volleyball */}
-            {activeView === 'schedule' && (
-              <LeagueSchedule 
-                mockSchedule={mockSchedule} 
-                openScoreSubmissionModal={openScoreSubmissionModal} 
+            {activeView === "schedule" && (
+              <LeagueSchedule
+                mockSchedule={mockSchedule}
+                openScoreSubmissionModal={openScoreSubmissionModal}
               />
             )}
 
             {/* Standings View */}
-            {activeView === 'standings' && (
+            {activeView === "standings" && (
               <LeagueStandings mockStandings={mockStandings} />
             )}
 
             {/* Admin Teams View */}
-            {activeView === 'teams' && userProfile?.is_admin && (
-              <LeagueTeams 
-                leagueId={league.id} 
+            {activeView === "teams" && userProfile?.is_admin && (
+              <LeagueTeams
+                leagueId={league.id}
                 onTeamsUpdate={() => handleSpotsUpdate(spotsRemaining)}
               />
             )}
@@ -211,3 +234,4 @@ export function LeagueDetailPage() {
     </div>
   );
 }
+

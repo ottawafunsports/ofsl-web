@@ -43,8 +43,9 @@ export const getDayName = (dayOfWeek: number | null): string => {
 export const formatLeagueDates = (startDate: string | null, endDate: string | null, hideDay: boolean = false): string => {
   if (!startDate || !endDate) return '';
   
-  const start = new Date(startDate);
-  const end = new Date(endDate);
+  // Parse dates as local dates to avoid timezone shifts
+  const start = new Date(startDate + 'T00:00:00');
+  const end = new Date(endDate + 'T00:00:00');
   
   // Start date always shows the day
   const startOptions: Intl.DateTimeFormatOptions = { 
