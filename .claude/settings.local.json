@@ -4,7 +4,12 @@
       "Bash(find:*)",
       "Bash(npm run typecheck:*)",
       "mcp__ide__getDiagnostics",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(mv:*)",
+      "Bash(touch:*)",
+      "Bash(rm:*)",
+      "Bash(cat:*)"
     ],
     "deny": []
   }

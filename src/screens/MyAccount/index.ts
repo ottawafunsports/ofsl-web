@@ -1,9 +1,9 @@
 export { AccountLayout } from './components/AccountLayout';
-export { ProfileTab } from './components/ProfileTab';
-export { TeamsTab } from './components/TeamsTab/TeamsTab';
+export { ProfileTab } from './components/ProfileTab/';
+export { TeamsTab } from './components/TeamsTab/';
 export { LeaguesTab } from './components/LeaguesTab';
-export { SchoolsTab } from './components/SchoolsTab';
-export { UsersTab } from './components/UsersTab';
+export { SchoolsTab } from './components/SchoolsTab/';
+export { UsersTab } from './components/UsersTab/';
 export { LeagueEditPage } from './components/LeagueEditPage';
-export { TeamEditPage } from './components/TeamEditPage';
+export { TeamEditPage } from './components/TeamEditPage/';
 export { LeagueNewPage } from './components/LeagueNewPage';

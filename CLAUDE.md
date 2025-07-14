@@ -111,4 +111,4 @@ Using Shadcn UI components in `/src/components/ui/`:
 - All API calls use the custom domain https://api.ofsl.ca
 - Supabase RLS policies enforce data access rules
 - Rich text editing uses React Quill with custom styling
-
+- Avoid barrel files
