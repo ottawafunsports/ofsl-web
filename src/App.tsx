@@ -25,13 +25,15 @@ import {
   LeaguesTab,
   SchoolsTab,
   UsersTab,
+  LeagueEditPage,
+  TeamEditPage,
+  LeagueNewPage,
 } from "./screens/MyAccount";
-import { LeagueEditPage } from "./screens/MyAccount/components/LeagueEditPage";
-import { TeamEditPage } from "./screens/MyAccount/components/TeamEditPage";
 import { CompleteProfilePage } from "./screens/MyAccount/components/CompleteProfilePage";
 import { Navigate } from "react-router-dom";
-import { LeagueNewPage } from "./screens/MyAccount/components/LeagueNewPage";
 import { GoogleSignupRedirect } from "./screens/SignupPage/GoogleSignupRedirect";
+import { AdminOnlyRoute } from "./components/AdminOnlyRoute";
+import { ComingSoonPage } from "./screens/ComingSoonPage";
 
 // Create a catch-all route component to handle direct URL access
 // const CatchAllRoute = () => {
@@ -46,28 +48,28 @@ export function App() {
         <ScrollToTop />
         <Routes>
           <Route element={<Layout />}>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/volleyball" element={<VolleyballPage />} />
-            <Route path="/badminton" element={<BadmintonPage />} />
-            <Route path="/leagues" element={<LeaguesPage />} />
+            <Route path="/" element={<AdminOnlyRoute><HomePage /></AdminOnlyRoute>} />
+            <Route path="/volleyball" element={<AdminOnlyRoute><VolleyballPage /></AdminOnlyRoute>} />
+            <Route path="/badminton" element={<AdminOnlyRoute><BadmintonPage /></AdminOnlyRoute>} />
+            <Route path="/leagues" element={<AdminOnlyRoute><LeaguesPage /></AdminOnlyRoute>} />
             <Route
               path="/google-signup-redirect"
               element={<GoogleSignupRedirect />}
             />
-            <Route path="/leagues/:id" element={<LeagueDetailPage />} />
+            <Route path="/leagues/:id" element={<AdminOnlyRoute><LeagueDetailPage /></AdminOnlyRoute>} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/signup-confirmation" element={<SignupConfirmation />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             {/* Ensure reset-password route can handle both query params and hash fragments */}
             <Route path="/reset-password" element={<ResetPasswordPage />} />
-            <Route path="/about-us" element={<AboutUsPage />} />
+            <Route path="/about-us" element={<AdminOnlyRoute><AboutUsPage /></AdminOnlyRoute>} />
             <Route
               path="/standards-of-play"
-              element={<StandardsOfPlayPage />}
+              element={<AdminOnlyRoute><StandardsOfPlayPage /></AdminOnlyRoute>}
             />
-            <Route path="/success" element={<SuccessPage />} />
-            <Route path="/cancel" element={<CancelPage />} />
+            <Route path="/success" element={<AdminOnlyRoute><SuccessPage /></AdminOnlyRoute>} />
+            <Route path="/cancel" element={<AdminOnlyRoute><CancelPage /></AdminOnlyRoute>} />
 
             {/* My Account routes with proper routing */}
             <Route
@@ -154,8 +156,11 @@ export function App() {
               }
             />
 
+            {/* Coming Soon page route */}
+            <Route path="/coming-soon" element={<ComingSoonPage />} />
+
             {/* Catch-all route for any unmatched routes */}
-            <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="*" element={<AdminOnlyRoute><Navigate to="/" replace /></AdminOnlyRoute>} />
 
             {/* Legacy redirects for backward compatibility */}
             <Route

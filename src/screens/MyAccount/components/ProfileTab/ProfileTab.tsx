@@ -1,0 +1,116 @@
+import { useState } from 'react';
+import { useAuth } from '../../../../contexts/AuthContext';
+import { ProfileInformation } from './ProfileInformation';
+import { PasswordSecurity } from './PasswordSecurity';
+import { NotificationPreferences } from './NotificationPreferences';
+import { SportsAndSkills } from './SportsAndSkills';
+import { useProfileData } from './useProfileData';
+import { useProfileOperations } from './useProfileOperations';
+import { usePasswordOperations } from './usePasswordOperations';
+
+export function ProfileTab() {
+  const { userProfile, refreshUserProfile } = useAuth();
+  const [isEditing, setIsEditing] = useState(false);
+
+  const {
+    profile,
+    notifications,
+    sports,
+    skills,
+    loadingSportsSkills,
+    setProfile,
+    handleNotificationToggle
+  } = useProfileData(userProfile);
+
+  const { saving, handleProfileSave } = useProfileOperations(userProfile, refreshUserProfile);
+
+  const {
+    showPasswordSection,
+    passwordForm,
+    passwordValidation,
+    showCurrentPassword,
+    showNewPassword,
+    showConfirmPassword,
+    setPasswordForm,
+    setShowCurrentPassword,
+    setShowNewPassword,
+    setShowConfirmPassword,
+    handleTogglePasswordSection,
+    validateCurrentPassword,
+    validateNewPassword,
+    validateConfirmPassword,
+    handlePasswordChange,
+    handleCancelPasswordChange
+  } = usePasswordOperations(profile);
+
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
+
+  const handleSave = async () => {
+    const success = await handleProfileSave(profile);
+    if (success) {
+      setIsEditing(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    setProfile({
+      name: userProfile?.name || '',
+      phone: userProfile?.phone || '',
+      email: userProfile?.email || '',
+      preferred_position: userProfile?.preferred_position || '',
+      user_sports_skills: userProfile?.user_sports_skills || []
+    });
+  };
+
+  return (
+    <div className="space-y-8">
+      <ProfileInformation
+        profile={profile}
+        isEditing={isEditing}
+        saving={saving}
+        userProfile={userProfile}
+        onEdit={handleEdit}
+        onSave={handleSave}
+        onCancel={handleCancel}
+        onProfileChange={setProfile}
+      />
+
+      <PasswordSecurity
+        showPasswordSection={showPasswordSection}
+        passwordForm={passwordForm}
+        passwordValidation={passwordValidation}
+        showCurrentPassword={showCurrentPassword}
+        showNewPassword={showNewPassword}
+        showConfirmPassword={showConfirmPassword}
+        onTogglePasswordSection={handleTogglePasswordSection}
+        onPasswordFormChange={setPasswordForm}
+        onToggleCurrentPassword={() => setShowCurrentPassword(!showCurrentPassword)}
+        onToggleNewPassword={() => setShowNewPassword(!showNewPassword)}
+        onToggleConfirmPassword={() => setShowConfirmPassword(!showConfirmPassword)}
+        onValidateCurrentPassword={validateCurrentPassword}
+        onValidateNewPassword={validateNewPassword}
+        onValidateConfirmPassword={validateConfirmPassword}
+        onPasswordChange={handlePasswordChange}
+        onCancelPasswordChange={handleCancelPasswordChange}
+      />
+
+      <NotificationPreferences
+        notifications={notifications}
+        onNotificationToggle={handleNotificationToggle}
+      />
+
+      <SportsAndSkills
+        profile={profile}
+        sports={sports}
+        skills={skills}
+        isEditing={isEditing}
+        loadingSportsSkills={loadingSportsSkills}
+        onEdit={handleEdit}
+        onProfileChange={setProfile}
+      />
+    </div>
+  );
+}
