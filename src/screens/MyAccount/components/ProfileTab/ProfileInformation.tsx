@@ -52,7 +52,7 @@ export function ProfileInformation({
               className="w-full"
             />
           ) : (
-            <p className="text-[#6F6F6F] py-2">{profile.name || 'Hong'}</p>
+            <p className="text-[#6F6F6F] py-2">{profile.name || 'No name available'}</p>
           )}
         </div>
 
@@ -66,7 +66,7 @@ export function ProfileInformation({
               type="email"
             />
           ) : (
-            <p className="text-[#6F6F6F] py-2">{profile.email || 'hzhang83@gmail.com'}</p>
+            <p className="text-[#6F6F6F] py-2">{profile.email || 'No email available'}</p>
           )}
         </div>
 
@@ -79,7 +79,7 @@ export function ProfileInformation({
               className="w-full"
             />
           ) : (
-            <p className="text-[#6F6F6F] py-2">{profile.phone || '613-255-6778'}</p>
+            <p className="text-[#6F6F6F] py-2">{profile.phone || 'No phone number available'}</p>
           )}
         </div>
 
@@ -98,7 +98,7 @@ export function ProfileInformation({
               ))}
             </select>
           ) : (
-            <p className="text-[#6F6F6F] py-2">{profile.preferred_position || 'Forward'}</p>
+            <p className="text-[#6F6F6F] py-2">{profile.preferred_position || 'Not specified'}</p>
           )}
         </div>
       </div>
