@@ -7,6 +7,7 @@ import { Card, CardContent } from '../../components/ui/card';
 import { supabase } from '../../lib/supabase';
 import { Loader2 } from 'lucide-react';
 import { SportSkillSelector } from './SportSkillSelector';
+import { useToast } from '../../components/ui/toast';
 
 interface SportSkill {
   sport_id: number;
@@ -19,6 +20,7 @@ export function GoogleSignupRedirect() {
   const { user, userProfile, loading, refreshUserProfile } = useAuth();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { showToast } = useToast();
   
   // Form steps
   const [currentStep, setCurrentStep] = useState(1);

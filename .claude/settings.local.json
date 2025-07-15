@@ -12,5 +12,9 @@
       "Bash(cat:*)"
     ],
     "deny": []
-  }
+  },
+  "enabledMcpjsonServers": [
+    "supabase",
+    "stripe"
+  ]
 }

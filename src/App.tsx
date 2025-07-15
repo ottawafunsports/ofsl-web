@@ -33,6 +33,7 @@ import { CompleteProfilePage } from "./screens/MyAccount/components/CompleteProf
 import { Navigate } from "react-router-dom";
 import { GoogleSignupRedirect } from "./screens/SignupPage/GoogleSignupRedirect";
 import { AdminOnlyRoute } from "./components/AdminOnlyRoute";
+import { ConditionalRoute } from "./components/ConditionalRoute";
 import { ComingSoonPage } from "./screens/ComingSoonPage";
 
 // Create a catch-all route component to handle direct URL access
@@ -48,28 +49,28 @@ export function App() {
         <ScrollToTop />
         <Routes>
           <Route element={<Layout />}>
-            <Route path="/" element={<AdminOnlyRoute><HomePage /></AdminOnlyRoute>} />
-            <Route path="/volleyball" element={<AdminOnlyRoute><VolleyballPage /></AdminOnlyRoute>} />
-            <Route path="/badminton" element={<AdminOnlyRoute><BadmintonPage /></AdminOnlyRoute>} />
-            <Route path="/leagues" element={<AdminOnlyRoute><LeaguesPage /></AdminOnlyRoute>} />
+            <Route path="/" element={<ConditionalRoute><HomePage /></ConditionalRoute>} />
+            <Route path="/volleyball" element={<ConditionalRoute><VolleyballPage /></ConditionalRoute>} />
+            <Route path="/badminton" element={<ConditionalRoute><BadmintonPage /></ConditionalRoute>} />
+            <Route path="/leagues" element={<ConditionalRoute><LeaguesPage /></ConditionalRoute>} />
             <Route
               path="/google-signup-redirect"
               element={<GoogleSignupRedirect />}
             />
-            <Route path="/leagues/:id" element={<AdminOnlyRoute><LeagueDetailPage /></AdminOnlyRoute>} />
+            <Route path="/leagues/:id" element={<ConditionalRoute><LeagueDetailPage /></ConditionalRoute>} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/signup-confirmation" element={<SignupConfirmation />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             {/* Ensure reset-password route can handle both query params and hash fragments */}
             <Route path="/reset-password" element={<ResetPasswordPage />} />
-            <Route path="/about-us" element={<AdminOnlyRoute><AboutUsPage /></AdminOnlyRoute>} />
+            <Route path="/about-us" element={<ConditionalRoute><AboutUsPage /></ConditionalRoute>} />
             <Route
               path="/standards-of-play"
-              element={<AdminOnlyRoute><StandardsOfPlayPage /></AdminOnlyRoute>}
+              element={<ConditionalRoute><StandardsOfPlayPage /></ConditionalRoute>}
             />
-            <Route path="/success" element={<AdminOnlyRoute><SuccessPage /></AdminOnlyRoute>} />
-            <Route path="/cancel" element={<AdminOnlyRoute><CancelPage /></AdminOnlyRoute>} />
+            <Route path="/success" element={<ConditionalRoute><SuccessPage /></ConditionalRoute>} />
+            <Route path="/cancel" element={<ConditionalRoute><CancelPage /></ConditionalRoute>} />
 
             {/* My Account routes with proper routing */}
             <Route

@@ -19,7 +19,8 @@ export function ProfileTab() {
     skills,
     loadingSportsSkills,
     setProfile,
-    handleNotificationToggle
+    handleNotificationToggle,
+    markProfileAsSaved
   } = useProfileData(userProfile);
 
   const { saving, handleProfileSave } = useProfileOperations(userProfile, refreshUserProfile);
@@ -50,8 +51,18 @@ export function ProfileTab() {
   const handleSave = async () => {
     const success = await handleProfileSave(profile);
     if (success) {
+      markProfileAsSaved(profile);
       setIsEditing(false);
     }
+  };
+
+  const handleSaveSports = async () => {
+    // Skip refresh for sports saves to prevent race condition - use optimistic updates instead
+    const success = await handleProfileSave(profile, true);
+    if (success) {
+      markProfileAsSaved(profile);
+    }
+    return success;
   };
 
   const handleCancel = () => {
@@ -106,9 +117,9 @@ export function ProfileTab() {
         profile={profile}
         sports={sports}
         skills={skills}
-        isEditing={isEditing}
         loadingSportsSkills={loadingSportsSkills}
-        onEdit={handleEdit}
+        saving={saving}
+        onSave={handleSaveSports}
         onProfileChange={setProfile}
       />
     </div>
