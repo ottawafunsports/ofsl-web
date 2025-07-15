@@ -168,32 +168,58 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (session?.user) {
       // Handle user profile for any signed-in user
       const profile = await handleUserProfileCreation(session.user);
-      if (profile) {
-        setUserProfile(profile);
-        
-        // Check if profile is complete - basic info and sports/skills
-        const hasBasicInfo = profile.name && profile.phone && 
-                            profile.name.trim() !== '' && profile.phone.trim() !== '';
-        const hasSportsSkills = profile.user_sports_skills && 
-                               Array.isArray(profile.user_sports_skills) && 
-                               profile.user_sports_skills.length > 0;
-        
-        const isComplete = hasBasicInfo && hasSportsSkills;
-        
-        setProfileComplete(isComplete);
-        
-        // For Google users with incomplete profiles, force redirect to profile completion
-        if (session.user.app_metadata?.provider === 'google' && !isComplete) {
-          // Don't redirect if already on the redirect page to avoid loops
+      
+      // For Google users, if profile creation fails or profile is incomplete, redirect to completion page
+      if (session.user.app_metadata?.provider === 'google') {
+        if (!profile) {
+          // Profile creation failed, redirect to manual completion
+          console.log('Google user profile creation failed, redirecting to manual completion');
           if (currentPath !== '/google-signup-redirect' && currentPath !== '/complete-profile') {
-            console.log('Google user with incomplete profile detected, redirecting to profile completion');
             localStorage.setItem('redirectAfterLogin', currentPath);
             window.location.replace('/google-signup-redirect');
             return;
           }
+        } else {
+          setUserProfile(profile);
+          
+          // Check if profile is complete - basic info and sports/skills
+          const hasBasicInfo = profile.name && profile.phone && 
+                              profile.name.trim() !== '' && profile.phone.trim() !== '';
+          const hasSportsSkills = profile.user_sports_skills && 
+                                 Array.isArray(profile.user_sports_skills) && 
+                                 profile.user_sports_skills.length > 0;
+          
+          const isComplete = hasBasicInfo && hasSportsSkills;
+          setProfileComplete(isComplete);
+          
+          // For Google users with incomplete profiles, force redirect to profile completion
+          if (!isComplete) {
+            // Don't redirect if already on the redirect page to avoid loops
+            if (currentPath !== '/google-signup-redirect' && currentPath !== '/complete-profile') {
+              console.log('Google user with incomplete profile detected, redirecting to profile completion');
+              localStorage.setItem('redirectAfterLogin', currentPath);
+              window.location.replace('/google-signup-redirect');
+              return;
+            }
+          }
         }
       } else {
-        console.error('Failed to create or retrieve user profile');
+        // For non-Google users, handle normally
+        if (profile) {
+          setUserProfile(profile);
+          
+          // Check if profile is complete - basic info and sports/skills
+          const hasBasicInfo = profile.name && profile.phone && 
+                              profile.name.trim() !== '' && profile.phone.trim() !== '';
+          const hasSportsSkills = profile.user_sports_skills && 
+                                 Array.isArray(profile.user_sports_skills) && 
+                                 profile.user_sports_skills.length > 0;
+          
+          const isComplete = hasBasicInfo && hasSportsSkills;
+          setProfileComplete(isComplete);
+        } else {
+          console.error('Failed to create or retrieve user profile');
+        }
       }
 
       // Handle redirect only for explicit sign-in events (not initial session)
@@ -251,28 +277,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
         
         if (mounted) {
-          
-          if (session?.user) {
-            // For Google users, ensure profile exists
-            if (session.user.app_metadata?.provider === 'google') {
-              try {
-                const { data, error } = await supabase.rpc('check_and_fix_user_profile_v4', {
-                  p_auth_id: session.user.id.toString(),
-                  p_email: session.user.email || null,
-                  p_name: session.user.user_metadata?.name || session.user.user_metadata?.full_name || null,
-                  p_phone: null
-                });
-                
-                if (error) {
-                  console.error('Error in initial Google profile creation:', error);
-                } else {
-                }
-              } catch (err) {
-                console.error('Exception in initial Google profile creation:', err);
-              }
-            }
-          }
-          
+          // handleAuthStateChange will handle user profile creation and redirects
           await handleAuthStateChange('INITIAL_SESSION', session);
         }
       } catch (error) {
