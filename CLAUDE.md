@@ -104,6 +104,16 @@ Using Shadcn UI components in `/src/components/ui/`:
 - Use `cn()` utility for conditional classes
 - Components use Radix UI primitives under the hood
 
+## Database Management
+
+Claude Code can manage the Supabase database for this project:
+
+- Apply database migrations using `mcp__supabase__apply_migration`
+- Execute SQL queries using `mcp__supabase__execute_sql`
+- List and manage database tables, extensions, and migrations
+- Generate TypeScript types from database schema
+- Access project logs and advisors for debugging
+
 ## Important Notes
 
 - No test framework is currently configured
