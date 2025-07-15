@@ -53,8 +53,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .eq('auth_id', authUser.id)
         .single();
 
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching user profile:', error);
+      if (error) {
+        if (error.code === 'PGRST116') {
+          // No profile found - this is expected for new users
+          console.log('No user profile found for auth_id:', authUser.id);
+          return null;
+        } else {
+          // Unexpected error - log and return null to prevent data leaks
+          console.error('Error fetching user profile:', error);
+          return null;
+        }
+      }
+
+      // Verify the profile belongs to the current user to prevent data leaks
+      if (profile && profile.auth_id !== authUser.id) {
+        console.error('Security violation: Profile auth_id mismatch', {
+          profile_auth_id: profile.auth_id,
+          user_auth_id: authUser.id
+        });
         return null;
       }
 
@@ -104,6 +120,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return null;
       }
       
+      // Verify the profile belongs to the current user to prevent data leaks
+      if (profile && profile.auth_id !== user.id) {
+        console.error('Security violation: Profile auth_id mismatch in handleUserProfileCreation', {
+          profile_auth_id: profile.auth_id,
+          user_auth_id: user.id
+        });
+        return null;
+      }
 
       return profile;
     } catch (error) {
@@ -169,64 +193,48 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Handle user profile for any signed-in user
       const profile = await handleUserProfileCreation(session.user);
       
-      // For Google users, if profile creation fails or profile is incomplete, redirect to completion page
-      if (session.user.app_metadata?.provider === 'google') {
-        if (!profile) {
-          // Profile creation failed, redirect to manual completion
-          console.log('Google user profile creation failed, redirecting to manual completion');
+      // Handle user profile for all users (Google and non-Google)
+      if (profile) {
+        setUserProfile(profile);
+        
+        // Check if profile is complete - basic info and sports/skills
+        const hasBasicInfo = profile.name && profile.phone && 
+                            profile.name.trim() !== '' && profile.phone.trim() !== '';
+        const hasSportsSkills = profile.user_sports_skills && 
+                               Array.isArray(profile.user_sports_skills) && 
+                               profile.user_sports_skills.length > 0;
+        
+        const isComplete = hasBasicInfo && hasSportsSkills;
+        setProfileComplete(isComplete);
+        
+        // For users with incomplete profiles, redirect to profile completion
+        if (!isComplete) {
+          // Only redirect if not already on the completion pages to avoid loops
           if (currentPath !== '/google-signup-redirect' && currentPath !== '/complete-profile') {
+            console.log('User with incomplete profile detected, redirecting to profile completion');
             localStorage.setItem('redirectAfterLogin', currentPath);
             window.location.replace('/google-signup-redirect');
             return;
           }
-        } else {
-          setUserProfile(profile);
-          
-          // Check if profile is complete - basic info and sports/skills
-          const hasBasicInfo = profile.name && profile.phone && 
-                              profile.name.trim() !== '' && profile.phone.trim() !== '';
-          const hasSportsSkills = profile.user_sports_skills && 
-                                 Array.isArray(profile.user_sports_skills) && 
-                                 profile.user_sports_skills.length > 0;
-          
-          const isComplete = hasBasicInfo && hasSportsSkills;
-          setProfileComplete(isComplete);
-          
-          // For Google users with incomplete profiles, force redirect to profile completion
-          if (!isComplete) {
-            // Don't redirect if already on the redirect page to avoid loops
-            if (currentPath !== '/google-signup-redirect' && currentPath !== '/complete-profile') {
-              console.log('Google user with incomplete profile detected, redirecting to profile completion');
-              localStorage.setItem('redirectAfterLogin', currentPath);
-              window.location.replace('/google-signup-redirect');
-              return;
-            }
-          }
         }
       } else {
-        // For non-Google users, handle normally
-        if (profile) {
-          setUserProfile(profile);
-          
-          // Check if profile is complete - basic info and sports/skills
-          const hasBasicInfo = profile.name && profile.phone && 
-                              profile.name.trim() !== '' && profile.phone.trim() !== '';
-          const hasSportsSkills = profile.user_sports_skills && 
-                                 Array.isArray(profile.user_sports_skills) && 
-                                 profile.user_sports_skills.length > 0;
-          
-          const isComplete = hasBasicInfo && hasSportsSkills;
-          setProfileComplete(isComplete);
-        } else {
-          console.error('Failed to create or retrieve user profile');
+        // Profile creation failed or doesn't exist
+        console.log('No user profile found, redirecting to profile completion');
+        setUserProfile(null);
+        setProfileComplete(false);
+        
+        // Redirect to profile completion if not already there
+        if (currentPath !== '/google-signup-redirect' && currentPath !== '/complete-profile') {
+          localStorage.setItem('redirectAfterLogin', currentPath);
+          window.location.replace('/google-signup-redirect');
+          return;
         }
       }
 
       // Handle redirect only for explicit sign-in events (not initial session)
       if (event === 'SIGNED_IN') {
-        // For Google sign-ins, redirect to the profile completion page if needed
-        // Only handle redirects if the profile is complete or this is not a Google user
-        if (profileComplete || session.user.app_metadata?.provider !== 'google') {
+        // Only redirect if profile is complete
+        if (profileComplete) {
           // Check for redirect after login
           const redirectPath = localStorage.getItem('redirectAfterLogin') || '/my-account/teams';
           if (redirectPath && redirectPath !== '/google-signup-redirect' && redirectPath !== '/complete-profile') {
@@ -234,16 +242,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             // Use setTimeout to ensure the state is fully updated before redirecting
             setTimeout(() => {
               window.location.replace(redirectPath);
-            }, 500); // Increased timeout to ensure state is fully updated
+            }, 100);
             return;
           }
           
           // Default redirect to teams page
           else {
-            window.location.replace('/my-account/teams');
+            setTimeout(() => {
+              window.location.replace('/my-account/teams');
+            }, 100);
             return;
           }
         }
+        // If profile is not complete, the redirect to completion page already happened above
       }
     }
 
