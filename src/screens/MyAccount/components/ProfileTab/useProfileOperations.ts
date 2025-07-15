@@ -7,7 +7,7 @@ export function useProfileOperations(userProfile: any, refreshUserProfile: () =>
   const { showToast } = useToast();
   const [saving, setSaving] = useState(false);
 
-  const handleProfileSave = async (profile: Profile) => {
+  const handleProfileSave = async (profile: Profile, skipRefresh = false) => {
     if (!userProfile) return;
 
     // Validate phone number format
@@ -33,7 +33,9 @@ export function useProfileOperations(userProfile: any, refreshUserProfile: () =>
 
       if (error) throw error;
 
-      await refreshUserProfile();
+      if (!skipRefresh) {
+        await refreshUserProfile();
+      }
       
       // If this was a profile completion, redirect appropriately
       const searchParams = new URLSearchParams(window.location.search);
