@@ -4,6 +4,15 @@ module.exports = {
     "app/**/*.{ts,tsx}",
     "components/**/*.{ts,tsx}",
   ],
+  safelist: [
+    // Skill level colors
+    'bg-green-200', 'text-green-900', 'border-green-400', 'hover:bg-green-100',
+    'bg-blue-200', 'text-blue-900', 'border-blue-400', 'hover:bg-blue-100',
+    'bg-yellow-200', 'text-yellow-900', 'border-yellow-400', 'hover:bg-yellow-100',
+    'bg-purple-200', 'text-purple-900', 'border-purple-400', 'hover:bg-purple-100',
+    'bg-red-200', 'text-red-900', 'border-red-400', 'hover:bg-red-100',
+    'bg-gray-100', 'text-gray-700', 'border-gray-300', 'hover:bg-gray-200'
+  ],
   theme: {
     extend: {
       fontFamily: {

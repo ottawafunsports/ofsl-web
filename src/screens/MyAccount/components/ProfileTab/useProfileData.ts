@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../../../lib/supabase';
 import { Profile, Sport, Skill, SportSkill } from './types';
 import { INITIAL_PROFILE, INITIAL_NOTIFICATIONS } from './constants';
 
 export function useProfileData(userProfile: any) {
   const [profile, setProfile] = useState<Profile>(INITIAL_PROFILE);
+  const lastSavedProfile = useRef<Profile | null>(null);
   const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
   const [sports, setSports] = useState<Sport[]>([]);
   const [skills, setSkills] = useState<Skill[]>([]);
@@ -29,6 +30,7 @@ export function useProfileData(userProfile: any) {
         setSkills(skillsResponse.data || []);
         
         // If we have user_sports_skills, enrich them with names
+        // Only update if this is meaningful data (not just a temporary state)
         if (userProfile?.user_sports_skills && userProfile.user_sports_skills.length > 0) {
           const enrichedSportsSkills = userProfile.user_sports_skills.map((item: SportSkill) => {
             const sport = sportsResponse.data?.find(s => s.id === item.sport_id);
@@ -41,10 +43,19 @@ export function useProfileData(userProfile: any) {
             };
           });
           
-          setProfile(prev => ({
-            ...prev,
-            user_sports_skills: enrichedSportsSkills
-          }));
+          setProfile(prev => {
+            // Only update if the enriched skills are different from current
+            const currentSkillsStr = JSON.stringify(prev.user_sports_skills);
+            const newSkillsStr = JSON.stringify(enrichedSportsSkills);
+            
+            if (currentSkillsStr !== newSkillsStr) {
+              return {
+                ...prev,
+                user_sports_skills: enrichedSportsSkills
+              };
+            }
+            return prev;
+          });
         }
       } catch (error) {
         console.error('Error loading sports and skills:', error);
@@ -56,16 +67,26 @@ export function useProfileData(userProfile: any) {
     loadSportsAndSkills();
   }, [userProfile?.user_sports_skills]);
 
-  // Update profile when userProfile changes
+  // Update profile when userProfile changes, but only if it's a meaningful change
   useEffect(() => {
     if (userProfile) {
-      setProfile({
+      const newProfile = {
         name: userProfile.name || '',
         phone: userProfile.phone || '',
         email: userProfile.email || '',
         preferred_position: userProfile.preferred_position || '',
         user_sports_skills: userProfile.user_sports_skills || []
-      });
+      };
+      
+      // Only update if this is the first load or if the changes are different from what we last saved
+      const isFirstLoad = !lastSavedProfile.current;
+      const hasSignificantChanges = lastSavedProfile.current && 
+        JSON.stringify(newProfile) !== JSON.stringify(lastSavedProfile.current);
+      
+      if (isFirstLoad || hasSignificantChanges) {
+        setProfile(newProfile);
+        lastSavedProfile.current = newProfile;
+      }
     }
   }, [userProfile]);
 
@@ -76,6 +97,10 @@ export function useProfileData(userProfile: any) {
     }));
   };
 
+  const markProfileAsSaved = (savedProfile: Profile) => {
+    lastSavedProfile.current = savedProfile;
+  };
+
   return {
     profile,
     notifications,
@@ -83,6 +108,7 @@ export function useProfileData(userProfile: any) {
     skills,
     loadingSportsSkills,
     setProfile,
-    handleNotificationToggle
+    handleNotificationToggle,
+    markProfileAsSaved
   };
 }
