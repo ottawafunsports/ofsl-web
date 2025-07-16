@@ -1,6 +1,13 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { Session, User, AuthError } from '@supabase/supabase-js';
-import { supabase } from '../lib/supabase';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useRef,
+  ReactNode,
+} from "react";
+import { Session, User, AuthError } from "@supabase/supabase-js";
+import { supabase } from "../lib/supabase";
 
 interface AuthContextType {
   session: Session | null;
@@ -8,11 +15,17 @@ interface AuthContextType {
   userProfile: any | null;
   loading: boolean;
   profileComplete: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>;
+  signIn: (
+    email: string,
+    password: string,
+  ) => Promise<{ error: AuthError | null }>;
   signInWithGoogle: () => Promise<{ error: AuthError | null }>;
-  signUp: (email: string, password: string) => Promise<{ 
-    user: User | null; 
-    error: AuthError | null; 
+  signUp: (
+    email: string,
+    password: string,
+  ) => Promise<{
+    user: User | null;
+    error: AuthError | null;
   }>;
   signOut: () => Promise<void>;
   checkProfileCompletion: () => boolean;
@@ -33,20 +46,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [emailVerified, setEmailVerified] = useState(false);
   const [initializing, setInitializing] = useState(true);
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [lastRedirectPath, setLastRedirectPath] = useState<string | null>(null);
   const [isNewUser, setIsNewUser] = useState(false);
+  const redirectingRef = useRef<string | null>(null);
 
   // Helper function to check if profile is complete
   const checkProfileCompletion = (profile?: any) => {
     const profileToCheck = profile || userProfile;
     if (!profileToCheck) return false;
-    
+
     // Check if required fields are filled including sports/skills
-    const hasBasicInfo = profileToCheck.name && profileToCheck.phone && 
-                        profileToCheck.name.trim() !== '' && profileToCheck.phone.trim() !== '';
-    const hasSportsSkills = profileToCheck.user_sports_skills && 
-                           Array.isArray(profileToCheck.user_sports_skills) && 
-                           profileToCheck.user_sports_skills.length > 0;
-    
+    const hasBasicInfo =
+      profileToCheck.name &&
+      profileToCheck.phone &&
+      profileToCheck.name.trim() !== "" &&
+      profileToCheck.phone.trim() !== "";
+    const hasSportsSkills =
+      profileToCheck.user_sports_skills &&
+      Array.isArray(profileToCheck.user_sports_skills) &&
+      profileToCheck.user_sports_skills.length > 0;
+
     return hasBasicInfo && hasSportsSkills && profileToCheck.profile_completed;
   };
 
@@ -54,35 +73,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const fetchUserProfile = async (authUser: User) => {
     try {
       const { data: profile, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('auth_id', authUser.id)
+        .from("users")
+        .select("*")
+        .eq("auth_id", authUser.id)
         .single();
 
       if (error) {
-        if (error.code === 'PGRST116') {
+        if (error.code === "PGRST116") {
           // No profile found - this is expected for new users
-          console.log('No user profile found for auth_id:', authUser.id);
+          console.log("No user profile found for auth_id:", authUser.id);
           return null;
         } else {
           // Unexpected error - log and return null to prevent data leaks
-          console.error('Error fetching user profile:', error);
+          console.error("Error fetching user profile:", error);
           return null;
         }
       }
 
       // Verify the profile belongs to the current user to prevent data leaks
       if (profile && profile.auth_id !== authUser.id) {
-        console.error('Security violation: Profile auth_id mismatch', {
+        console.error("Security violation: Profile auth_id mismatch", {
           profile_auth_id: profile.auth_id,
-          user_auth_id: authUser.id
+          user_auth_id: authUser.id,
         });
         return null;
       }
 
       return profile;
     } catch (error) {
-      console.error('Error in fetchUserProfile:', error);
+      console.error("Error in fetchUserProfile:", error);
       return null;
     }
   };
@@ -98,97 +117,120 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Helper function to create user profile if it doesn't exist
   const handleUserProfileCreation = async (user: User) => {
     try {
-      const provider = user.app_metadata?.provider || 'email';
-      
+      const provider = user.app_metadata?.provider || "email";
+
       // Use the v4 function for better Google OAuth support
-      let { data: existingProfile, error: fetchError } = await supabase
-        .rpc('check_and_fix_user_profile_v4', {
+      let { data: existingProfile, error: fetchError } = await supabase.rpc(
+        "check_and_fix_user_profile_v4",
+        {
           p_auth_id: user.id.toString(),
           p_email: user.email,
-          p_name: user.user_metadata?.full_name || user.user_metadata?.name || '',
-          p_phone: user.user_metadata?.phone || ''
-        });
+          p_name:
+            user.user_metadata?.full_name || user.user_metadata?.name || "",
+          p_phone: user.user_metadata?.phone || "",
+        },
+      );
 
-      if (fetchError && fetchError.code !== 'PGRST116') {
-        console.error('Error checking existing user:', fetchError);
+      if (fetchError && fetchError.code !== "PGRST116") {
+        console.error("Error checking existing user:", fetchError);
         return null;
       }
 
       // After attempting to fix the profile, fetch the current profile
       const { data: profile, error: profileError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('auth_id', user.id)
+        .from("users")
+        .select("*")
+        .eq("auth_id", user.id)
         .single();
-      
+
       if (profileError) {
-        console.error('Error fetching user profile after fix attempt:', profileError);
+        console.error(
+          "Error fetching user profile after fix attempt:",
+          profileError,
+        );
         return null;
       }
-      
+
       // Verify the profile belongs to the current user to prevent data leaks
       if (profile && profile.auth_id !== user.id) {
-        console.error('Security violation: Profile auth_id mismatch in handleUserProfileCreation', {
-          profile_auth_id: profile.auth_id,
-          user_auth_id: user.id
-        });
+        console.error(
+          "Security violation: Profile auth_id mismatch in handleUserProfileCreation",
+          {
+            profile_auth_id: profile.auth_id,
+            user_auth_id: user.id,
+          },
+        );
         return null;
       }
 
       return profile;
     } catch (error) {
-      console.error('Error in handleUserProfileCreation:', error);
+      console.error("Error in handleUserProfileCreation:", error);
       return null;
     }
   };
 
   // Handle auth state changes
-  const handleAuthStateChange = async (event: string, session: Session | null) => {
+  const handleAuthStateChange = async (
+    event: string,
+    session: Session | null,
+  ) => {
+    // Helper function to get current path dynamically
+    const getCurrentPath = () => window.location.hash.replace("#", "") || "/";
     
     // Store the current path for potential redirect after profile completion
-    const currentPath = window.location.hash.replace('#', '') || '/';
-    
-    // Don't process redirects if user is already on complete-profile page
-    if (currentPath === '/complete-profile') {
-      // Still set session and user state
+    const currentPath = getCurrentPath();
+
+    console.log({ currentPath, event, lastRedirectPath, isRedirecting, redirectingRef: redirectingRef.current });
+
+    // If we're already redirecting to complete-profile, skip redirect logic
+    if (redirectingRef.current === "/complete-profile" || (isRedirecting && lastRedirectPath === "/complete-profile")) {
+      // Set session and user state
       if (session) {
         setSession(session);
         setUser(session.user);
         setEmailVerified(session.user.email_confirmed_at != null);
-        
-        // Try to create/fetch user profile but don't redirect
+
+        // Try to create/fetch user profile
         if (session.user) {
-          handleUserProfileCreation(session.user).then(profile => {
-            if (profile) {
-              setUserProfile(profile);
-              const isComplete = checkProfileCompletion(profile);
-              setProfileComplete(isComplete);
-            }
-          }).catch(err => {
-            console.error('Error handling user profile on complete-profile page:', err);
-          });
+          handleUserProfileCreation(session.user)
+            .then((profile) => {
+              if (profile) {
+                setUserProfile(profile);
+                const isComplete = checkProfileCompletion(profile);
+                setProfileComplete(isComplete);
+                
+                // Only clear redirect flags if we're actually on complete-profile page
+                if (currentPath === "/complete-profile") {
+                  setIsRedirecting(false);
+                  setLastRedirectPath(null);
+                  redirectingRef.current = null;
+                }
+              }
+            })
+            .catch((err) => {
+              console.error("Error handling user profile during redirect:", err);
+            });
         }
       } else {
         setSession(null);
         setUser(null);
         setEmailVerified(false);
       }
-      
-      // Properly set initialization and loading states
+
+      // Set loading to false
       if (initializing) {
         setInitializing(false);
       }
       setLoading(false);
       return;
     }
-    
-    
+
     // Set isNewUser flag for SIGNED_UP events
-    if (event === 'SIGNED_UP') {
+    if (event === "SIGNED_UP") {
       setIsNewUser(true);
     }
-    
-    
+
     // Set session and user state immediately to ensure UI updates
     if (session) {
       setSession(session);
@@ -201,23 +243,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(null);
       setEmailVerified(false);
     }
-    
+
     // Profile creation will be handled by handleUserProfileCreation below
-    
-    if (event === 'SIGNED_OUT') {
+
+    if (event === "SIGNED_OUT") {
       // Clear all auth state
       setSession(null);
       setUser(null);
       setUserProfile(null);
       setIsNewUser(false);
+      setIsRedirecting(false);
+      setLastRedirectPath(null);
+      redirectingRef.current = null;
       // Clear any stored redirect paths
-      localStorage.removeItem('redirectAfterLogin');
+      localStorage.removeItem("redirectAfterLogin");
       setLoading(false);
       return;
     }
 
     // Handle password recovery event
-    if (event === 'PASSWORD_RECOVERY') {
+    if (event === "PASSWORD_RECOVERY") {
       // Don't redirect, let the ResetPasswordPage component handle this
       setLoading(false);
       return;
@@ -226,102 +271,127 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (session?.user) {
       // Handle user profile for any signed-in user
       const profile = await handleUserProfileCreation(session.user);
-      
+
       // Handle user profile for all users (Google and non-Google)
       if (profile) {
         setUserProfile(profile);
-        
+
         // Check profile completion status
         const isComplete = checkProfileCompletion(profile);
         setProfileComplete(isComplete);
-        
+
         // Check email verification status
         const isEmailVerified = session.user.email_confirmed_at != null;
-        
+
         // Redirect logic based on verification and completion status
         if (!isEmailVerified) {
           // Email not verified, redirect to confirmation
-          if (currentPath !== '/signup-confirmation') {
-            localStorage.setItem('redirectAfterLogin', currentPath);
-            window.location.replace('/#/signup-confirmation');
+          const currentPathNow = getCurrentPath();
+          if (currentPathNow !== "/signup-confirmation") {
+            localStorage.setItem("redirectAfterLogin", currentPathNow);
+            window.location.hash = "#/signup-confirmation";
             return;
           }
         } else if (!isComplete) {
           // Email verified but profile incomplete, redirect to profile completion
           // Check if this user needs profile completion
-          const needsProfileCompletion = !profile.profile_completed || 
-                                       !profile.name || 
-                                       !profile.phone ||
-                                       !profile.user_sports_skills ||
-                                       profile.user_sports_skills.length === 0;
-          
-          if (needsProfileCompletion && currentPath !== '/complete-profile' && !isRedirecting) {
+          const needsProfileCompletion =
+            !profile.profile_completed ||
+            !profile.name ||
+            !profile.phone ||
+            !profile.user_sports_skills ||
+            profile.user_sports_skills.length === 0;
+
+          const currentPathNow = getCurrentPath();
+          console.log({ needsProfileCompletion, currentPathNow, isRedirecting, lastRedirectPath });
+          if (
+            needsProfileCompletion &&
+            currentPathNow !== "/complete-profile" &&
+            !isRedirecting &&
+            lastRedirectPath !== "/complete-profile" &&
+            redirectingRef.current !== "/complete-profile"
+          ) {
+            console.log("Redirecting to complete-profile from:", currentPathNow);
+            // Set ref immediately to prevent race condition
+            redirectingRef.current = "/complete-profile";
             setIsRedirecting(true);
-            localStorage.setItem('redirectAfterLogin', currentPath);
-            // Use setTimeout to ensure the redirect happens after React finishes rendering
-            setTimeout(() => {
-              window.location.href = '/#/complete-profile';
-            }, 100);
-            return;
+            setLastRedirectPath("/complete-profile");
+            localStorage.setItem("redirectAfterLogin", currentPathNow);
+            // Use replace to avoid race condition and ensure immediate URL change
+            window.location.hash = "#/complete-profile";
+            // Don't return - continue processing as if we're on complete-profile page
+            console.log("Continuing auth state processing for complete-profile page");
           }
         }
       } else {
         // Profile creation failed or doesn't exist
-        console.log('No user profile found, redirecting to profile completion');
+        console.log("No user profile found, redirecting to profile completion");
         setUserProfile(null);
         setProfileComplete(false);
-        
+
         // Check email verification first
         const isEmailVerified = session.user.email_confirmed_at != null;
-        
+
         if (!isEmailVerified) {
           // Email not verified, redirect to confirmation
-          if (currentPath !== '/signup-confirmation') {
-            localStorage.setItem('redirectAfterLogin', currentPath);
-            window.location.replace('/#/signup-confirmation');
+          const currentPathNow = getCurrentPath();
+          if (currentPathNow !== "/signup-confirmation") {
+            localStorage.setItem("redirectAfterLogin", currentPathNow);
+            window.location.hash = "#/signup-confirmation";
             return;
           }
         } else {
           // Email verified but no profile exists, redirect to profile completion
           // This handles both new users and cases where profile creation failed
-          
+
           // For Google users, we can't rely on SIGNED_UP event, so check if user is recent
-          const isGoogleUser = session.user.app_metadata?.provider === 'google';
+          const isGoogleUser = session.user.app_metadata?.provider === "google";
           const userCreatedAt = new Date(session.user.created_at);
           const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
           const isRecentUser = userCreatedAt > fiveMinutesAgo;
-          
+
           // Always redirect to profile completion if no profile exists
-          if (currentPath !== '/complete-profile' && !isRedirecting) {
+          const currentPathNow = getCurrentPath();
+          console.log("No profile - checking redirect:", { currentPathNow, isRedirecting, lastRedirectPath });
+          if (currentPathNow !== "/complete-profile" && !isRedirecting && lastRedirectPath !== "/complete-profile" && redirectingRef.current !== "/complete-profile") {
+            console.log("Redirecting to complete-profile (no profile) from:", currentPathNow);
+            // Set ref immediately to prevent race condition
+            redirectingRef.current = "/complete-profile";
             setIsRedirecting(true);
-            localStorage.setItem('redirectAfterLogin', currentPath);
-            setTimeout(() => {
-              window.location.href = '/#/complete-profile';
-            }, 100);
-            return;
+            setLastRedirectPath("/complete-profile");
+            localStorage.setItem("redirectAfterLogin", currentPathNow);
+            // Use replace to avoid race condition and ensure immediate URL change
+            window.location.hash = "#/complete-profile";
+            // Don't return - continue processing as if we're on complete-profile page
+            console.log("Continuing auth state processing for complete-profile page (no profile)");
           }
         }
       }
 
       // Handle redirect only for explicit sign-in events (not initial session)
-      if (event === 'SIGNED_IN') {
+      if (event === "SIGNED_IN") {
         // Only redirect if email is verified and profile is complete
         if (emailVerified && profileComplete) {
           // Check for redirect after login
-          const redirectPath = localStorage.getItem('redirectAfterLogin') || '/my-account/teams';
-          if (redirectPath && redirectPath !== '/signup-confirmation' && redirectPath !== '/complete-profile') {
-            localStorage.removeItem('redirectAfterLogin');
+          const redirectPath =
+            localStorage.getItem("redirectAfterLogin") || "/my-account/teams";
+          if (
+            redirectPath &&
+            redirectPath !== "/signup-confirmation" &&
+            redirectPath !== "/complete-profile"
+          ) {
+            localStorage.removeItem("redirectAfterLogin");
             // Use setTimeout to ensure the state is fully updated before redirecting
             setTimeout(() => {
-              window.location.replace('#' + redirectPath);
+              window.location.hash = "#" + redirectPath;
             }, 100);
             return;
           }
-          
+
           // Default redirect to teams page
           else {
             setTimeout(() => {
-              window.location.replace('/#/my-account/teams');
+              window.location.hash = "#/my-account/teams";
             }, 100);
             return;
           }
@@ -340,31 +410,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     let mounted = true;
 
-
     // Get initial session
     const getInitialSession = async () => {
       try {
         // Keep loading true until we've processed everything
         setLoading(true);
-       
+
         const { data, error } = await supabase.auth.getSession();
         const session = data?.session;
-        
+
         if (error) {
-          console.error('Error getting session:', error);
+          console.error("Error getting session:", error);
           if (mounted) {
             setLoading(false);
             setInitializing(false);
           }
           return;
         }
-        
+
         if (mounted) {
           // handleAuthStateChange will handle user profile creation and redirects
-          await handleAuthStateChange('INITIAL_SESSION', session);
+          await handleAuthStateChange("INITIAL_SESSION", session);
         }
       } catch (error) {
-        console.error('Error in getInitialSession:', error);
+        console.error("Error in getInitialSession:", error);
         if (mounted) {
           setLoading(false);
           setInitializing(false);
@@ -375,7 +444,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     getInitialSession();
 
     // Subscribe to auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (mounted && !initializing) {
         await handleAuthStateChange(event, session);
       }
@@ -390,24 +461,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signIn = async (email: string, password: string) => {
     try {
       setLoading(true);
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
       if (error) {
-        console.error('Sign in error:', error.message);
+        console.error("Sign in error:", error.message);
         setLoading(false);
         return { error };
       }
 
       // Don't set loading to false here - let the auth state change handler do it
       // The redirect will happen in the auth state change handler
-      
+
       // Force a state update to trigger UI refresh
       setUser(data.user);
       setSession(data.session);
-      
+
       return { error: null };
     } catch (error) {
-      console.error('Error in signIn:', error);
+      console.error("Error in signIn:", error);
       setLoading(false);
       return { error: error as AuthError };
     }
@@ -416,22 +490,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signInWithGoogle = async () => {
     try {
       setLoading(true);
-      
+
       // Store the current URL for redirect after login
-      const currentPath = window.location.hash.replace('#', '') || '/';
-      if (currentPath !== '/login' && currentPath !== '/signup' && currentPath !== '/google-signup-redirect') {
-        localStorage.setItem('redirectAfterLogin', currentPath);
+      const currentPath = window.location.hash.replace("#", "") || "/";
+      if (
+        currentPath !== "/login" &&
+        currentPath !== "/signup" &&
+        currentPath !== "/google-signup-redirect"
+      ) {
+        localStorage.setItem("redirectAfterLogin", currentPath);
       }
-      
+
       const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
+        provider: "google",
         options: {
           redirectTo: `${window.location.origin}/#/signup-confirmation`,
           queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          }
-        }
+            access_type: "offline",
+            prompt: "consent",
+          },
+        },
       });
 
       if (data) {
@@ -440,10 +518,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           window.location.href = data.url;
         }
       }
-      
+
       return { error };
     } catch (error) {
-      console.error('Error in signInWithGoogle:', error);
+      console.error("Error in signInWithGoogle:", error);
       setLoading(false);
       return { error: error as AuthError };
     }
@@ -453,33 +531,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const _signInWithGoogle = async () => {
     try {
       setLoading(true);
-      
+
       // Store the current URL for redirect after login
-      const currentPath = window.location.hash.replace('#', '') || '/';
-      if (currentPath !== '/login' && currentPath !== '/signup' && currentPath !== '/google-signup-redirect') {
-        localStorage.setItem('redirectAfterLogin', currentPath);
+      const currentPath = window.location.hash.replace("#", "") || "/";
+      if (
+        currentPath !== "/login" &&
+        currentPath !== "/signup" &&
+        currentPath !== "/google-signup-redirect"
+      ) {
+        localStorage.setItem("redirectAfterLogin", currentPath);
       }
-      
+
       const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
+        provider: "google",
         options: {
           // Redirect to the Google signup redirect page to complete profile
           redirectTo: `${window.location.origin}/google-signup-redirect`,
           queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          }
-        }
+            access_type: "offline",
+            prompt: "consent",
+          },
+        },
       });
 
       if (data) {
         if (data.url) {
         }
       }
-      
+
       return { error };
     } catch (error) {
-      console.error('Error in signInWithGoogle:', error);
+      console.error("Error in signInWithGoogle:", error);
       setLoading(false);
       return { error: error as AuthError };
     }
@@ -488,24 +570,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signUp = async (email: string, password: string) => {
     try {
       setLoading(true);
-      
+
       // Store the current URL for redirect after signup
-      const currentPath = window.location.hash.replace('#', '') || '/';
-      if (currentPath !== '/login' && currentPath !== '/signup') {
-        localStorage.setItem('redirectAfterLogin', currentPath);
+      const currentPath = window.location.hash.replace("#", "") || "/";
+      if (currentPath !== "/login" && currentPath !== "/signup") {
+        localStorage.setItem("redirectAfterLogin", currentPath);
       }
-      
+
       const { data, error } = await supabase.auth.signUp({
-        email, 
+        email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/my-account/profile`
-        }
+          emailRedirectTo: `${window.location.origin}/my-account/profile`,
+        },
       });
-      
+
       return { user: data?.user || null, error };
     } catch (error) {
-      console.error('Error in signUp:', error);
+      console.error("Error in signUp:", error);
       return { user: null, error: error as AuthError };
     } finally {
       setLoading(false);
@@ -516,23 +598,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       // Set loading state
       setLoading(true);
-      
+
       // Sign out from Supabase
       const { error } = await supabase.auth.signOut();
-      
+
       if (error) {
-        console.error('Error signing out:', error);
+        console.error("Error signing out:", error);
         throw error;
       }
-      
+
       // Clear local storage items
-      localStorage.removeItem('redirectAfterLogin');
-      
-      
+      localStorage.removeItem("redirectAfterLogin");
+
       // Force page reload to ensure clean state
-      window.location.href = '/';
+      window.location.href = "/";
     } catch (error) {
-      console.error('Error in signOut:', error);
+      console.error("Error in signOut:", error);
       // Even if there's an error, clear the local state
       setSession(null);
       setUser(null);
@@ -553,22 +634,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ 
-      session, 
-      user, 
-      userProfile,
-      loading,
-      profileComplete,
-      emailVerified,
-      isNewUser,
-      setIsNewUser,
-      signIn, 
-      signInWithGoogle, 
-      signUp, 
-      signOut, 
-      checkProfileCompletion,
-      refreshUserProfile
-    }}>
+    <AuthContext.Provider
+      value={{
+        session,
+        user,
+        userProfile,
+        loading,
+        profileComplete,
+        emailVerified,
+        isNewUser,
+        setIsNewUser,
+        signIn,
+        signInWithGoogle,
+        signUp,
+        signOut,
+        checkProfileCompletion,
+        refreshUserProfile,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -577,10 +660,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
-  
+
   // Log auth state when hook is used (helps with debugging)
-  
+
   return context;
 };

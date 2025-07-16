@@ -119,6 +119,23 @@ export function AccountLayout() {
                   <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#B20000]"></div>
                 )}
               </Link>
+
+              <Link
+                to="/my-account/waivers"
+                className={`flex items-center gap-2 px-6 py-3 text-center cursor-pointer relative transition-all ${
+                  isActive('/my-account/waivers') 
+                    ? 'text-[#B20000] font-medium' 
+                    : 'text-[#6F6F6F] hover:text-[#B20000]'
+                }`}
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+                </svg>
+                Manage Waivers
+                {isActive('/my-account/waivers') && (
+                  <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#B20000]"></div>
+                )}
+              </Link>
             </>
           )}
         </div>

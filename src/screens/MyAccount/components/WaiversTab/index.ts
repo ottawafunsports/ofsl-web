@@ -1,0 +1,1 @@
+export { WaiversTab } from './WaiversTab';

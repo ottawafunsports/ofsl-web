@@ -17,7 +17,7 @@ export function Header({ isCompact = false }: HeaderProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const { user, userProfile, signOut } = useAuth();
   const { showToast } = useToast();
 
   // Close dropdown when clicking outside
@@ -157,7 +157,7 @@ export function Header({ isCompact = false }: HeaderProps) {
               
               {/* Dropdown Menu */}
               {isUserDropdownOpen && (
-                <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                <div className="absolute right-0 top-full mt-2 w-52 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
                   <div className="py-2">
                     <Link 
                       to="/my-teams" 
@@ -173,6 +173,38 @@ export function Header({ isCompact = false }: HeaderProps) {
                     >
                       My Account
                     </Link>
+                    
+                    {/* Admin-only routes */}
+                    {userProfile?.is_admin && (
+                      <>
+                        <hr className="my-1 border-gray-200" />
+                        <div className="px-4 py-1">
+                          <p className="text-xs text-gray-500 font-medium">Admin</p>
+                        </div>
+                        <Link 
+                          to="/my-account/leagues"
+                          className="block px-4 py-2 text-[#6F6F6F] hover:bg-gray-50 hover:text-[#B20000] transition-colors"
+                          onClick={() => setIsUserDropdownOpen(false)}
+                        >
+                          Manage Leagues
+                        </Link>
+                        <Link 
+                          to="/my-account/schools"
+                          className="block px-4 py-2 text-[#6F6F6F] hover:bg-gray-50 hover:text-[#B20000] transition-colors"
+                          onClick={() => setIsUserDropdownOpen(false)}
+                        >
+                          Manage Schools
+                        </Link>
+                        <Link 
+                          to="/my-account/users"
+                          className="block px-4 py-2 text-[#6F6F6F] hover:bg-gray-50 hover:text-[#B20000] transition-colors"
+                          onClick={() => setIsUserDropdownOpen(false)}
+                        >
+                          Manage Users
+                        </Link>
+                      </>
+                    )}
+                    
                     <button 
                       onClick={handleLogout}
                       className="w-full text-left px-4 py-2 text-[#6F6F6F] hover:bg-gray-50 hover:text-[#B20000] transition-colors last:rounded-b-lg"
@@ -276,6 +308,47 @@ export function Header({ isCompact = false }: HeaderProps) {
                     <User className="h-4 w-4 mr-2" />
                     My Account
                   </Link>
+                  
+                  {/* Admin-only routes for mobile */}
+                  {userProfile?.is_admin && (
+                    <>
+                      <div className="h-px w-full bg-white/20 my-2"></div>
+                      <div className="px-4 py-1">
+                        <span className="text-[10px] text-[#ffeae5] font-medium whitespace-nowrap">Admin</span>
+                      </div>
+                      <Link
+                        to="/my-account/leagues"
+                        className={`${getMobileLinkClasses("/my-account/leagues")} flex items-center`}
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <svg className="h-4 w-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M12,5.5A3.5,3.5 0 0,1 15.5,9A3.5,3.5 0 0,1 12,12.5A3.5,3.5 0 0,1 8.5,9A3.5,3.5 0 0,1 12,5.5M5,8C5.56,8 6.08,8.15 6.53,8.42C6.38,9.85 6.8,11.27 7.66,12.38C7.16,13.34 6.16,14 5,14A3,3 0 0,1 2,11A3,3 0 0,1 5,8M19,8A3,3 0 0,1 22,11A3,3 0 0,1 19,14C17.84,14 16.84,13.34 16.34,12.38C17.2,11.27 17.62,9.85 17.47,8.42C17.92,8.15 18.44,8 19,8M5.5,18.25C5.5,16.18 8.41,14.5 12,14.5C15.59,14.5 18.5,16.18 18.5,18.25V20H5.5V18.25M0,20V18.5C0,17.11 1.89,15.94 4.45,15.6C3.86,16.28 3.5,17.22 3.5,18.25V20H0M24,20H20.5V18.25C20.5,17.22 20.14,16.28 19.55,15.6C22.11,15.94 24,17.11 24,18.5V20Z" />
+                        </svg>
+                        Manage Leagues
+                      </Link>
+                      <Link
+                        to="/my-account/schools"
+                        className={`${getMobileLinkClasses("/my-account/schools")} flex items-center`}
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <svg className="h-4 w-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M12,3L1,9L12,15L21,10.09V17H23V9M5,13.18V17.18L12,21L19,17.18V13.18L12,17L5,13.18Z" />
+                        </svg>
+                        Manage Schools
+                      </Link>
+                      <Link
+                        to="/my-account/users"
+                        className={`${getMobileLinkClasses("/my-account/users")} flex items-center`}
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <svg className="h-4 w-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M16,4C16.88,4 17.67,4.38 18.18,5H20C21.11,5 22,5.89 22,7V17C22,18.11 21.11,19 20,19H4C2.89,19 2,18.11 2,17V7C2,5.89 2.89,5 4,5H5.82C6.33,4.38 7.12,4 8,4H16M8,6A1,1 0 0,0 7,7A1,1 0 0,0 8,8A1,1 0 0,0 9,7A1,1 0 0,0 8,6M16,6A1,1 0 0,0 15,7A1,1 0 0,0 16,8A1,1 0 0,0 17,7A1,1 0 0,0 16,6M4,9V17H20V9H4M6,11H8V13H6V11M6,15H14V17H6V15M10,11H18V13H10V11Z" />
+                        </svg>
+                        Manage Users
+                      </Link>
+                    </>
+                  )}
+                  
                   <button 
                     onClick={() => {
                       handleLogout();
