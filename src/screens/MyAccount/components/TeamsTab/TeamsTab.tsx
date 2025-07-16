@@ -10,7 +10,7 @@ export function TeamsTab() {
   const { user, userProfile } = useAuth();
   const { leaguePayments, teams, loading, setLeaguePayments, refetchTeams } = useTeamsData(userProfile?.id);
   const { unregisteringPayment, handleUnregister } = useTeamOperations();
-  const [selectedTeam, setSelectedTeam] = useState<{id: number, name: string, roster: string[]} | null>(null);
+  const [selectedTeam, setSelectedTeam] = useState<{id: number, name: string, roster: string[], leagueName: string} | null>(null);
 
   const onUnregisterSuccess = (paymentId: number) => {
     setLeaguePayments(prev => prev.filter(p => p.id !== paymentId));
@@ -27,7 +27,12 @@ export function TeamsTab() {
   const handleManageTeammates = (teamId: number, teamName: string) => {
     const team = teams.find(t => t.id === teamId);
     if (team) {
-      setSelectedTeam({ id: teamId, name: teamName, roster: team.roster });
+      setSelectedTeam({ 
+        id: teamId, 
+        name: teamName, 
+        roster: team.roster,
+        leagueName: team.league?.name || 'OFSL League'
+      });
     }
   };
 
@@ -57,6 +62,7 @@ export function TeamsTab() {
           teamName={selectedTeam.name}
           currentRoster={selectedTeam.roster}
           onRosterUpdate={handleRosterUpdate}
+          leagueName={selectedTeam.leagueName}
         />
       )}
     </div>
