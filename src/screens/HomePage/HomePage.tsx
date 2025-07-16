@@ -41,13 +41,13 @@ const leagueCards = [
     title: "Women's Volleyball",
     image: "/TRE_7742.jpg",
     alt: "Womens volleyball",
-    link: "/womens-volleyball",
+    link: "/leagues?sport=Volleyball",
   },
   {
     title: "Men's Volleyball",
     image: "/mens-volleyball.jpg",
     alt: "Mens volleyball",
-    link: "/mens-volleyball",
+    link: "/leagues?sport=Volleyball",
   },
 ];
 
