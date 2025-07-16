@@ -21,7 +21,7 @@ const leagueCards = [
   },
   {
     title: "Advanced Badminton",
-    image: "/image.png",
+    image: "/badminton-card.png",
     alt: "Advanced badminton",
     link: "/badminton",
   },
@@ -33,7 +33,7 @@ const leagueCards = [
   },
   {
     title: "Competitive Badminton",
-    image: "/image.png",
+    image: "/badminton-card.png",
     alt: "Competitive badminton",
     link: "/badminton-competitive",
   },
@@ -419,4 +419,57 @@ export const HomePage = (): JSX.Element => {
                 Skills and drills
               </h2>
               <p className="text-[#6f6f6f] text-base md:text-lg leading-6 md:leading-7 mb-6 md:mb-8">
-              Whether you're just starting out or a seasoned player aiming to refine your fundamentals, elevate your skills with <strong>OFSL's Skills & Drills Program</strong>, led by <strong>James Battiston</strong>, former professional volleyball player and Canadian Beach
+              Whether you're just starting out or a seasoned player aiming to refine your fundamentals, elevate your skills with <strong>OFSL’s Skills & Drills Program</strong>, led by <strong>James Battiston</strong>, former professional volleyball player and Canadian Beach National Team member. Learn from one of the best and take your game to the next level!
+              </p>
+              <a 
+                href="#" 
+                className="text-base md:text-lg text-[#b20000] underline font-bold"
+              >
+                Sign me up
+              </a>
+            </div>
+          </div>
+
+          {/* About us */}
+          <div className="flex flex-col">
+            <img
+              className="w-full h-[250px] sm:h-[300px] md:h-[438px] object-cover mb-6 md:mb-8 rounded-lg"
+              alt="About us"
+              src="/group-2.png"
+            />
+            <div>
+              <h2 className="font-bold text-[#6f6f6f] text-xl md:text-2xl lg:text-[32px] leading-7 mb-4 md:mb-6">
+                About us
+              </h2>
+              <p className="text-[#6f6f6f] text-base md:text-lg leading-6 md:leading-7 mb-6 md:mb-8">
+                The <strong>Ottawa Fun Sports League (OFSL)</strong> is dedicated to promoting active living and healthy lifestyles for youth and adults—while keeping fun at the heart of it all. Throughout the year, we organize a variety of tournaments and teams, creating opportunities to connect, compete, and celebrate community through sport.
+              </p>
+              <Link to="/about-us" className="text-base md:text-lg text-[#b20000] underline font-bold">
+                More about us
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Ready to Play CTA - Full width section */}
+      <div className="w-full py-12 md:py-16" style={{ background: 'linear-gradient(90deg, rgba(178,0,0,1) 0%, rgba(120,18,18,1) 100%)' }}>
+        <div className="max-w-[1280px] mx-auto px-4 text-center text-white">
+          <h2 className="text-3xl font-bold mb-4">Ready to play?</h2>
+          <p className="text-xl mb-8 max-w-2xl mx-auto">
+            Join thousands of athletes in our community.
+          </p>
+          <Link to="/leagues">
+            <Button
+              className="bg-white hover:bg-[#0d0d0d42] text-[#b20000] hover:text-white rounded-[10px] border border-white px-[15px] md:px-[25px] py-2.5"
+            >
+              <span className="text-base md:text-lg text-[#b20000] hover:text-white">
+                Register now
+              </span>
+            </Button>
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+};
