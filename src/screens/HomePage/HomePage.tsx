@@ -9,7 +9,7 @@ import { HeroBanner } from "../../components/HeroBanner";
 const leagueCards = [
   {
     title: "Women's Elite Volleyball",
-    image: "/kcymca-swimming-pool-laps-1200x800_0002_badminton1.jpg",
+    image: "/womens-elite-card.jpg",
     alt: "Elite womens volleyball",
     link: "/volleyball-elite",
   },
