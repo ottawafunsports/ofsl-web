@@ -36,8 +36,8 @@ export function ProtectedRoute({ children, requireAdmin = false, requireComplete
       const fixUserProfile = async (retryCount = 0) => {
         try {
           
-          // Use the enhanced v3 function for better Google OAuth support
-          const { data, error } = await supabase.rpc('check_and_fix_user_profile_v3', {
+          // Use the enhanced v4 function for better Google OAuth support
+          const { data, error } = await supabase.rpc('check_and_fix_user_profile_v4', {
             p_auth_id: user.id,
             p_email: user.email || '',
             p_name: user.user_metadata?.name || user.user_metadata?.full_name || '',
