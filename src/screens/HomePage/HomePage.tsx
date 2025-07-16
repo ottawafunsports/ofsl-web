@@ -8,19 +8,19 @@ import { HeroBanner } from "../../components/HeroBanner";
 // Data for leagues
 const leagueCards = [
   {
-    title: "Tuesday Women's Elite",
+    title: "Women's Elite Volleyball",
     image: "/womens-elite-card.jpg",
     alt: "Elite womens volleyball",
     link: "/volleyball-elite",
   },
   {
-    title: "Indoor Coed Volleyball",
+    title: "Mixed Volleyball",
     image: "/571North-CR3_0335-Indoor-VB-Header-Featured.jpg",
     alt: "Indoor coed volleyball",
     link: "/volleyball",
   },
   {
-    title: "Indoor Advanced Badminton",
+    title: "Advanced Badminton",
     image: "/badminton-card.png",
     alt: "Advanced badminton",
     link: "/badminton",
@@ -32,19 +32,19 @@ const leagueCards = [
     link: "/pickleball",
   },
   {
-    title: "Indoor Competitive Badminton",
+    title: "Competitive Badminton",
     image: "/badminton-card.png",
     alt: "Competitive badminton",
     link: "/badminton-competitive",
   },
   {
-    title: "Indoor Womens Volleyball",
+    title: "Women's Volleyball",
     image: "/womens-elite-card.jpg",
     alt: "Womens volleyball",
     link: "/womens-volleyball",
   },
   {
-    title: "Indoor Mens Volleyball",
+    title: "Men's Volleyball",
     image: "/indoor-coed.jpg",
     alt: "Mens volleyball",
     link: "/mens-volleyball",
