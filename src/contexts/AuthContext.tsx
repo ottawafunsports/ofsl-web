@@ -100,7 +100,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const provider = user.app_metadata?.provider || 'email';
       
-      // Use the v3 function for better Google OAuth support
+      // Use the v4 function for better Google OAuth support
       let { data: existingProfile, error: fetchError } = await supabase
         .rpc('check_and_fix_user_profile_v4', {
           p_auth_id: user.id.toString(),
@@ -148,6 +148,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Store the current path for potential redirect after profile completion
     const currentPath = window.location.pathname;
     
+    console.log('AuthContext: handleAuthStateChange', {
+      event,
+      currentPath,
+      sessionUser: session?.user?.id,
+      provider: session?.user?.app_metadata?.provider
+    });
+    
     // Set isNewUser flag for SIGNED_UP events
     if (event === 'SIGNED_UP') {
       setIsNewUser(true);
@@ -167,25 +174,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setEmailVerified(false);
     }
     
-    if (session?.user) {
-      // For Google sign-ins, make an extra attempt to create the profile
-      if (session.user.app_metadata?.provider === 'google') {
-        try {
-          const { data, error } = await supabase.rpc('check_and_fix_user_profile_v4', {
-            p_auth_id: session.user.id.toString(),
-            p_email: session.user.email || null,
-            p_name: session.user.user_metadata?.name || session.user.user_metadata?.full_name || null,
-            p_phone: null
-          });
-          
-          if (error) {
-            console.error('Error in Google profile creation:', error);
-          }
-        } catch (err) {
-          console.error('Exception in Google profile creation:', err);
-        }
-      }
-    }
+    // Profile creation will be handled by handleUserProfileCreation below
     
     if (event === 'SIGNED_OUT') {
       // Clear all auth state
@@ -257,9 +246,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             window.location.replace('/signup-confirmation');
             return;
           }
-        } else if (isNewUser) {
-          // Email verified but no profile for NEW users only, redirect to profile completion
-          if (currentPath !== '/complete-profile' && !isRedirecting) {
+        } else {
+          // Email verified but no profile exists, redirect to profile completion
+          // This handles both new users and cases where profile creation failed
+          
+          // For Google users, we can't rely on SIGNED_UP event, so check if user is recent
+          const isGoogleUser = session.user.app_metadata?.provider === 'google';
+          const userCreatedAt = new Date(session.user.created_at);
+          const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+          const isRecentUser = userCreatedAt > fiveMinutesAgo;
+          
+          // Redirect if it's a new user or Google user without profile
+          const shouldRedirect = isNewUser || (isGoogleUser && isRecentUser) || isGoogleUser;
+          
+          if (currentPath !== '/complete-profile' && !isRedirecting && shouldRedirect) {
+            console.log('Redirecting to profile completion - no profile found', {
+              currentPath,
+              isRedirecting,
+              isNewUser,
+              isGoogleUser,
+              isRecentUser,
+              shouldRedirect
+            });
             setIsRedirecting(true);
             localStorage.setItem('redirectAfterLogin', currentPath);
             setTimeout(() => {
