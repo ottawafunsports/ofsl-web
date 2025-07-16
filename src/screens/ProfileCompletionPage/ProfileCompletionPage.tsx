@@ -5,6 +5,7 @@ import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Card, CardContent } from "../../components/ui/card";
 import { supabase } from "../../lib/supabase";
+import { getUserIpAddress } from "../../lib/ipUtils";
 import { Loader2, CheckCircle, FileText } from "lucide-react";
 import { SportsSkillsSelector, SportSkill } from "../../components/SportsSkillsSelector";
 import { useToast } from "../../components/ui/toast";
@@ -177,20 +178,32 @@ export function ProfileCompletionPage() {
       if (profileError) throw profileError;
 
       // Record waiver acceptance if there's an active waiver
-      if (activeWaiver && waiverAccepted) {
-        const { error: acceptanceError } = await supabase
-          .from('waiver_acceptances')
-          .insert({
-            user_id: user?.id,
-            waiver_id: activeWaiver.id,
-            accepted_at: new Date().toISOString(),
-            ip_address: 'unknown', // Could be enhanced with actual IP tracking
-            user_agent: navigator.userAgent,
-          });
+      if (activeWaiver && waiverAccepted && user?.id) {
+        // Get the user's database ID using their auth_id
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('id')
+          .eq('auth_id', user.id)
+          .single();
 
-        if (acceptanceError) {
-          console.error('Error recording waiver acceptance:', acceptanceError);
-          // Don't fail the whole process if waiver recording fails
+        if (userError) {
+          console.error('Error getting user ID:', userError);
+        } else if (userData) {
+          const userIp = await getUserIpAddress();
+          const { error: acceptanceError } = await supabase
+            .from('waiver_acceptances')
+            .insert({
+              user_id: userData.id,
+              waiver_id: activeWaiver.id,
+              accepted_at: new Date().toISOString(),
+              ip_address: userIp,
+              user_agent: navigator.userAgent,
+            });
+
+          if (acceptanceError) {
+            console.error('Error recording waiver acceptance:', acceptanceError);
+            // Don't fail the whole process if waiver recording fails
+          }
         }
       }
 

@@ -3,6 +3,7 @@ import { useAuth } from '../../../../contexts/AuthContext';
 import { ProfileInformation } from './ProfileInformation';
 import { PasswordSecurity } from './PasswordSecurity';
 import { NotificationPreferences } from './NotificationPreferences';
+import { WaiverStatus } from './WaiverStatus';
 import { SportsSkillsSelector } from '../../../../components/SportsSkillsSelector';
 import { useProfileData } from './useProfileData';
 import { useProfileOperations } from './useProfileOperations';
@@ -111,6 +112,8 @@ export function ProfileTab() {
         notifications={notifications}
         onNotificationToggle={handleNotificationToggle}
       />
+
+      <WaiverStatus />
 
       <SportsSkillsSelector
         value={profile.user_sports_skills}
