@@ -30,7 +30,7 @@ import {
   TeamEditPage,
   LeagueNewPage,
 } from "./screens/MyAccount";
-import { CompleteProfilePage } from "./screens/MyAccount/components/CompleteProfilePage";
+import { ProfileCompletionPage } from "./screens/ProfileCompletionPage/ProfileCompletionPage";
 import { Navigate } from "react-router-dom";
 import { GoogleSignupRedirect } from "./screens/SignupPage/GoogleSignupRedirect";
 import { AdminOnlyRoute } from "./components/AdminOnlyRoute";
@@ -154,7 +154,7 @@ export function App() {
               path="/complete-profile"
               element={
                 <ProtectedRoute requireCompleteProfile={false}>
-                  <CompleteProfilePage />
+                  <ProfileCompletionPage />
                 </ProtectedRoute>
               }
             />
