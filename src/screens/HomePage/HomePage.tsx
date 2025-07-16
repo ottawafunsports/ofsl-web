@@ -8,19 +8,19 @@ import { HeroBanner } from "../../components/HeroBanner";
 // Data for leagues
 const leagueCards = [
   {
-    title: "Indoor Womens Elite Volleyball",
-    image: "/womens-elite-card.jpg",
+    title: "Women's Elite Volleyball",
+    image: "/kcymca-swimming-pool-laps-1200x800_0002_badminton1.jpg",
     alt: "Elite womens volleyball",
     link: "/volleyball-elite",
   },
   {
-    title: "Indoor Coed Volleyball",
+    title: "Mixed Volleyball",
     image: "/571North-CR3_0335-Indoor-VB-Header-Featured.jpg",
     alt: "Indoor coed volleyball",
     link: "/volleyball",
   },
   {
-    title: "Indoor Advanced Badminton",
+    title: "Advanced Badminton",
     image: "/badminton-card.png",
     alt: "Advanced badminton",
     link: "/badminton",
@@ -32,19 +32,19 @@ const leagueCards = [
     link: "/pickleball",
   },
   {
-    title: "Indoor Competitive Badminton",
+    title: "Competitive Badminton",
     image: "/badminton-card.png",
     alt: "Competitive badminton",
     link: "/badminton-competitive",
   },
   {
-    title: "Indoor Womens Volleyball",
+    title: "Women's Volleyball",
     image: "/womens-elite-card.jpg",
     alt: "Womens volleyball",
     link: "/womens-volleyball",
   },
   {
-    title: "Indoor Mens Volleyball",
+    title: "Men's Volleyball",
     image: "/indoor-coed.jpg",
     alt: "Mens volleyball",
     link: "/mens-volleyball",
@@ -214,16 +214,15 @@ export const HomePage = (): JSX.Element => {
         <div className="text-center text-white max-w-[860px] px-4">
           <h1 className="text-4xl md:text-5xl lg:text-6xl mb-4 md:mb-6 font-heading font-bold">Welcome to OFSL!</h1>
           <p className="text-base md:text-lg lg:text-xl">
-            Ottawa's premier adult volleyball and badminton league—where
-            sportsmanship meets healthy competition from intermediate to
-            competitive levels.
+            Ottawa's leading adult volleyball and badminton league—where
+            sportsmanship meets healthy competition from competitive to intermediate levels.
           </p>
           {/* Hero buttons */}
           <div className="flex flex-col sm:flex-row gap-3 md:gap-4 mt-6 md:mt-12 justify-center">
             <Link to="/volleyball" className="w-full sm:w-auto">
               <Button
                 variant="outline"
-                className="w-full sm:w-auto bg-[#0d0d0d42] hover:bg-white text-white hover:text-[#b20000] border border-white rounded-[10px] px-[15px] md:px-[25px] py-2.5"
+                className="w-full sm:w-auto bg-[#0d0d0d42] hover:bg-[#b20000] text-white border border-white rounded-[10px] px-[15px] md:px-[25px] py-2.5"
               >
                 <span className="text-base md:text-lg text-white">
                   Womens Elite
@@ -235,7 +234,7 @@ export const HomePage = (): JSX.Element => {
               className="w-full sm:w-auto bg-[#0d0d0d42] text-white border border-white rounded-[10px] px-[15px] md:px-[25px] py-2.5"
             >
               <span className="text-base md:text-lg text-white">
-                Schedule &amp; Standings
+                Register Now
               </span>
             </Button>
             <Button
@@ -282,12 +281,10 @@ export const HomePage = (): JSX.Element => {
             />
             <div className="md:ml-6 text-center md:text-left">
               <h3 className="font-bold text-[#6f6f6f] text-xl md:text-2xl lg:text-[32px] leading-8 md:leading-10 mb-2">
-                Holiday break
+                LoveGive's Charity Tournament 
               </h3>
               <p className="text-[#6f6f6f] text-base md:text-lg leading-6 md:leading-7">
-                There will be NO activities during the Easter weekend from April
-                19th to April 21st, 2025 inclusively. Captains please inform
-                your team.
+                Come out and experience a day of fun on Aug 17, 2025 at Britannia Beach, for a 6v6 and 4v4 tournament. 
               </p>
             </div>
           </CardContent>
@@ -296,7 +293,7 @@ export const HomePage = (): JSX.Element => {
         {/* League description */}
         <div className="text-center mb-16 md:mb-24">
           <p className="max-w-[1080px] mx-auto font-normal text-[#6f6f6f] text-base md:text-lg leading-6 md:leading-7">
-            Our leagues provide a well-organized structure and experience for those who take their play seriously—but still want to have a good time. Geared toward intermediate to competitive play, it's a great way to stay active, maintain your fitness, and connect with others who share your passion for the games.
+            Our leagues provide a well-organized structure and experience for those who take their play seriously—but still want to have a good time. Geared toward intermediate to competitive play, it's a great way to stay active, maintain your fitness, and connect with others who share your passion for the games. 
           </p>
         </div>
       </div>
@@ -395,7 +392,7 @@ export const HomePage = (): JSX.Element => {
               src="/rebase-24dp-000000-fill0-wght300-grad0-opsz24-1.svg"
             />
             <div className="md:ml-6 flex-1 text-center md:text-left">
-              <h2 className="text-xl md:text-2xl font-bold text-white mb-3">Tournaments</h2>
+              <h2 className="text-xl md:text-2xl font-bold text-white mb-3">Skills and Drills</h2>
               <p className="text-white text-base md:text-lg leading-6 md:leading-7">
                 Led by James Battiston, former member of the Canadian Beach National Team.
               </p>
@@ -422,12 +419,7 @@ export const HomePage = (): JSX.Element => {
                 Skills and drills
               </h2>
               <p className="text-[#6f6f6f] text-base md:text-lg leading-6 md:leading-7 mb-6 md:mb-8">
-                Just getting into volleyball or been around for a while but
-                looking to revisit some fundamentals, refine your skills or take
-                them to the next level? Join us for OFSL's new Skills and
-                Drills Program led by James Battiston, former professional
-                volleyball player and member of the Canadian Beach National
-                Team.
+              Whether you're just starting out or a seasoned player aiming to refine your fundamentals, elevate your skills with <strong>OFSL’s Skills & Drills Program</strong>, led by <strong>James Battiston</strong>, former professional volleyball player and Canadian Beach National Team member. Learn from one of the best and take your game to the next level!
               </p>
               <a 
                 href="#" 
@@ -450,14 +442,7 @@ export const HomePage = (): JSX.Element => {
                 About us
               </h2>
               <p className="text-[#6f6f6f] text-base md:text-lg leading-6 md:leading-7 mb-6 md:mb-8">
-                The <strong>Ottawa Fun Sports league's(OFSL)</strong> aims
-                to provide opportunities to be active and to promote a healthy
-                lifestyle for youths and adults, while having fun at the same
-                time.
-                <br />
-                <br />
-                We host a number of tournaments and social events throughout the
-                year for individuals and teams.
+                The <strong>Ottawa Fun Sports League (OFSL)</strong> is dedicated to promoting active living and healthy lifestyles for youth and adults—while keeping fun at the heart of it all. Throughout the year, we organize a variety of tournaments and teams, creating opportunities to connect, compete, and celebrate community through sport.
               </p>
               <Link to="/about-us" className="text-base md:text-lg text-[#b20000] underline font-bold">
                 More about us
