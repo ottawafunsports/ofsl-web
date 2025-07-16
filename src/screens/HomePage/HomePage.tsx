@@ -293,7 +293,7 @@ export const HomePage = (): JSX.Element => {
         {/* League description */}
         <div className="text-center mb-16 md:mb-24">
           <p className="max-w-[1080px] mx-auto font-normal text-[#6f6f6f] text-base md:text-lg leading-6 md:leading-7">
-            Our leagues provide a well-organized structure and experience for those who take their play seriously—but still want to have a good time. Geared toward intermediate to competitive play, it's a great way to stay active, maintain your fitness, and connect with others who share your passion for the games. Test
+            Our leagues provide a well-organized structure and experience for those who take their play seriously—but still want to have a good time. Geared toward intermediate to competitive play, it's a great way to stay active, maintain your fitness, and connect with others who share your passion for the games. 
           </p>
         </div>
       </div>
@@ -392,7 +392,7 @@ export const HomePage = (): JSX.Element => {
               src="/rebase-24dp-000000-fill0-wght300-grad0-opsz24-1.svg"
             />
             <div className="md:ml-6 flex-1 text-center md:text-left">
-              <h2 className="text-xl md:text-2xl font-bold text-white mb-3">Tournaments</h2>
+              <h2 className="text-xl md:text-2xl font-bold text-white mb-3">Skills and Drills</h2>
               <p className="text-white text-base md:text-lg leading-6 md:leading-7">
                 Led by James Battiston, former member of the Canadian Beach National Team.
               </p>
@@ -419,12 +419,7 @@ export const HomePage = (): JSX.Element => {
                 Skills and drills
               </h2>
               <p className="text-[#6f6f6f] text-base md:text-lg leading-6 md:leading-7 mb-6 md:mb-8">
-                Just getting into volleyball or been around for a while but
-                looking to revisit some fundamentals, refine your skills or take
-                them to the next level? Join us for OFSL's new Skills and
-                Drills Program led by James Battiston, former professional
-                volleyball player and member of the Canadian Beach National
-                Team.
+              Whether you're just starting out or a seasoned player aiming to refine your fundamentals, elevate your skills with <strong>OFSL’s Skills & Drills Program</strong>, led by <strong>James Battiston</strong>, former professional volleyball player and Canadian Beach National Team member. Learn from one of the best and take your game to the next level!
               </p>
               <a 
                 href="#" 
@@ -447,14 +442,7 @@ export const HomePage = (): JSX.Element => {
                 About us
               </h2>
               <p className="text-[#6f6f6f] text-base md:text-lg leading-6 md:leading-7 mb-6 md:mb-8">
-                The <strong>Ottawa Fun Sports league's(OFSL)</strong> aims
-                to provide opportunities to be active and to promote a healthy
-                lifestyle for youths and adults, while having fun at the same
-                time.
-                <br />
-                <br />
-                We host a number of tournaments and social events throughout the
-                year for individuals and teams.
+                The <strong>Ottawa Fun Sports League (OFSL)</strong> is dedicated to promoting active living and healthy lifestyles for youth and adults—while keeping fun at the heart of it all. Throughout the year, we organize a variety of tournaments and teams, creating opportunities to connect, compete, and celebrate community through sport.
               </p>
               <Link to="/about-us" className="text-base md:text-lg text-[#b20000] underline font-bold">
                 More about us
