@@ -50,6 +50,7 @@ export function App() {
         <ScrollToTop />
         <Routes>
           <Route element={<Layout />}>
+            <Route path="/complete-profile" element={<ProfileCompletionPage />} />
             <Route path="/" element={<ConditionalRoute><HomePage /></ConditionalRoute>} />
             <Route path="/volleyball" element={<ConditionalRoute><VolleyballPage /></ConditionalRoute>} />
             <Route path="/badminton" element={<ConditionalRoute><BadmintonPage /></ConditionalRoute>} />
@@ -149,15 +150,6 @@ export function App() {
               }
             />
 
-            {/* Complete Profile Page - separate route */}
-            <Route
-              path="/complete-profile"
-              element={
-                <ProtectedRoute requireCompleteProfile={false}>
-                  <ProfileCompletionPage />
-                </ProtectedRoute>
-              }
-            />
 
             {/* Coming Soon page route */}
             <Route path="/coming-soon" element={<ComingSoonPage />} />

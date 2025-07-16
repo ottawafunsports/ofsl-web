@@ -74,7 +74,6 @@ export function useProfileData(userProfile: any) {
         name: userProfile.name || '',
         phone: userProfile.phone || '',
         email: userProfile.email || '',
-        preferred_position: userProfile.preferred_position || '',
         user_sports_skills: userProfile.user_sports_skills || []
       };
       

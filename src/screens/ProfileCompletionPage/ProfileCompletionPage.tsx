@@ -17,24 +17,17 @@ interface SportSkill {
 }
 
 export function ProfileCompletionPage() {
+  console.log('ProfileCompletionPage: Component is rendering!');
+  
+  // Use auth hook but manage loading states more carefully
   const { user, userProfile, loading, refreshUserProfile, setIsNewUser } = useAuth();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { showToast } = useToast();
   
-  // Debug logging
-  console.log('ProfileCompletionPage render:', {
-    user: user?.id,
-    userProfile,
-    loading,
-    initialLoading,
-    emailVerified
-  });
-  
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
-    preferred_position: '',
     sports_skills: [] as SportSkill[]
   });
   
@@ -47,7 +40,7 @@ export function ProfileCompletionPage() {
   // Check if user is logged in
   useEffect(() => {
     if (!loading && !user) {
-      navigate('/login');
+      window.location.href = '/#/login';
       return;
     }
 
@@ -62,9 +55,7 @@ export function ProfileCompletionPage() {
       
       if (!isEmailVerified && !isGoogleUser) {
         // Email not verified for non-Google users, redirect to confirmation page
-        navigate('/signup-confirmation', {
-          state: { email: user.email }
-        });
+        window.location.href = '/#/signup-confirmation';
         return;
       }
 
@@ -72,7 +63,6 @@ export function ProfileCompletionPage() {
       setFormData({
         name: userProfile?.name || user.user_metadata?.full_name || user.user_metadata?.name || '',
         phone: userProfile?.phone || '',
-        preferred_position: userProfile?.preferred_position || '',
         sports_skills: userProfile?.user_sports_skills || []
       });
       setInitialLoading(false);
@@ -93,7 +83,7 @@ export function ProfileCompletionPage() {
         console.log('Profile already complete, redirecting to teams');
         const redirectPath = localStorage.getItem('redirectAfterLogin') || '/my-account/teams';
         localStorage.removeItem('redirectAfterLogin');
-        navigate(redirectPath);
+        window.location.href = '#' + redirectPath;
       }
     }
   }, [userProfile, loading, initialLoading, navigate]);
@@ -131,7 +121,6 @@ export function ProfileCompletionPage() {
         .update({
           name: formData.name,
           phone: formData.phone,
-          preferred_position: formData.preferred_position,
           user_sports_skills: formData.sports_skills,
           profile_completed: true,
           email_verified: true,
@@ -151,7 +140,7 @@ export function ProfileCompletionPage() {
       // Redirect to intended page or teams page
       const redirectPath = localStorage.getItem('redirectAfterLogin') || '/my-account/teams';
       localStorage.removeItem('redirectAfterLogin');
-      navigate(redirectPath);
+      window.location.href = '#' + redirectPath;
       
     } catch (err: any) {
       console.error('Error completing profile:', err);
@@ -185,6 +174,29 @@ export function ProfileCompletionPage() {
     const formattedPhone = formatPhoneNumber(e.target.value);
     setFormData({...formData, phone: formattedPhone});
   };
+
+  // Add loading state management to prevent infinite loader
+  const [componentLoading, setComponentLoading] = useState(true);
+  
+  // Handle component initialization
+  useEffect(() => {
+    // Set a timeout to prevent infinite loader
+    const timer = setTimeout(() => {
+      setComponentLoading(false);
+    }, 1000);
+    
+    return () => clearTimeout(timer);
+  }, []);
+  
+  // Show loading if still initializing component
+  if (componentLoading) {
+    return (
+      <div className="min-h-[calc(100vh-135px)] bg-gray-50 flex flex-col items-center justify-center p-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#B20000] mb-4"></div>
+        <p className="text-[#6F6F6F]">Loading profile completion...</p>
+      </div>
+    );
+  }
 
   // Show loading if still loading or no user
   if (loading || initialLoading || !user) {
@@ -271,25 +283,6 @@ export function ProfileCompletionPage() {
               </p>
             </div>
             
-            <div className="space-y-2">
-              <label
-                htmlFor="preferred_position"
-                className="block text-sm font-medium text-[#6F6F6F]"
-              >
-                Preferred Position (Optional)
-              </label>
-              <select
-                id="preferred_position"
-                className="w-full h-12 px-4 rounded-lg border border-[#D4D4D4] focus:border-[#B20000] focus:ring-[#B20000]"
-                value={formData.preferred_position}
-                onChange={(e) => setFormData({...formData, preferred_position: e.target.value})}
-              >
-                <option value="">Select position (optional)</option>
-                <option value="Guard">Guard</option>
-                <option value="Forward">Forward</option>
-                <option value="Center">Center</option>
-              </select>
-            </div>
 
             <div className="space-y-2">
               <label className="block text-sm font-medium text-[#6F6F6F]">

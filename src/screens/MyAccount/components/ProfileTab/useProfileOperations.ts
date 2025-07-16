@@ -25,7 +25,6 @@ export function useProfileOperations(userProfile: any, refreshUserProfile: () =>
           name: profile.name,
           phone: profile.phone,
           email: profile.email,
-          preferred_position: profile.preferred_position || null,
           user_sports_skills: profile.user_sports_skills,
           date_modified: new Date().toISOString()
         })
