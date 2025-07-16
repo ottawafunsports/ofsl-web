@@ -35,7 +35,7 @@ export function ProfileCompletionPage() {
   const [initialLoading, setInitialLoading] = useState(true);
   const [emailVerified, setEmailVerified] = useState(false);
 
-  // Check if user is logged in and email is verified
+  // Check if user is logged in
   useEffect(() => {
     if (!loading && !user) {
       navigate('/login');
@@ -47,8 +47,12 @@ export function ProfileCompletionPage() {
       const isEmailVerified = user.email_confirmed_at != null;
       setEmailVerified(isEmailVerified);
 
-      if (!isEmailVerified) {
-        // Email not verified, redirect to confirmation page
+      // For Google users, we'll be more lenient with email verification
+      // since Google emails are typically pre-verified
+      const isGoogleUser = user.app_metadata?.provider === 'google';
+      
+      if (!isEmailVerified && !isGoogleUser) {
+        // Email not verified for non-Google users, redirect to confirmation page
         navigate('/signup-confirmation', {
           state: { email: user.email }
         });
@@ -172,11 +176,23 @@ export function ProfileCompletionPage() {
     setFormData({...formData, phone: formattedPhone});
   };
 
-  if (loading || initialLoading || !user || !emailVerified) {
+  // Show loading if still loading or no user
+  if (loading || initialLoading || !user) {
     return (
       <div className="min-h-[calc(100vh-135px)] bg-gray-50 flex flex-col items-center justify-center p-4">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#B20000] mb-4"></div>
         <p className="text-[#6F6F6F]">Loading your account information...</p>
+      </div>
+    );
+  }
+
+  // For Google users, don't require email verification to show the page
+  const isGoogleUser = user.app_metadata?.provider === 'google';
+  if (!emailVerified && !isGoogleUser) {
+    return (
+      <div className="min-h-[calc(100vh-135px)] bg-gray-50 flex flex-col items-center justify-center p-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#B20000] mb-4"></div>
+        <p className="text-[#6F6F6F]">Verifying your email...</p>
       </div>
     );
   }
