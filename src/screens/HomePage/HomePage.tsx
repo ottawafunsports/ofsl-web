@@ -234,7 +234,7 @@ export const HomePage = (): JSX.Element => {
               className="w-full sm:w-auto bg-[#0d0d0d42] text-white border border-white rounded-[10px] px-[15px] md:px-[25px] py-2.5"
             >
               <span className="text-base md:text-lg text-white">
-                Schedule &amp; Standings
+                Register Now
               </span>
             </Button>
             <Button
