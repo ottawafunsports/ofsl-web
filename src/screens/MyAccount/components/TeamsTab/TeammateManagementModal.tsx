@@ -3,7 +3,8 @@ import { supabase } from '../../../../lib/supabase';
 import { Button } from '../../../../components/ui/button';
 import { Input } from '../../../../components/ui/input';
 import { useToast } from '../../../../components/ui/toast';
-import { X, UserPlus, Trash2, Mail, Phone, User } from 'lucide-react';
+import { useAuth } from '../../../../contexts/AuthContext';
+import { X, UserPlus, Trash2, Mail, Phone, User, Send } from 'lucide-react';
 
 interface User {
   id: string;
@@ -19,6 +20,7 @@ interface TeammateManagementModalProps {
   teamName: string;
   currentRoster: string[];
   onRosterUpdate: (newRoster: string[]) => void;
+  leagueName?: string;
 }
 
 export function TeammateManagementModal({
@@ -27,14 +29,18 @@ export function TeammateManagementModal({
   teamId,
   teamName,
   currentRoster,
-  onRosterUpdate
+  onRosterUpdate,
+  leagueName
 }: TeammateManagementModalProps) {
   const [teammates, setTeammates] = useState<User[]>([]);
   const [searchEmail, setSearchEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
   const [searchResult, setSearchResult] = useState<User | null>(null);
+  const [userNotFound, setUserNotFound] = useState(false);
+  const [sendingInvite, setSendingInvite] = useState(false);
   const { showToast } = useToast();
+  const { userProfile } = useAuth();
 
   useEffect(() => {
     if (isOpen) {
@@ -67,6 +73,9 @@ export function TeammateManagementModal({
     
     try {
       setSearching(true);
+      setUserNotFound(false);
+      setSearchResult(null);
+      
       const { data, error } = await supabase
         .from('users')
         .select('id, name, email, phone')
@@ -75,20 +84,71 @@ export function TeammateManagementModal({
 
       if (error) {
         if (error.code === 'PGRST116') {
-          showToast('User not found with that email', 'error');
+          // User not found - show invite option
+          setUserNotFound(true);
           setSearchResult(null);
         } else {
           throw error;
         }
       } else {
         setSearchResult(data);
+        setUserNotFound(false);
       }
     } catch (error) {
       console.error('Error searching user:', error);
       showToast('Failed to search for user', 'error');
       setSearchResult(null);
+      setUserNotFound(false);
     } finally {
       setSearching(false);
+    }
+  };
+
+  const sendInvite = async () => {
+    if (!searchEmail.trim() || !userProfile?.name) return;
+    
+    try {
+      setSendingInvite(true);
+      
+      // Get the session to authenticate with Supabase
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error('No authentication session found');
+      }
+
+      const response = await fetch('https://api.ofsl.ca/functions/v1/send-invite', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          email: searchEmail.toLowerCase(),
+          teamName: teamName,
+          leagueName: leagueName || 'OFSL League',
+          captainName: userProfile.name
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send invite');
+      }
+
+      const result = await response.json();
+      
+      if (result.success) {
+        showToast(`Invite sent successfully to ${searchEmail}`, 'success');
+        setSearchEmail('');
+        setUserNotFound(false);
+      } else {
+        throw new Error(result.error || 'Failed to send invite');
+      }
+    } catch (error) {
+      console.error('Error sending invite:', error);
+      showToast('Failed to send invite. Please try again.', 'error');
+    } finally {
+      setSendingInvite(false);
     }
   };
 
@@ -194,6 +254,53 @@ export function TeammateManagementModal({
                     <UserPlus className="h-4 w-4 mr-1" />
                     Add
                   </Button>
+                </div>
+              </div>
+            )}
+
+            {userNotFound && (
+              <div className="mt-4 p-4 border rounded-lg bg-orange-50 border-orange-200">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 mt-0.5">
+                    <Mail className="h-5 w-5 text-orange-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-medium text-orange-800 mb-1">User Not Found</h4>
+                    <p className="text-sm text-orange-700 mb-3">
+                      No user found with email <strong>{searchEmail}</strong>. 
+                      Would you like to send them an invitation to join OFSL and your team?
+                    </p>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={sendInvite}
+                        disabled={sendingInvite}
+                        size="sm"
+                        className="bg-orange-600 hover:bg-orange-700 text-white"
+                      >
+                        {sendingInvite ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                            Sending...
+                          </>
+                        ) : (
+                          <>
+                            <Send className="h-4 w-4 mr-1" />
+                            Send Invite
+                          </>
+                        )}
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          setUserNotFound(false);
+                          setSearchEmail('');
+                        }}
+                        size="sm"
+                        variant="outline"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
