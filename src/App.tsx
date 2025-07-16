@@ -2,6 +2,7 @@ import { Route, Routes } from "react-router-dom";
 import { HomePage } from "./screens/HomePage";
 import { VolleyballPage } from "./screens/VolleyballPage";
 import { BadmintonPage } from "./screens/BadmintonPage";
+import { PickleballPage } from "./screens/PickleballPage";
 import { LeaguesPage } from "./screens/LeaguesPage";
 import { LoginPage } from "./screens/LoginPage";
 import { SignupPage } from "./screens/SignupPage";
@@ -52,6 +53,7 @@ export function App() {
             <Route path="/" element={<ConditionalRoute><HomePage /></ConditionalRoute>} />
             <Route path="/volleyball" element={<ConditionalRoute><VolleyballPage /></ConditionalRoute>} />
             <Route path="/badminton" element={<ConditionalRoute><BadmintonPage /></ConditionalRoute>} />
+            <Route path="/pickleball" element={<ConditionalRoute><PickleballPage /></ConditionalRoute>} />
             <Route path="/leagues" element={<ConditionalRoute><LeaguesPage /></ConditionalRoute>} />
             <Route
               path="/google-signup-redirect"

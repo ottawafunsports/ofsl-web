@@ -9,21 +9,21 @@ import { HeroBanner } from "../../components/HeroBanner";
 const leagueCards = [
   {
     title: "Women's Elite Volleyball",
-    image: "/kcymca-swimming-pool-laps-1200x800_0002_badminton1.jpg",
+    image: "/womens-elite-card.jpg",
     alt: "Elite womens volleyball",
-    link: "/volleyball-elite",
+    link: "/leagues?sport=Volleyball",
   },
   {
     title: "Mixed Volleyball",
     image: "/571North-CR3_0335-Indoor-VB-Header-Featured.jpg",
     alt: "Indoor coed volleyball",
-    link: "/volleyball",
+    link: "/leagues?sport=Volleyball",
   },
   {
     title: "Advanced Badminton",
     image: "/badminton-card.png",
     alt: "Advanced badminton",
-    link: "/badminton",
+    link: "/leagues?sport=Badminton",
   },
   {
     title: "Indoor Pickleball Coming Soon!",
@@ -33,21 +33,21 @@ const leagueCards = [
   },
   {
     title: "Competitive Badminton",
-    image: "/badminton-card.png",
-    alt: "Competitive badminton",
-    link: "/badminton-competitive",
+    image: "/competitive badminton.jpg",
+    alt: "Competitive badminton players",
+    link: "/leagues?sport=Badminton",
   },
   {
     title: "Women's Volleyball",
-    image: "/womens-elite-card.jpg",
+    image: "/TRE_7742.jpg",
     alt: "Womens volleyball",
-    link: "/womens-volleyball",
+    link: "/leagues?sport=Volleyball",
   },
   {
     title: "Men's Volleyball",
-    image: "/indoor-coed.jpg",
+    image: "/mens-volleyball.jpg",
     alt: "Mens volleyball",
-    link: "/mens-volleyball",
+    link: "/leagues?sport=Volleyball",
   },
 ];
 
