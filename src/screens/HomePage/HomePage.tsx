@@ -33,7 +33,7 @@ const leagueCards = [
   },
   {
     title: "Competitive Badminton",
-    image: "/competitive-badminton.jpg",
+    image: "/competitive-badminton-players.jpg",
     alt: "Competitive badminton players",
     link: "/badminton-competitive",
   },
