@@ -17,6 +17,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   checkProfileCompletion: () => boolean;
   refreshUserProfile: () => Promise<void>;
+  emailVerified: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -27,21 +28,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [userProfile, setUserProfile] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [profileComplete, setProfileComplete] = useState(false);
+  const [emailVerified, setEmailVerified] = useState(false);
   const [initializing, setInitializing] = useState(true);
 
   // Helper function to check if profile is complete
   const checkProfileCompletion = () => {
     if (!userProfile) return false;
     
-    // Check if required fields are filled
-    const requiredFields = ['name', 'phone', 'user_sports_skills'];
-    const basicFieldsComplete = requiredFields.filter(field => field !== 'user_sports_skills').every(field => 
-      userProfile[field] && userProfile[field].toString().trim() !== ''
-    );
+    // Check if required fields are filled including sports/skills
+    const hasBasicInfo = userProfile.name && userProfile.phone && 
+                        userProfile.name.trim() !== '' && userProfile.phone.trim() !== '';
+    const hasSportsSkills = userProfile.user_sports_skills && 
+                           Array.isArray(userProfile.user_sports_skills) && 
+                           userProfile.user_sports_skills.length > 0;
     
-    // Don't require sports and skills for profile completion
-    // This allows users to access their account even without selecting sports
-    return basicFieldsComplete;
+    return hasBasicInfo && hasSportsSkills && userProfile.profile_completed;
   };
 
   // Function to fetch user profile
@@ -146,9 +147,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (session) {
       setSession(session);
       setUser(session.user);
+      // Set email verification status
+      const isEmailVerified = session.user.email_confirmed_at != null;
+      setEmailVerified(isEmailVerified);
     } else {
       setSession(null);
       setUser(null);
+      setEmailVerified(false);
     }
     
     if (session?.user) {
@@ -197,23 +202,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (profile) {
         setUserProfile(profile);
         
-        // Check if profile is complete - basic info and sports/skills
-        const hasBasicInfo = profile.name && profile.phone && 
-                            profile.name.trim() !== '' && profile.phone.trim() !== '';
-        const hasSportsSkills = profile.user_sports_skills && 
-                               Array.isArray(profile.user_sports_skills) && 
-                               profile.user_sports_skills.length > 0;
-        
-        const isComplete = hasBasicInfo && hasSportsSkills;
+        // Check profile completion status
+        const isComplete = checkProfileCompletion();
         setProfileComplete(isComplete);
         
-        // For users with incomplete profiles, redirect to profile completion
-        if (!isComplete) {
-          // Only redirect if not already on the completion pages to avoid loops
-          if (currentPath !== '/google-signup-redirect' && currentPath !== '/complete-profile') {
-            console.log('User with incomplete profile detected, redirecting to profile completion');
+        // Check email verification status
+        const isEmailVerified = session.user.email_confirmed_at != null;
+        
+        // Redirect logic based on verification and completion status
+        if (!isEmailVerified) {
+          // Email not verified, redirect to confirmation
+          if (currentPath !== '/signup-confirmation') {
             localStorage.setItem('redirectAfterLogin', currentPath);
-            window.location.replace('/google-signup-redirect');
+            window.location.replace('/signup-confirmation');
+            return;
+          }
+        } else if (!isComplete) {
+          // Email verified but profile incomplete, redirect to profile completion
+          if (currentPath !== '/complete-profile') {
+            localStorage.setItem('redirectAfterLogin', currentPath);
+            window.location.replace('/complete-profile');
             return;
           }
         }
@@ -223,21 +231,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUserProfile(null);
         setProfileComplete(false);
         
-        // Redirect to profile completion if not already there
-        if (currentPath !== '/google-signup-redirect' && currentPath !== '/complete-profile') {
-          localStorage.setItem('redirectAfterLogin', currentPath);
-          window.location.replace('/google-signup-redirect');
-          return;
+        // Check email verification first
+        const isEmailVerified = session.user.email_confirmed_at != null;
+        
+        if (!isEmailVerified) {
+          // Email not verified, redirect to confirmation
+          if (currentPath !== '/signup-confirmation') {
+            localStorage.setItem('redirectAfterLogin', currentPath);
+            window.location.replace('/signup-confirmation');
+            return;
+          }
+        } else {
+          // Email verified but no profile, redirect to profile completion
+          if (currentPath !== '/complete-profile') {
+            localStorage.setItem('redirectAfterLogin', currentPath);
+            window.location.replace('/complete-profile');
+            return;
+          }
         }
       }
 
       // Handle redirect only for explicit sign-in events (not initial session)
       if (event === 'SIGNED_IN') {
-        // Only redirect if profile is complete
-        if (profileComplete) {
+        // Only redirect if email is verified and profile is complete
+        if (emailVerified && profileComplete) {
           // Check for redirect after login
           const redirectPath = localStorage.getItem('redirectAfterLogin') || '/my-account/teams';
-          if (redirectPath && redirectPath !== '/google-signup-redirect' && redirectPath !== '/complete-profile') {
+          if (redirectPath && redirectPath !== '/signup-confirmation' && redirectPath !== '/complete-profile') {
             localStorage.removeItem('redirectAfterLogin');
             // Use setTimeout to ensure the state is fully updated before redirecting
             setTimeout(() => {
@@ -254,7 +274,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             return;
           }
         }
-        // If profile is not complete, the redirect to completion page already happened above
+        // If email not verified or profile not complete, redirect already happened above
       }
     }
 
@@ -354,7 +374,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/google-signup-redirect`,
+          redirectTo: `${window.location.origin}/signup-confirmation`,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
@@ -487,6 +507,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       userProfile,
       loading,
       profileComplete,
+      emailVerified,
       signIn, 
       signInWithGoogle, 
       signUp, 

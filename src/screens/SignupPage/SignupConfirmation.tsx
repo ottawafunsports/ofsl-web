@@ -1,22 +1,31 @@
 import { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent } from '../../components/ui/card';
 import { CheckCircle, Mail, Home } from 'lucide-react';
 
 export function SignupConfirmation() {
+  const { user, emailVerified } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const email = location.state?.email || 'your email address';
+  const email = location.state?.email || user?.email || 'your email address';
 
-  // If no email was provided in state, redirect to signup
+  // If user is already logged in and email is verified, redirect to profile completion
   useEffect(() => {
-    if (!location.state?.email) {
+    if (user && emailVerified) {
+      navigate('/complete-profile');
+    }
+  }, [user, emailVerified, navigate]);
+
+  // If no email and no user, redirect to signup after delay
+  useEffect(() => {
+    if (!location.state?.email && !user?.email) {
       setTimeout(() => {
         navigate('/signup');
       }, 3000);
     }
-  }, [location.state, navigate]);
+  }, [location.state, user, navigate]);
 
   return (
     <div className="min-h-[calc(100vh-135px)] bg-gray-50 flex flex-col items-center justify-center p-4">
@@ -44,7 +53,7 @@ export function SignupConfirmation() {
                   {email}
                 </p>
                 <p className="text-blue-700">
-                  Please check your inbox and click the verification link to activate your account.
+                  Please check your inbox and click the verification link to complete your profile setup.
                 </p>
                 <p className="text-blue-700 mt-4 text-sm">
                   <strong>Note:</strong> If you don't see the email in your inbox, please check your spam or junk folder.
@@ -55,7 +64,7 @@ export function SignupConfirmation() {
 
           <div className="text-center">
             <p className="text-[#6F6F6F] mb-6">
-              Once your email is verified, you can log in to access your account.
+              Once your email is verified, you'll be able to complete your profile and access your account.
             </p>
             <Button
               onClick={() => navigate('/')}
