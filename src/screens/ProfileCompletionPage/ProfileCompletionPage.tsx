@@ -22,6 +22,15 @@ export function ProfileCompletionPage() {
   const navigate = useNavigate();
   const { showToast } = useToast();
   
+  // Debug logging
+  console.log('ProfileCompletionPage render:', {
+    user: user?.id,
+    userProfile,
+    loading,
+    initialLoading,
+    emailVerified
+  });
+  
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -70,23 +79,24 @@ export function ProfileCompletionPage() {
     }
   }, [user, userProfile, loading, navigate]);
 
-  // Check if profile is already complete
+  // Check if profile is already complete - but be more lenient
   useEffect(() => {
-    if (userProfile && !loading && !initialLoading && emailVerified) {
+    if (userProfile && !loading && !initialLoading) {
       const hasBasicInfo = userProfile.name && userProfile.phone && 
                           userProfile.name.trim() !== '' && userProfile.phone.trim() !== '';
       const hasSportsSkills = userProfile.user_sports_skills && 
                              Array.isArray(userProfile.user_sports_skills) && 
                              userProfile.user_sports_skills.length > 0;
       
-      if (hasBasicInfo && hasSportsSkills && userProfile.profile_completed) {
-        // Profile already complete, redirect to teams page
+      // Only redirect if profile is truly complete AND marked as completed
+      if (hasBasicInfo && hasSportsSkills && userProfile.profile_completed === true) {
+        console.log('Profile already complete, redirecting to teams');
         const redirectPath = localStorage.getItem('redirectAfterLogin') || '/my-account/teams';
         localStorage.removeItem('redirectAfterLogin');
         navigate(redirectPath);
       }
     }
-  }, [userProfile, loading, initialLoading, emailVerified, navigate]);
+  }, [userProfile, loading, initialLoading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -190,12 +190,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
 
     if (session?.user) {
-      // Don't try to redirect if user is already on the complete-profile page
-      if (currentPath === '/complete-profile') {
-        setLoading(false);
-        return;
-      }
-      
       // Handle user profile for any signed-in user
       const profile = await handleUserProfileCreation(session.user);
       
@@ -218,9 +212,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             window.location.replace('/signup-confirmation');
             return;
           }
-        } else if (!isComplete && isNewUser) {
-          // Email verified but profile incomplete for NEW users only, redirect to profile completion
-          if (currentPath !== '/complete-profile' && !isRedirecting) {
+        } else if (!isComplete) {
+          // Email verified but profile incomplete, redirect to profile completion
+          // Check if this user needs profile completion
+          const needsProfileCompletion = !profile.profile_completed || 
+                                       !profile.name || 
+                                       !profile.phone ||
+                                       !profile.user_sports_skills ||
+                                       profile.user_sports_skills.length === 0;
+          
+          if (needsProfileCompletion && currentPath !== '/complete-profile' && !isRedirecting) {
             setIsRedirecting(true);
             localStorage.setItem('redirectAfterLogin', currentPath);
             // Use setTimeout to ensure the redirect happens after React finishes rendering
@@ -256,10 +257,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
           const isRecentUser = userCreatedAt > fiveMinutesAgo;
           
-          // Redirect if it's a new user or Google user without profile
-          const shouldRedirect = isNewUser || (isGoogleUser && isRecentUser) || isGoogleUser;
-          
-          if (currentPath !== '/complete-profile' && !isRedirecting && shouldRedirect) {
+          // Always redirect to profile completion if no profile exists
+          if (currentPath !== '/complete-profile' && !isRedirecting) {
             setIsRedirecting(true);
             localStorage.setItem('redirectAfterLogin', currentPath);
             setTimeout(() => {
