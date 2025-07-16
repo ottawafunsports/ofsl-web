@@ -18,6 +18,8 @@ interface AuthContextType {
   checkProfileCompletion: () => boolean;
   refreshUserProfile: () => Promise<void>;
   emailVerified: boolean;
+  isNewUser: boolean;
+  setIsNewUser: (isNew: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -31,6 +33,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [emailVerified, setEmailVerified] = useState(false);
   const [initializing, setInitializing] = useState(true);
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [isNewUser, setIsNewUser] = useState(false);
 
   // Helper function to check if profile is complete
   const checkProfileCompletion = (profile?: any) => {
@@ -145,6 +148,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Store the current path for potential redirect after profile completion
     const currentPath = window.location.pathname;
     
+    // Set isNewUser flag for SIGNED_UP events
+    if (event === 'SIGNED_UP') {
+      setIsNewUser(true);
+    }
+    
     
     // Set session and user state immediately to ensure UI updates
     if (session) {
@@ -184,6 +192,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setSession(null);
       setUser(null);
       setUserProfile(null);
+      setIsNewUser(false);
       // Clear any stored redirect paths
       localStorage.removeItem('redirectAfterLogin');
       setLoading(false);
@@ -220,8 +229,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             window.location.replace('/signup-confirmation');
             return;
           }
-        } else if (!isComplete) {
-          // Email verified but profile incomplete, redirect to profile completion
+        } else if (!isComplete && isNewUser) {
+          // Email verified but profile incomplete for NEW users only, redirect to profile completion
           if (currentPath !== '/complete-profile' && !isRedirecting) {
             setIsRedirecting(true);
             localStorage.setItem('redirectAfterLogin', currentPath);
@@ -248,8 +257,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             window.location.replace('/signup-confirmation');
             return;
           }
-        } else {
-          // Email verified but no profile, redirect to profile completion
+        } else if (isNewUser) {
+          // Email verified but no profile for NEW users only, redirect to profile completion
           if (currentPath !== '/complete-profile' && !isRedirecting) {
             setIsRedirecting(true);
             localStorage.setItem('redirectAfterLogin', currentPath);
@@ -518,6 +527,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       loading,
       profileComplete,
       emailVerified,
+      isNewUser,
+      setIsNewUser,
       signIn, 
       signInWithGoogle, 
       signUp, 
