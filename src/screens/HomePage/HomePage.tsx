@@ -214,9 +214,8 @@ export const HomePage = (): JSX.Element => {
         <div className="text-center text-white max-w-[860px] px-4">
           <h1 className="text-4xl md:text-5xl lg:text-6xl mb-4 md:mb-6 font-heading font-bold">Welcome to OFSL!</h1>
           <p className="text-base md:text-lg lg:text-xl">
-            Ottawa's premier adult volleyball and badminton league—where
-            sportsmanship meets healthy competition from intermediate to
-            competitive levels.
+            Ottawa's leading adult volleyball and badminton league—where
+            sportsmanship meets healthy competition from competitive to intermediate levels.
           </p>
           {/* Hero buttons */}
           <div className="flex flex-col sm:flex-row gap-3 md:gap-4 mt-6 md:mt-12 justify-center">
