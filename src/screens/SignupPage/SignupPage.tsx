@@ -20,7 +20,7 @@ export function SignupPage() {
   const [emailError, setEmailError] = useState<string | null>(null);
   const [googleLoading, setGoogleLoading] = useState(false);
   const navigate = useNavigate();
-  const { signInWithGoogle } = useAuth();
+  const { signInWithGoogle, setIsNewUser } = useAuth();
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -105,6 +105,9 @@ export function SignupPage() {
         // Continue anyway, profile creation can be handled later
       }
       
+      // Mark user as new for profile completion flow
+      setIsNewUser(true);
+      
       // Navigate to confirmation page
       navigate('/signup-confirmation', {
         state: { 
@@ -125,6 +128,9 @@ export function SignupPage() {
     setGoogleLoading(true);
     
     try {
+      // Mark user as new for Google sign-ups
+      setIsNewUser(true);
+      
       const { error } = await signInWithGoogle();
       
       if (error) {

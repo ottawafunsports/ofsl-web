@@ -17,7 +17,7 @@ interface SportSkill {
 }
 
 export function ProfileCompletionPage() {
-  const { user, userProfile, loading, refreshUserProfile } = useAuth();
+  const { user, userProfile, loading, refreshUserProfile, setIsNewUser } = useAuth();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { showToast } = useToast();
@@ -130,6 +130,9 @@ export function ProfileCompletionPage() {
       // Refresh the user profile
       await refreshUserProfile();
       showToast('Profile completed successfully!', 'success');
+      
+      // Clear the new user flag since profile is now complete
+      setIsNewUser(false);
       
       // Redirect to intended page or teams page
       const redirectPath = localStorage.getItem('redirectAfterLogin') || '/my-account/teams';
