@@ -146,7 +146,41 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const handleAuthStateChange = async (event: string, session: Session | null) => {
     
     // Store the current path for potential redirect after profile completion
-    const currentPath = window.location.pathname;
+    const currentPath = window.location.hash.replace('#', '') || '/';
+    
+    // Don't process redirects if user is already on complete-profile page
+    if (currentPath === '/complete-profile') {
+      // Still set session and user state
+      if (session) {
+        setSession(session);
+        setUser(session.user);
+        setEmailVerified(session.user.email_confirmed_at != null);
+        
+        // Try to create/fetch user profile but don't redirect
+        if (session.user) {
+          handleUserProfileCreation(session.user).then(profile => {
+            if (profile) {
+              setUserProfile(profile);
+              const isComplete = checkProfileCompletion(profile);
+              setProfileComplete(isComplete);
+            }
+          }).catch(err => {
+            console.error('Error handling user profile on complete-profile page:', err);
+          });
+        }
+      } else {
+        setSession(null);
+        setUser(null);
+        setEmailVerified(false);
+      }
+      
+      // Properly set initialization and loading states
+      if (initializing) {
+        setInitializing(false);
+      }
+      setLoading(false);
+      return;
+    }
     
     
     // Set isNewUser flag for SIGNED_UP events
@@ -209,7 +243,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           // Email not verified, redirect to confirmation
           if (currentPath !== '/signup-confirmation') {
             localStorage.setItem('redirectAfterLogin', currentPath);
-            window.location.replace('/signup-confirmation');
+            window.location.replace('/#/signup-confirmation');
             return;
           }
         } else if (!isComplete) {
@@ -226,7 +260,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             localStorage.setItem('redirectAfterLogin', currentPath);
             // Use setTimeout to ensure the redirect happens after React finishes rendering
             setTimeout(() => {
-              window.location.href = '/complete-profile';
+              window.location.href = '/#/complete-profile';
             }, 100);
             return;
           }
@@ -244,7 +278,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           // Email not verified, redirect to confirmation
           if (currentPath !== '/signup-confirmation') {
             localStorage.setItem('redirectAfterLogin', currentPath);
-            window.location.replace('/signup-confirmation');
+            window.location.replace('/#/signup-confirmation');
             return;
           }
         } else {
@@ -262,7 +296,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setIsRedirecting(true);
             localStorage.setItem('redirectAfterLogin', currentPath);
             setTimeout(() => {
-              window.location.href = '/complete-profile';
+              window.location.href = '/#/complete-profile';
             }, 100);
             return;
           }
@@ -279,7 +313,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             localStorage.removeItem('redirectAfterLogin');
             // Use setTimeout to ensure the state is fully updated before redirecting
             setTimeout(() => {
-              window.location.replace(redirectPath);
+              window.location.replace('#' + redirectPath);
             }, 100);
             return;
           }
@@ -287,7 +321,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           // Default redirect to teams page
           else {
             setTimeout(() => {
-              window.location.replace('/my-account/teams');
+              window.location.replace('/#/my-account/teams');
             }, 100);
             return;
           }
@@ -384,7 +418,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setLoading(true);
       
       // Store the current URL for redirect after login
-      const currentPath = window.location.pathname;
+      const currentPath = window.location.hash.replace('#', '') || '/';
       if (currentPath !== '/login' && currentPath !== '/signup' && currentPath !== '/google-signup-redirect') {
         localStorage.setItem('redirectAfterLogin', currentPath);
       }
@@ -392,7 +426,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/signup-confirmation`,
+          redirectTo: `${window.location.origin}/#/signup-confirmation`,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
@@ -421,7 +455,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setLoading(true);
       
       // Store the current URL for redirect after login
-      const currentPath = window.location.pathname;
+      const currentPath = window.location.hash.replace('#', '') || '/';
       if (currentPath !== '/login' && currentPath !== '/signup' && currentPath !== '/google-signup-redirect') {
         localStorage.setItem('redirectAfterLogin', currentPath);
       }
@@ -456,7 +490,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setLoading(true);
       
       // Store the current URL for redirect after signup
-      const currentPath = window.location.pathname;
+      const currentPath = window.location.hash.replace('#', '') || '/';
       if (currentPath !== '/login' && currentPath !== '/signup') {
         localStorage.setItem('redirectAfterLogin', currentPath);
       }

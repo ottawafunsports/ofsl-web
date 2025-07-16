@@ -20,7 +20,6 @@ export interface Profile {
   name: string;
   phone: string;
   email: string;
-  preferred_position: string;
   user_sports_skills: SportSkill[];
 }
 

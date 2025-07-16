@@ -36,6 +36,7 @@ import { GoogleSignupRedirect } from "./screens/SignupPage/GoogleSignupRedirect"
 import { AdminOnlyRoute } from "./components/AdminOnlyRoute";
 import { ConditionalRoute } from "./components/ConditionalRoute";
 import { ComingSoonPage } from "./screens/ComingSoonPage";
+import { TestPage } from "./TestPage";
 
 // Create a catch-all route component to handle direct URL access
 // const CatchAllRoute = () => {
@@ -50,6 +51,8 @@ export function App() {
         <ScrollToTop />
         <Routes>
           <Route element={<Layout />}>
+            <Route path="/test-page" element={<TestPage />} />
+            <Route path="/complete-profile" element={<ProfileCompletionPage />} />
             <Route path="/" element={<ConditionalRoute><HomePage /></ConditionalRoute>} />
             <Route path="/volleyball" element={<ConditionalRoute><VolleyballPage /></ConditionalRoute>} />
             <Route path="/badminton" element={<ConditionalRoute><BadmintonPage /></ConditionalRoute>} />
@@ -149,15 +152,6 @@ export function App() {
               }
             />
 
-            {/* Complete Profile Page - separate route */}
-            <Route
-              path="/complete-profile"
-              element={
-                <ProtectedRoute requireCompleteProfile={false}>
-                  <ProfileCompletionPage />
-                </ProtectedRoute>
-              }
-            />
 
             {/* Coming Soon page route */}
             <Route path="/coming-soon" element={<ComingSoonPage />} />
