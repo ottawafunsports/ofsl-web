@@ -23,7 +23,7 @@ const leagueCards = [
     title: "Advanced Badminton",
     image: "/badminton-card.png",
     alt: "Advanced badminton",
-    link: "/badminton",
+    link: "/leagues?sport=Badminton",
   },
   {
     title: "Indoor Pickleball Coming Soon!",
@@ -35,7 +35,7 @@ const leagueCards = [
     title: "Competitive Badminton",
     image: "/competitive badminton.jpg",
     alt: "Competitive badminton players",
-    link: "/badminton-competitive",
+    link: "/leagues?sport=Badminton",
   },
   {
     title: "Women's Volleyball",
