@@ -39,7 +39,7 @@ const leagueCards = [
   },
   {
     title: "Women's Volleyball",
-    image: "/womens-elite-card.jpg",
+    image: "/TRE_7742.jpg",
     alt: "Womens volleyball",
     link: "/womens-volleyball",
   },
