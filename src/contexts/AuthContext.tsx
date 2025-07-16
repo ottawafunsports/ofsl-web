@@ -148,12 +148,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Store the current path for potential redirect after profile completion
     const currentPath = window.location.pathname;
     
-    console.log('AuthContext: handleAuthStateChange', {
-      event,
-      currentPath,
-      sessionUser: session?.user?.id,
-      provider: session?.user?.app_metadata?.provider
-    });
     
     // Set isNewUser flag for SIGNED_UP events
     if (event === 'SIGNED_UP') {
@@ -196,6 +190,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
 
     if (session?.user) {
+      // Don't try to redirect if user is already on the complete-profile page
+      if (currentPath === '/complete-profile') {
+        setLoading(false);
+        return;
+      }
+      
       // Handle user profile for any signed-in user
       const profile = await handleUserProfileCreation(session.user);
       
@@ -260,14 +260,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const shouldRedirect = isNewUser || (isGoogleUser && isRecentUser) || isGoogleUser;
           
           if (currentPath !== '/complete-profile' && !isRedirecting && shouldRedirect) {
-            console.log('Redirecting to profile completion - no profile found', {
-              currentPath,
-              isRedirecting,
-              isNewUser,
-              isGoogleUser,
-              isRecentUser,
-              shouldRedirect
-            });
             setIsRedirecting(true);
             localStorage.setItem('redirectAfterLogin', currentPath);
             setTimeout(() => {
