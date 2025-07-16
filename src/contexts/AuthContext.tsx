@@ -30,19 +30,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [profileComplete, setProfileComplete] = useState(false);
   const [emailVerified, setEmailVerified] = useState(false);
   const [initializing, setInitializing] = useState(true);
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   // Helper function to check if profile is complete
-  const checkProfileCompletion = () => {
-    if (!userProfile) return false;
+  const checkProfileCompletion = (profile?: any) => {
+    const profileToCheck = profile || userProfile;
+    if (!profileToCheck) return false;
     
     // Check if required fields are filled including sports/skills
-    const hasBasicInfo = userProfile.name && userProfile.phone && 
-                        userProfile.name.trim() !== '' && userProfile.phone.trim() !== '';
-    const hasSportsSkills = userProfile.user_sports_skills && 
-                           Array.isArray(userProfile.user_sports_skills) && 
-                           userProfile.user_sports_skills.length > 0;
+    const hasBasicInfo = profileToCheck.name && profileToCheck.phone && 
+                        profileToCheck.name.trim() !== '' && profileToCheck.phone.trim() !== '';
+    const hasSportsSkills = profileToCheck.user_sports_skills && 
+                           Array.isArray(profileToCheck.user_sports_skills) && 
+                           profileToCheck.user_sports_skills.length > 0;
     
-    return hasBasicInfo && hasSportsSkills && userProfile.profile_completed;
+    return hasBasicInfo && hasSportsSkills && profileToCheck.profile_completed;
   };
 
   // Function to fetch user profile
@@ -143,6 +145,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Store the current path for potential redirect after profile completion
     const currentPath = window.location.pathname;
     
+    
     // Set session and user state immediately to ensure UI updates
     if (session) {
       setSession(session);
@@ -203,7 +206,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUserProfile(profile);
         
         // Check profile completion status
-        const isComplete = checkProfileCompletion();
+        const isComplete = checkProfileCompletion(profile);
         setProfileComplete(isComplete);
         
         // Check email verification status
@@ -219,9 +222,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           }
         } else if (!isComplete) {
           // Email verified but profile incomplete, redirect to profile completion
-          if (currentPath !== '/complete-profile') {
+          if (currentPath !== '/complete-profile' && !isRedirecting) {
+            setIsRedirecting(true);
             localStorage.setItem('redirectAfterLogin', currentPath);
-            window.location.replace('/complete-profile');
+            // Use setTimeout to ensure the redirect happens after React finishes rendering
+            setTimeout(() => {
+              window.location.href = '/complete-profile';
+            }, 100);
             return;
           }
         }
@@ -243,9 +250,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           }
         } else {
           // Email verified but no profile, redirect to profile completion
-          if (currentPath !== '/complete-profile') {
+          if (currentPath !== '/complete-profile' && !isRedirecting) {
+            setIsRedirecting(true);
             localStorage.setItem('redirectAfterLogin', currentPath);
-            window.location.replace('/complete-profile');
+            setTimeout(() => {
+              window.location.href = '/complete-profile';
+            }, 100);
             return;
           }
         }
