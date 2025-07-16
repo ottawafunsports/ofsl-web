@@ -8,7 +8,7 @@ import { HeroBanner } from "../../components/HeroBanner";
 // Data for leagues
 const leagueCards = [
   {
-    title: "Indoor Womens Elite Volleyball",
+    title: "Tuesday Women's Elite",
     image: "/womens-elite-card.jpg",
     alt: "Elite womens volleyball",
     link: "/volleyball-elite",
