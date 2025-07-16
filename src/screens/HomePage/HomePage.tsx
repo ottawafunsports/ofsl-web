@@ -11,13 +11,13 @@ const leagueCards = [
     title: "Women's Elite Volleyball",
     image: "/womens-elite-card.jpg",
     alt: "Elite womens volleyball",
-    link: "/volleyball-elite",
+    link: "/leagues?sport=Volleyball",
   },
   {
     title: "Mixed Volleyball",
     image: "/571North-CR3_0335-Indoor-VB-Header-Featured.jpg",
     alt: "Indoor coed volleyball",
-    link: "/volleyball",
+    link: "/leagues?sport=Volleyball",
   },
   {
     title: "Advanced Badminton",
