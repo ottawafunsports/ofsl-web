@@ -45,7 +45,7 @@ const leagueCards = [
   },
   {
     title: "Men's Volleyball",
-    image: "/indoor-coed.jpg",
+    image: "/mens-volleyball.jpg",
     alt: "Mens volleyball",
     link: "/mens-volleyball",
   },
