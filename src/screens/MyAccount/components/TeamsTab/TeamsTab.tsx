@@ -1,14 +1,16 @@
+import { useState } from 'react';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { LoadingSpinner } from './LoadingSpinner';
-import { LeaguePaymentsSection } from './LeaguePaymentsSection';
 import { TeamsSection } from './TeamsSection';
+import { TeammateManagementModal } from './TeammateManagementModal';
 import { useTeamsData } from './useTeamsData';
 import { useTeamOperations } from './useTeamOperations';
 
 export function TeamsTab() {
-  const { user } = useAuth();
-  const { leaguePayments, teams, loading, setLeaguePayments } = useTeamsData(user?.id);
+  const { user, userProfile } = useAuth();
+  const { leaguePayments, teams, loading, setLeaguePayments, refetchTeams } = useTeamsData(userProfile?.id);
   const { unregisteringPayment, handleUnregister } = useTeamOperations();
+  const [selectedTeam, setSelectedTeam] = useState<{id: number, name: string, roster: string[]} | null>(null);
 
   const onUnregisterSuccess = (paymentId: number) => {
     setLeaguePayments(prev => prev.filter(p => p.id !== paymentId));
@@ -22,18 +24,41 @@ export function TeamsTab() {
     return <LoadingSpinner />;
   }
 
+  const handleManageTeammates = (teamId: number, teamName: string) => {
+    const team = teams.find(t => t.id === teamId);
+    if (team) {
+      setSelectedTeam({ id: teamId, name: teamName, roster: team.roster });
+    }
+  };
+
+  const handleRosterUpdate = (newRoster: string[]) => {
+    if (selectedTeam) {
+      setSelectedTeam({ ...selectedTeam, roster: newRoster });
+      refetchTeams();
+    }
+  };
+
   return (
     <div className="space-y-6">
-      <LeaguePaymentsSection
+      <TeamsSection
+        teams={teams}
+        currentUserId={userProfile?.id}
         leaguePayments={leaguePayments}
         unregisteringPayment={unregisteringPayment}
         onUnregister={onUnregister}
+        onManageTeammates={handleManageTeammates}
       />
       
-      <TeamsSection
-        teams={teams}
-        currentUserId={user?.id}
-      />
+      {selectedTeam && (
+        <TeammateManagementModal
+          isOpen={!!selectedTeam}
+          onClose={() => setSelectedTeam(null)}
+          teamId={selectedTeam.id}
+          teamName={selectedTeam.name}
+          currentRoster={selectedTeam.roster}
+          onRosterUpdate={handleRosterUpdate}
+        />
+      )}
     </div>
   );
 }
