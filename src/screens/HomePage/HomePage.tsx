@@ -281,12 +281,10 @@ export const HomePage = (): JSX.Element => {
             />
             <div className="md:ml-6 text-center md:text-left">
               <h3 className="font-bold text-[#6f6f6f] text-xl md:text-2xl lg:text-[32px] leading-8 md:leading-10 mb-2">
-                Holiday break
+                LoveGive's Charity Tournament 
               </h3>
               <p className="text-[#6f6f6f] text-base md:text-lg leading-6 md:leading-7">
-                There will be NO activities during the Easter weekend from April
-                19th to April 21st, 2025 inclusively. Captains please inform
-                your team.
+                Come out and experience a day of fun on Aug 17, 2025 at Britannia Beach, for a 6v6 and 4v4 tournament. 
               </p>
             </div>
           </CardContent>
