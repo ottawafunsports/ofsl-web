@@ -24,6 +24,23 @@ export function ProfileInformation({
   onCancel,
   onProfileChange
 }: ProfileInformationProps) {
+  // Phone number formatting function
+  const formatPhoneNumber = (value: string) => {
+    const phoneNumber = value.replace(/\D/g, "");
+
+    if (phoneNumber.length <= 3) {
+      return phoneNumber;
+    } else if (phoneNumber.length <= 6) {
+      return `${phoneNumber.slice(0, 3)}-${phoneNumber.slice(3)}`;
+    } else {
+      return `${phoneNumber.slice(0, 3)}-${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
+    }
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formattedPhone = formatPhoneNumber(e.target.value);
+    onProfileChange({ ...profile, phone: formattedPhone });
+  };
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-6">
       <div className="flex items-center justify-between mb-6">
@@ -72,11 +89,19 @@ export function ProfileInformation({
         <div>
           <label className="block text-sm font-medium text-[#6F6F6F] mb-2">Phone Number</label>
           {isEditing ? (
-            <Input
-              value={profile.phone}
-              onChange={(e) => onProfileChange({ ...profile, phone: e.target.value })}
-              className="w-full"
-            />
+            <div>
+              <Input
+                value={profile.phone}
+                onChange={handlePhoneChange}
+                className="w-full"
+                type="tel"
+                placeholder="###-###-####"
+                maxLength={12}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Format: ###-###-####
+              </p>
+            </div>
           ) : (
             <p className="text-[#6F6F6F] py-2">{profile.phone || 'No phone number available'}</p>
           )}

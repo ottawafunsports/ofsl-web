@@ -4,6 +4,7 @@ export { TeamsTab } from './components/TeamsTab/';
 export { LeaguesTab } from './components/LeaguesTab';
 export { SchoolsTab } from './components/SchoolsTab/';
 export { UsersTab } from './components/UsersTab/';
+export { WaiversTab } from './components/WaiversTab/';
 export { LeagueEditPage } from './components/LeagueEditPage';
 export { TeamEditPage } from './components/TeamEditPage/';
 export { LeagueNewPage } from './components/LeagueNewPage';

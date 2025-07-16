@@ -122,3 +122,13 @@ Claude Code can manage the Supabase database for this project:
 - Supabase RLS policies enforce data access rules
 - Rich text editing uses React Quill with custom styling
 - Avoid barrel files
+
+## Recent Session Summary
+
+Fixed sign-up flow issues:
+- Fixed infinite loader on profile completion page by removing test code and adding proper loading states
+- Fixed HashRouter path detection in AuthContext - changed from `window.location.pathname` to `window.location.hash.replace('#', '')`
+- Fixed race condition in handleAuthStateChange where currentPath wasn't updating after redirects
+- Removed preferred_position field from profile completion form
+- Removed TestPage routes from App.tsx
+- Added race condition prevention with lastRedirectPath state tracking

@@ -3,7 +3,7 @@ import { useAuth } from '../../../../contexts/AuthContext';
 import { ProfileInformation } from './ProfileInformation';
 import { PasswordSecurity } from './PasswordSecurity';
 import { NotificationPreferences } from './NotificationPreferences';
-import { SportsAndSkills } from './SportsAndSkills';
+import { SportsSkillsSelector } from '../../../../components/SportsSkillsSelector';
 import { useProfileData } from './useProfileData';
 import { useProfileOperations } from './useProfileOperations';
 import { usePasswordOperations } from './usePasswordOperations';
@@ -112,14 +112,12 @@ export function ProfileTab() {
         onNotificationToggle={handleNotificationToggle}
       />
 
-      <SportsAndSkills
-        profile={profile}
-        sports={sports}
-        skills={skills}
-        loadingSportsSkills={loadingSportsSkills}
-        saving={saving}
+      <SportsSkillsSelector
+        value={profile.user_sports_skills}
+        onChange={(newSportsSkills) => setProfile({ ...profile, user_sports_skills: newSportsSkills })}
         onSave={handleSaveSports}
-        onProfileChange={setProfile}
+        saving={saving}
+        showTitle={true}
       />
     </div>
   );
