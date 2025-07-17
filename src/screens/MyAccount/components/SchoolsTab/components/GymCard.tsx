@@ -71,6 +71,16 @@ export function GymCard({ gym, sports, daysOfWeek, deleting, onEdit, onDelete }:
             })}
           </div>
         )}
+        
+        {gym.locations && gym.locations.length > 0 && (
+          <div className="inline-flex flex-wrap gap-1 ml-2">
+            {gym.locations.map(location => (
+              <span key={location} className="px-2 py-1 text-xs rounded-full bg-orange-100 text-orange-800">
+                {location}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
       
       {gym.instructions && (

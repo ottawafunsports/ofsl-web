@@ -8,7 +8,7 @@ import { GymsList } from './components/GymsList';
 import { useSchoolsData } from './useSchoolsData';
 import { useGymOperations } from './useGymOperations';
 import { SchoolFilters } from './types';
-import { DAYS_OF_WEEK } from './constants';
+import { DAYS_OF_WEEK, GYM_LOCATIONS } from './constants';
 
 export function SchoolsTab() {
   const { userProfile } = useAuth();
@@ -43,7 +43,8 @@ export function SchoolsTab() {
     handleCancelEdit,
     handleDeleteGym,
     handleDayToggle,
-    handleSportToggle
+    handleSportToggle,
+    handleLocationToggle
   } = useGymOperations(newGym, editGym, setNewGym, setEditGym, loadData);
 
   const handleFilterChange = (filterType: keyof SchoolFilters, value: any) => {
@@ -141,10 +142,12 @@ export function SchoolsTab() {
           gym={newGym}
           sports={sports}
           daysOfWeek={DAYS_OF_WEEK}
+          locations={GYM_LOCATIONS}
           saving={saving}
           onGymChange={setNewGym}
           onDayToggle={(dayId) => handleDayToggle(dayId, true)}
           onSportToggle={(sportId) => handleSportToggle(sportId, true)}
+          onLocationToggle={(location) => handleLocationToggle(location, true)}
           onSave={handleCreateGymAndClose}
           onCancel={() => setShowNewGymForm(false)}
         />
@@ -154,6 +157,7 @@ export function SchoolsTab() {
         filteredGyms={filteredGyms}
         sports={sports}
         daysOfWeek={DAYS_OF_WEEK}
+        locations={GYM_LOCATIONS}
         loading={loading}
         editingGym={editingGym}
         editGym={editGym}
@@ -164,6 +168,7 @@ export function SchoolsTab() {
         onEditGymChange={setEditGym}
         onDayToggle={handleDayToggle}
         onSportToggle={handleSportToggle}
+        onLocationToggle={handleLocationToggle}
         onUpdateGym={handleUpdateGym}
         onCancelEdit={handleCancelEdit}
         onDeleteGym={handleDeleteGym}

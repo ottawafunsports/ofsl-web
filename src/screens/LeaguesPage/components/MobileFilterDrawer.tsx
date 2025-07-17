@@ -19,6 +19,7 @@ interface MobileFilterDrawerProps {
     day: string[];
   };
   isAnyFilterActive: () => boolean;
+  clearSkillLevels: () => void;
 }
 
 export function MobileFilterDrawer({
@@ -30,7 +31,8 @@ export function MobileFilterDrawer({
   sports,
   skills,
   filterOptions,
-  isAnyFilterActive
+  isAnyFilterActive,
+  clearSkillLevels
 }: MobileFilterDrawerProps) {
   const sportFilterOptions = ["All Sports", ...sports.map(sport => sport.name)];
   const skillFilterOptions = ["All Skill Levels", ...skills.map(skill => skill.name)];
@@ -135,7 +137,7 @@ export function MobileFilterDrawer({
                     className={`block w-full text-left py-1 transition-colors duration-200 ${
                       filters.skillLevels.length === 0 ? 'text-[#B20000] font-medium' : 'text-[#6F6F6F]'
                     }`}
-                    onClick={() => setFilters(prev => ({ ...prev, skillLevels: [] }))}
+                    onClick={clearSkillLevels}
                   >
                     {option}
                   </button>

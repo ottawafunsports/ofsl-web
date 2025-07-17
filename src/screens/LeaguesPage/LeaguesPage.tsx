@@ -19,7 +19,7 @@ import { MobileFilterDrawer } from "./components/MobileFilterDrawer";
 
 // Filter options data
 const filterOptions = {
-  location: ["All Locations", "Central", "West End", "East End"],
+  location: ["All Locations", "Central", "East", "West", "South", "Gatineau"],
   day: ["All Days", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 };
 
@@ -183,6 +183,11 @@ export const LeaguesPage = (): JSX.Element => {
     });
   };
 
+  // Clear skill levels only
+  const clearSkillLevels = () => {
+    setFilters(prev => ({ ...prev, skillLevels: [] }));
+  };
+
   // Check if any filters are active
   const isAnyFilterActive = () => {
     return filters.sport !== "All Sports" ||
@@ -194,7 +199,7 @@ export const LeaguesPage = (): JSX.Element => {
   // Filter leagues based on selected filters
   const filteredLeagues = leagues.filter(league => {
     const dayName = getDayName(league.day_of_week);
-    const primaryLocation = getPrimaryLocation(league.gyms);
+    const leagueLocations = getPrimaryLocation(league.gyms);
     
     // Helper function to check if league matches skill level filters
     const matchesSkillLevels = () => {
@@ -218,9 +223,16 @@ export const LeaguesPage = (): JSX.Element => {
       return false;
     };
     
+    // Helper function to check if league matches location filter
+    const matchesLocation = () => {
+      if (filters.location === "All Locations") return true;
+      // Check if any of the league's gym locations match the selected location
+      return leagueLocations.includes(filters.location);
+    };
+    
     return (
       (filters.sport === "All Sports" || league.sport_name === filters.sport) &&
-      (filters.location === "All Locations" || primaryLocation.includes(filters.location)) &&
+      matchesLocation() &&
       matchesSkillLevels() &&
       (filters.day === "All Days" || dayName === filters.day)
     );
@@ -398,7 +410,7 @@ export const LeaguesPage = (): JSX.Element => {
                         className={`block w-full text-left px-4 py-2 transition-colors duration-200 hover:bg-[#ffeae5] hover:text-[#B20000] ${
                           filters.skillLevels.length === 0 ? 'bg-[#ffeae5] text-[#B20000] font-medium' : ''
                         }`}
-                        onClick={() => setFilters(prev => ({ ...prev, skillLevels: [] }))}
+                        onClick={clearSkillLevels}
                       >
                         {option}
                       </button>
@@ -576,6 +588,7 @@ export const LeaguesPage = (): JSX.Element => {
         skills={skills}
         filterOptions={filterOptions}
         isAnyFilterActive={isAnyFilterActive}
+        clearSkillLevels={clearSkillLevels}
       />
     </div>
   );

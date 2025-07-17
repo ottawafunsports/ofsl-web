@@ -6,6 +6,7 @@ export interface Gym {
   active: boolean | null;
   available_days: number[] | null;
   available_sports: number[] | null;
+  locations: string[] | null;
 }
 
 export interface Sport {
@@ -31,6 +32,7 @@ export interface NewGymForm {
   active: boolean;
   availableDays: number[];
   availableSports: number[];
+  locations: string[];
 }
 
 export interface EditGymForm {
@@ -40,4 +42,5 @@ export interface EditGymForm {
   active: boolean;
   availableDays: number[];
   availableSports: number[];
+  locations: string[];
 }
