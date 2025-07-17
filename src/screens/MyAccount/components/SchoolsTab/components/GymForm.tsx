@@ -9,10 +9,12 @@ interface GymFormProps {
   gym: NewGymForm | EditGymForm;
   sports: Sport[];
   daysOfWeek: DayOfWeek[];
+  locations: string[];
   saving: boolean;
   onGymChange: (gym: NewGymForm | EditGymForm) => void;
   onDayToggle: (dayId: number) => void;
   onSportToggle: (sportId: number) => void;
+  onLocationToggle: (location: string) => void;
   onSave: () => void;
   onCancel: () => void;
 }
@@ -23,10 +25,12 @@ export function GymForm({
   gym,
   sports,
   daysOfWeek,
+  locations,
   saving,
   onGymChange,
   onDayToggle,
   onSportToggle,
+  onLocationToggle,
   onSave,
   onCancel
 }: GymFormProps) {
@@ -85,6 +89,26 @@ export function GymForm({
           <label htmlFor={`${isEdit ? 'edit' : 'new'}-gym-active`} className="text-sm font-medium text-[#6F6F6F]">
             Active
           </label>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-[#6F6F6F] mb-3">Locations</label>
+          <div className="flex flex-wrap gap-2">
+            {locations.map((location) => (
+              <button
+                key={location}
+                type="button"
+                onClick={() => onLocationToggle(location)}
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  gym.locations.includes(location)
+                    ? 'bg-[#B20000] text-white'
+                    : 'bg-gray-100 text-[#6F6F6F] hover:bg-gray-200'
+                }`}
+              >
+                {location}
+              </button>
+            ))}
+          </div>
         </div>
 
         {gym.active && (

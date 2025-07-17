@@ -8,6 +8,7 @@ interface GymsListProps {
   filteredGyms: Gym[];
   sports: Sport[];
   daysOfWeek: DayOfWeek[];
+  locations: string[];
   loading: boolean;
   editingGym: number | null;
   editGym: any;
@@ -18,6 +19,7 @@ interface GymsListProps {
   onEditGymChange: (gym: any) => void;
   onDayToggle: (dayId: number, isNewGym?: boolean) => void;
   onSportToggle: (sportId: number, isNewGym?: boolean) => void;
+  onLocationToggle: (location: string, isNewGym?: boolean) => void;
   onUpdateGym: () => void;
   onCancelEdit: () => void;
   onDeleteGym: (gymId: number) => void;
@@ -28,6 +30,7 @@ export function GymsList({
   filteredGyms,
   sports,
   daysOfWeek,
+  locations,
   loading,
   editingGym,
   editGym,
@@ -38,6 +41,7 @@ export function GymsList({
   onEditGymChange,
   onDayToggle,
   onSportToggle,
+  onLocationToggle,
   onUpdateGym,
   onCancelEdit,
   onDeleteGym,
@@ -73,10 +77,12 @@ export function GymsList({
               gym={editGym}
               sports={sports}
               daysOfWeek={daysOfWeek}
+              locations={locations}
               saving={saving}
               onGymChange={onEditGymChange}
               onDayToggle={(dayId) => onDayToggle(dayId, false)}
               onSportToggle={(sportId) => onSportToggle(sportId, false)}
+              onLocationToggle={(location) => onLocationToggle(location, false)}
               onSave={onUpdateGym}
               onCancel={onCancelEdit}
             />

@@ -23,7 +23,7 @@ export interface League {
   // Joined data
   sport_name: string | null;
   skill_name: string | null;
-  gyms: Array<{ id: number; gym: string | null; address: string | null }>;
+  gyms: Array<{ id: number; gym: string | null; address: string | null; locations: string[] | null }>;
 }
 
 export interface LeagueWithTeamCount extends League {
@@ -68,12 +68,19 @@ export const formatLeagueDates = (startDate: string | null, endDate: string | nu
 };
 
 // Get primary gym location for display
-export const getPrimaryLocation = (gyms: Array<{ gym: string | null; address: string | null }>): string => {
-  if (!gyms || gyms.length === 0) return '';
+export const getPrimaryLocation = (gyms: Array<{ gym: string | null; address: string | null; locations: string[] | null }>): string[] => {
+  if (!gyms || gyms.length === 0) return [];
   
-  // For now, just return the first gym's name
-  // Later we can implement logic to determine region (Central, East End, West End)
-  return gyms[0]?.gym || '';
+  // Collect all unique locations from all gyms
+  const allLocations = new Set<string>();
+  
+  gyms.forEach(gym => {
+    if (gym.locations && gym.locations.length > 0) {
+      gym.locations.forEach(location => allLocations.add(location));
+    }
+  });
+  
+  return Array.from(allLocations);
 };
 
 // Fetch all leagues with related data
@@ -122,7 +129,7 @@ export const fetchLeagues = async (): Promise<LeagueWithTeamCount[]> => {
     // Fetch gym information
     const { data: gymsData, error: gymsError } = await supabase
       .from('gyms')
-      .select('id, gym, address')
+      .select('id, gym, address, locations')
       .in('id', Array.from(allGymIds));
 
     if (gymsError) {

@@ -28,7 +28,8 @@ export function useGymOperations(
           instructions: newGym.instructions,
           active: newGym.active,
           available_days: newGym.availableDays,
-          available_sports: newGym.availableSports
+          available_sports: newGym.availableSports,
+          locations: newGym.locations
         });
 
       if (error) throw error;
@@ -54,7 +55,8 @@ export function useGymOperations(
       instructions: gym.instructions || '',
       active: gym.active ?? true,
       availableDays: gym.available_days || [],
-      availableSports: gym.available_sports || []
+      availableSports: gym.available_sports || [],
+      locations: gym.locations || []
     });
   };
 
@@ -72,7 +74,8 @@ export function useGymOperations(
           instructions: editGym.instructions,
           active: editGym.active,
           available_days: editGym.availableDays,
-          available_sports: editGym.availableSports
+          available_sports: editGym.availableSports,
+          locations: editGym.locations
         })
         .eq('id', editingGym);
 
@@ -157,6 +160,24 @@ export function useGymOperations(
     }
   };
 
+  const handleLocationToggle = (location: string, isNewGym: boolean = false) => {
+    if (isNewGym) {
+      setNewGym({
+        ...newGym,
+        locations: newGym.locations.includes(location)
+          ? newGym.locations.filter(loc => loc !== location)
+          : [...newGym.locations, location]
+      });
+    } else {
+      setEditGym({
+        ...editGym,
+        locations: editGym.locations.includes(location)
+          ? editGym.locations.filter(loc => loc !== location)
+          : [...editGym.locations, location]
+      });
+    }
+  };
+
   return {
     saving,
     editingGym,
@@ -167,6 +188,7 @@ export function useGymOperations(
     handleCancelEdit,
     handleDeleteGym,
     handleDayToggle,
-    handleSportToggle
+    handleSportToggle,
+    handleLocationToggle
   };
 }

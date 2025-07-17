@@ -10,13 +10,22 @@ export const DAYS_OF_WEEK: DayOfWeek[] = [
   { id: 6, name: 'Saturday' }
 ];
 
+export const GYM_LOCATIONS = [
+  'Central',
+  'East', 
+  'West',
+  'South',
+  'Gatineau'
+] as const;
+
 export const INITIAL_NEW_GYM_FORM = {
   gym: '',
   address: '',
   instructions: '',
   active: true,
   availableDays: [] as number[],
-  availableSports: [] as number[]
+  availableSports: [] as number[],
+  locations: [] as string[]
 };
 
 export const INITIAL_EDIT_GYM_FORM = {
@@ -25,7 +34,8 @@ export const INITIAL_EDIT_GYM_FORM = {
   instructions: '',
   active: true,
   availableDays: [] as number[],
-  availableSports: [] as number[]
+  availableSports: [] as number[],
+  locations: [] as string[]
 };
 
 export const INITIAL_FILTERS = {
